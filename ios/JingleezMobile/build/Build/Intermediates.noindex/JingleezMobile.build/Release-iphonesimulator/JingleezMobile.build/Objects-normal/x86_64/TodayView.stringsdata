@@ -1,0 +1,200 @@
+{
+  "source": "/Users/kalyaan/betting-model/ios/JingleezMobile/JingleezMobile/TodayView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Today’s Games",
+        "location": {
+          "startingColumn": 37,
+          "startingLine": 16
+        }
+      },
+      {
+        "comment": "",
+        "key": "Loading today’s games…",
+        "location": {
+          "startingColumn": 54,
+          "startingLine": 12
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld\nGAMES",
+        "location": {
+          "startingColumn": 323,
+          "startingLine": 17
+        }
+      },
+      {
+        "comment": "",
+        "key": "MLB MODEL BOARD",
+        "location": {
+          "startingColumn": 184,
+          "startingLine": 17
+        }
+      },
+      {
+        "comment": "",
+        "key": "Tap a game for full research",
+        "location": {
+          "startingColumn": 229,
+          "startingLine": 17
+        }
+      },
+      {
+        "comment": "",
+        "key": "OFFICIAL PICKS LOCKED",
+        "location": {
+          "startingColumn": 87,
+          "startingLine": 24
+        }
+      },
+      {
+        "comment": "",
+        "key": "WAITING FOR LINEUPS",
+        "location": {
+          "startingColumn": 111,
+          "startingLine": 24
+        }
+      },
+      {
+        "comment": "",
+        "key": "Game Overview",
+        "location": {
+          "startingColumn": 37,
+          "startingLine": 57
+        }
+      },
+      {
+        "comment": "",
+        "key": "Game information",
+        "location": {
+          "startingColumn": 52,
+          "startingLine": 56
+        }
+      },
+      {
+        "comment": "",
+        "key": "AWAY",
+        "location": {
+          "startingColumn": 153,
+          "startingLine": 58
+        }
+      },
+      {
+        "comment": "",
+        "key": "AT",
+        "location": {
+          "startingColumn": 242,
+          "startingLine": 58
+        }
+      },
+      {
+        "comment": "",
+        "key": "HOME",
+        "location": {
+          "startingColumn": 489,
+          "startingLine": 58
+        }
+      },
+      {
+        "comment": "",
+        "key": "Probable starters",
+        "location": {
+          "startingColumn": 79,
+          "startingLine": 59
+        }
+      },
+      {
+        "comment": "",
+        "key": "Official lineup lock complete",
+        "location": {
+          "startingColumn": 278,
+          "startingLine": 61
+        }
+      },
+      {
+        "comment": "",
+        "key": "Monitoring official lineups",
+        "location": {
+          "startingColumn": 310,
+          "startingLine": 61
+        }
+      },
+      {
+        "comment": "",
+        "key": "These selections are permanent and will not change.",
+        "location": {
+          "startingColumn": 384,
+          "startingLine": 61
+        }
+      },
+      {
+        "comment": "",
+        "key": "Nothing is recorded until both MLB batting orders are confirmed.",
+        "location": {
+          "startingColumn": 438,
+          "startingLine": 61
+        }
+      },
+      {
+        "comment": "",
+        "key": "Why this pick?",
+        "location": {
+          "startingColumn": 670,
+          "startingLine": 67
+        }
+      },
+      {
+        "comment": "",
+        "key": "MONEYLINE",
+        "location": {
+          "startingColumn": 104,
+          "startingLine": 67
+        }
+      },
+      {
+        "comment": "",
+        "key": "TOTAL",
+        "location": {
+          "startingColumn": 116,
+          "startingLine": 67
+        }
+      },
+      {
+        "comment": "",
+        "key": "QUALIFYING RESEARCH",
+        "location": {
+          "startingColumn": 264,
+          "startingLine": 67
+        }
+      },
+      {
+        "comment": "",
+        "key": "MODEL LEAN",
+        "location": {
+          "startingColumn": 286,
+          "startingLine": 67
+        }
+      },
+      {
+        "comment": "",
+        "key": "No wager is placed or facilitated",
+        "location": {
+          "startingColumn": 536,
+          "startingLine": 73
+        }
+      },
+      {
+        "comment": "",
+        "key": "Done",
+        "location": {
+          "startingColumn": 681,
+          "startingLine": 73
+        }
+      }
+    ]
+  },
+  "version": 1
+}

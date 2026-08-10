@@ -1,0 +1,822 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+  .back-link {
+    display: inline-block;
+    color:var(--amber);
+    text-decoration: none;
+    font-size: 13px;
+    margin-bottom: 16px;
+    letter-spacing: 1px;
+  }
+  .back-link:hover { color:var(--text); }
+
+  /* ── Hero header ── */
+  .game-hero {
+    background:rgba(124,58,237,0.12);
+    border:1px solid var(--border-active);
+    
+    padding: 20px 24px;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .hero-team {
+    text-align: center;
+    flex: 1;
+  }
+  .hero-team-logo {
+    width: clamp(68px, 8vw, 96px);
+    height: clamp(68px, 8vw, 96px);
+    object-fit: contain;
+    display: block;
+    margin: 0 auto 5px;
+  }
+  .hero-abbr {
+    font-size: 48px;
+    font-weight: 900;
+    color:var(--amber);
+    display: block;
+  }
+  .hero-full {
+    font-size: 12px;
+    color:var(--text-dim);
+    letter-spacing: 1px;
+    margin-top: 4px;
+  }
+  .hero-record {
+    font-size: 14px;
+    color:var(--text);
+    margin-top: 4px;
+  }
+  .hero-at {
+    font-size: 22px;
+    color:var(--amber);
+    padding: 0 20px;
+    font-weight: bold;
+  }
+  .hero-meta {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    align-items: center;
+    margin-top: 14px;
+    flex-wrap: wrap;
+  }
+  .hero-meta-item {
+    text-align: center;
+    font-size: 12px;
+    color:var(--text-dim);
+    letter-spacing: 1px;
+  }
+  .hero-meta-item strong {
+    display: block;
+    color:var(--text);
+    font-size: 14px;
+    margin-top: 2px;
+  }
+
+  /* ── Section cards ── */
+  .section-card {
+    background:var(--bg-card);
+    border:1px solid var(--border);
+    
+    padding: 16px 20px;
+    margin-bottom: 20px;
+  }
+  .section-title {
+    font-size: 14px;
+    font-weight: bold;
+    color:var(--text);
+    border-bottom:1px solid var(--border);
+    padding-bottom: 6px;
+    margin-bottom: 14px;
+    letter-spacing: 1px;
+  }
+
+  /* ── Pitcher matchup ── */
+  .pitcher-matchup {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 0;
+    align-items: start;
+  }
+  .pitcher-side {
+    padding: 0 12px;
+  }
+  .pitcher-name-big {
+    font-size: 16px;
+    font-weight: 900;
+    color:var(--text);
+    margin-bottom: 4px;
+  }
+  .pitcher-photo {
+    width: clamp(230px, 24vw, 320px);
+    height: clamp(320px, 34vw, 440px);
+    display: block;
+    margin: 0 auto 14px;
+    
+    object-fit: cover;
+    object-position: center center;
+    background:rgba(255,255,255,0.06);
+    border:1px solid var(--border);
+  }
+  .pitcher-team-tag {
+    display: inline-block;
+    background:rgba(124,58,237,0.12);
+    color:var(--amber);
+    font-size: 10px;
+    padding: 2px 6px;
+    
+    margin-bottom: 10px;
+    letter-spacing: 1px;
+  }
+  .stat-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .stat-box {
+    background:rgba(255,255,255,0.03);
+    border: 1px solid #ddd;
+    
+    padding: 8px;
+    text-align: center;
+  }
+  .stat-label {
+    font-size: 9px;
+    color:var(--text-muted);
+    letter-spacing: 1px;
+    display: block;
+    margin-bottom: 3px;
+    text-transform: uppercase;
+  }
+  .stat-value {
+    font-size: 18px;
+    font-weight: 900;
+    color:var(--text);
+  }
+  .stat-value.good { color: #27ae60; }
+  .stat-value.bad  { color: #c0392b; }
+  .stat-na { color: #bbb; font-size: 14px; }
+  .vs-divider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    font-weight: 900;
+    color:var(--text);
+    padding: 0 8px;
+    min-width: 40px;
+  }
+
+  /* ── Odds section ── */
+  .odds-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+  }
+  .odds-box {
+    background:rgba(255,255,255,0.03);
+    border:1px solid var(--border);
+    
+    padding: 12px;
+    text-align: center;
+  }
+  .odds-box-label {
+    font-size: 10px;
+    color:var(--text-muted);
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+  }
+  .odds-big {
+    font-size: 28px;
+    font-weight: 900;
+  }
+  .odds-big.positive { color: #27ae60; }
+  .odds-big.negative { color: #c0392b; }
+  .odds-big.neutral  { color:var(--text); }
+  .odds-books {
+    font-size: 10px;
+    color:var(--text-dim);
+    margin-top: 4px;
+  }
+
+  /* ── Generate picks section ── */
+  .picks-section {
+    background:rgba(124,58,237,0.12);
+    border:1px solid var(--border-active);
+    
+    padding: 20px 24px;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  .picks-section-title {
+    color:var(--amber);
+    font-size: 16px;
+    margin-bottom: 6px;
+    letter-spacing: 1px;
+  }
+  .picks-section p {
+    color:var(--text-dim);
+    font-size: 12px;
+    margin-bottom: 16px;
+  }
+  #generate-btn {
+    font-size: 14px;
+    padding: 12px 36px;
+    cursor: pointer;
+    letter-spacing: 1px;
+  }
+  #picks-result {
+    margin-top: 20px;
+    display: none;
+  }
+
+  /* ── Pick result cards ── */
+  .pick-result-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-top: 12px;
+  }
+  .pick-result-card {
+    background:var(--bg-card);
+    border:1px solid var(--border);
+    
+    padding: 14px;
+    text-align: left;
+  }
+
+  @media (max-width: 760px) {
+    .game-hero { padding: 14px 10px; }
+    .hero-abbr { font-size: clamp(28px, 12vw, 42px); }
+    .hero-full { font-size: 9px; overflow-wrap: anywhere; }
+    .hero-at { padding: 0 8px; font-size: 16px; }
+    .hero-meta { gap: 10px; }
+    .section-card, .picks-section { padding: 14px 10px; }
+    .pitcher-matchup { grid-template-columns: 1fr; gap: 16px; }
+    .pitcher-side { padding: 0; }
+    .vs-divider { padding: 0; }
+    .odds-grid, .pick-result-grid { grid-template-columns: 1fr; }
+    #generate-btn { width: 100%; padding-inline: 10px; }
+  }
+  .pick-type-badge {
+    display: inline-block;
+    background:rgba(124,58,237,0.12);
+    color:var(--amber);
+    font-size: 10px;
+    padding: 3px 8px;
+    
+    margin-bottom: 8px;
+    letter-spacing: 1px;
+  }
+  .pick-name {
+    font-size: 18px;
+    font-weight: 900;
+    color:var(--text);
+    margin-bottom: 10px;
+  }
+  .pick-stat-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 5px;
+  }
+  .pick-stat-label {
+    font-size: 11px;
+    color:var(--text-muted);
+    letter-spacing: 1px;
+  }
+  .pick-stat-val {
+    font-size: 12px;
+    font-weight: bold;
+    color:var(--text);
+  }
+  .pick-stat-val.green { color: #27ae60; }
+  .pick-stat-val.red   { color: #c0392b; }
+  .pick-ev-bar {
+    height: 6px;
+    background:rgba(255,255,255,0.06);
+    
+    margin-top: 10px;
+    overflow: hidden;
+  }
+  .pick-ev-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #27ae60, #ffd700);
+    
+    transition: width 0.6s ease;
+  }
+  .no-pick-msg {
+    color:var(--text-dim);
+    font-size: 12px;
+    padding: 12px;
+    background: #0a0a1a;
+    
+    text-align: center;
+  }
+  .existing-picks-notice {
+    background: #27ae60;
+    color:var(--text);
+    font-size: 11px;
+    padding: 6px 12px;
+    
+    margin-bottom: 10px;
+    display: inline-block;
+  }
+  .final-score { color:var(--text); text-align:center; min-width:170px; }
+  .final-score-label { color:var(--amber); font-size:11px; letter-spacing:2px; margin-bottom:8px; }
+  .final-score-numbers { font-size:38px; font-weight:900; white-space:nowrap; }
+  .postgame-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:14px; margin-top:18px; }
+  .postgame-card { background:var(--bg-card); color:var(--text); border:1px solid var(--border); padding:16px; text-align:left; }
+  .postgame-card.won { border-top:8px solid #18a558; }
+  .postgame-card.lost { border-top:8px solid #d13c32; }
+  .postgame-grade { font-size:12px; padding:5px 9px; color:var(--text); float:right; }
+  .postgame-grade.won { background:#18a558; }.postgame-grade.lost { background:#d13c32; }
+  .postgame-metrics { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin:14px 0; }
+  .postgame-metric { background:#f2f2f2; border:1px solid #ccc; padding:9px; text-align:center; }
+  .postgame-metric span { display:block; color:var(--text-dim); font-size:8px; margin-bottom:5px; }
+  .postgame-metric strong { font-size:13px; }
+  .postgame-copy { font-family:Arial,sans-serif; font-size:13px; line-height:1.65; }
+</style>
+
+<a class="back-link" href="/">◀ BACK TO TODAY'S GAMES</a>
+
+{% if not game %}
+  <div style="text-align:center;color:var(--text);font-size:16px;margin:40px 0">
+    Game not found. <a href="/" style="color:var(--amber)">Return to schedule.</a>
+  </div>
+{% else %}
+
+<!-- ── Hero header ────────────────────────────────────────── -->
+<div class="game-hero">
+  <div style="flex:1">
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <div class="hero-team">
+        {% if game.away_team_id %}<img class="hero-team-logo" src="https://midfield.mlbstatic.com/v1/team/{{ game.away_team_id }}/spots/72" alt="{{ game.away }} logo" onerror="this.style.display='none'">{% endif %}
+        <span class="hero-abbr">{{ game.away_abbr }}</span>
+        <div class="hero-full">{{ game.away }}</div>
+        <div class="hero-record">{{ game.away_record }}</div>
+      </div>
+      {% if postgame %}
+      <div class="final-score">
+        <div class="final-score-label">FINAL</div>
+        <div class="final-score-numbers">{{ postgame.away_score }} — {{ postgame.home_score }}</div>
+      </div>
+      {% else %}<div class="hero-at">@</div>{% endif %}
+      <div class="hero-team">
+        {% if game.home_team_id %}<img class="hero-team-logo" src="https://midfield.mlbstatic.com/v1/team/{{ game.home_team_id }}/spots/72" alt="{{ game.home }} logo" onerror="this.style.display='none'">{% endif %}
+        <span class="hero-abbr">{{ game.home_abbr }}</span>
+        <div class="hero-full">{{ game.home }}</div>
+        <div class="hero-record">{{ game.home_record }}</div>
+      </div>
+    </div>
+    <div class="hero-meta">
+      <div class="hero-meta-item">⏰ FIRST PITCH<strong>{{ game.time }}</strong></div>
+      <div class="hero-meta-item">📍 VENUE<strong>{{ game.venue }}</strong></div>
+      <div class="hero-meta-item">📅 DATE<strong>{{ today }}</strong></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Pitcher matchup ────────────────────────────────────── -->
+<div class="section-card">
+  <div class="section-title">⚾ STARTING PITCHER MATCHUP</div>
+  <div class="pitcher-matchup">
+
+    <!-- Away pitcher -->
+    <div class="pitcher-side">
+      {% if game.away_sp_id %}<img class="pitcher-photo" src="https://img.mlbstatic.com/mlb-photos/image/upload/w_640,q_auto:best/v1/people/{{ game.away_sp_id }}/headshot/67/current" alt="{{ game.away_sp_name }}" onerror="this.style.display='none'">{% endif %}
+      <div class="pitcher-name-big">{{ game.away_sp_name }}</div>
+      <div>
+        <span class="pitcher-team-tag">{{ game.away_abbr }} · {{ game.away_sp_hand }}HP</span>
+      </div>
+      {% set a = game.away_sp_stats %}
+      <div class="stat-grid">
+        <div class="stat-box">
+          <span class="stat-label">ERA</span>
+          <span class="stat-value {% if a.era and a.era < 3.5 %}good{% elif a.era and a.era > 5.0 %}bad{% endif %}">
+            {{ a.era if a.era else '—' }}
+          </span>
+        </div>
+        <div class="stat-box">
+          <span class="stat-label">WHIP</span>
+          <span class="stat-value {% if a.whip and a.whip < 1.15 %}good{% elif a.whip and a.whip > 1.45 %}bad{% endif %}">
+            {{ a.whip if a.whip else '—' }}
+          </span>
+        </div>
+        <div class="stat-box">
+          <span class="stat-label">K/9</span>
+          <span class="stat-value {% if a.k9 and a.k9 > 9.5 %}good{% elif a.k9 and a.k9 < 6.5 %}bad{% endif %}">
+            {{ a.k9 if a.k9 else '—' }}
+          </span>
+        </div>
+        <div class="stat-box">
+          <span class="stat-label">FIP</span>
+          <span class="stat-value {% if a.fip and a.fip < 3.5 %}good{% elif a.fip and a.fip > 5.0 %}bad{% endif %}">
+            {{ "%.2f"|format(a.fip) if a.fip else '—' }}
+          </span>
+        </div>
+      </div>
+      {% if a.ip %}<div style="font-size:11px;color:var(--text-dim);margin-top:8px">{{ a.ip }} IP · {{ a.so }} K this season</div>{% endif %}
+    </div>
+
+    <div class="vs-divider">VS</div>
+
+    <!-- Home pitcher -->
+    <div class="pitcher-side">
+      {% if game.home_sp_id %}<img class="pitcher-photo" src="https://img.mlbstatic.com/mlb-photos/image/upload/w_640,q_auto:best/v1/people/{{ game.home_sp_id }}/headshot/67/current" alt="{{ game.home_sp_name }}" onerror="this.style.display='none'">{% endif %}
+      <div class="pitcher-name-big">{{ game.home_sp_name }}</div>
+      <div>
+        <span class="pitcher-team-tag">{{ game.home_abbr }} · {{ game.home_sp_hand }}HP</span>
+      </div>
+      {% set h = game.home_sp_stats %}
+      <div class="stat-grid">
+        <div class="stat-box">
+          <span class="stat-label">ERA</span>
+          <span class="stat-value {% if h.era and h.era < 3.5 %}good{% elif h.era and h.era > 5.0 %}bad{% endif %}">
+            {{ h.era if h.era else '—' }}
+          </span>
+        </div>
+        <div class="stat-box">
+          <span class="stat-label">WHIP</span>
+          <span class="stat-value {% if h.whip and h.whip < 1.15 %}good{% elif h.whip and h.whip > 1.45 %}bad{% endif %}">
+            {{ h.whip if h.whip else '—' }}
+          </span>
+        </div>
+        <div class="stat-box">
+          <span class="stat-label">K/9</span>
+          <span class="stat-value {% if h.k9 and h.k9 > 9.5 %}good{% elif h.k9 and h.k9 < 6.5 %}bad{% endif %}">
+            {{ h.k9 if h.k9 else '—' }}
+          </span>
+        </div>
+        <div class="stat-box">
+          <span class="stat-label">FIP</span>
+          <span class="stat-value {% if h.fip and h.fip < 3.5 %}good{% elif h.fip and h.fip > 5.0 %}bad{% endif %}">
+            {{ "%.2f"|format(h.fip) if h.fip else '—' }}
+          </span>
+        </div>
+      </div>
+      {% if h.ip %}<div style="font-size:11px;color:var(--text-dim);margin-top:8px">{{ h.ip }} IP · {{ h.so }} K this season</div>{% endif %}
+    </div>
+
+  </div>
+</div>
+
+<!-- ── Current Odds ───────────────────────────────────────── -->
+{% if game.odds and not postgame %}
+<div class="section-card">
+  <div class="section-title">💰 CURRENT MARKET ODDS</div>
+  <div class="odds-grid">
+    <div class="odds-box">
+      <div class="odds-box-label">{{ game.away_abbr }} MONEYLINE</div>
+      <div class="odds-big {% if game.odds.away_ml_avg and '+' in game.odds.away_ml_avg %}positive{% else %}negative{% endif %}">
+        {{ game.odds.away_ml_avg }}
+      </div>
+      <div class="odds-books">{{ game.odds.away_ml_list|length }} books</div>
+    </div>
+    <div class="odds-box">
+      <div class="odds-box-label">TOTAL LINE</div>
+      <div class="odds-big neutral">{{ game.odds.total_line or 'N/A' }}</div>
+      <div class="odds-books">O/U -110 each side</div>
+    </div>
+    <div class="odds-box">
+      <div class="odds-box-label">{{ game.home_abbr }} MONEYLINE</div>
+      <div class="odds-big {% if game.odds.home_ml_avg and '+' in game.odds.home_ml_avg %}positive{% else %}negative{% endif %}">
+        {{ game.odds.home_ml_avg }}
+      </div>
+      <div class="odds-books">{{ game.odds.home_ml_list|length }} books</div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<!-- ── Generate Picks ─────────────────────────────────────── -->
+{% if postgame %}
+<div class="picks-section">
+  <div class="picks-section-title">📊 POSTGAME ANALYSIS</div>
+  <p>Final: <strong>{{ game.away }} {{ postgame.away_score }}, {{ game.home }} {{ postgame.home_score }}</strong> · {{ postgame.actual_total }} combined runs. This review uses only the picks locked before first pitch.</p>
+  {% if postgame.picks %}
+  <div class="postgame-grid">
+    {% for item in postgame.picks %}
+    <article class="postgame-card {{ item.status }}">
+      <span class="postgame-grade {{ item.status }}">{{ item.status|upper }}</span>
+      <span class="pick-type-badge">{{ item.pick_type|upper }}</span>
+      <div class="pick-name">{{ item.pick }}</div>
+      <div class="postgame-metrics">
+        <div class="postgame-metric"><span>MODEL PROB</span><strong>{{ "%.1f"|format(item.model_prob * 100) if item.model_prob is not none else '—' }}{% if item.model_prob is not none %}%{% endif %}</strong></div>
+        <div class="postgame-metric"><span>LOCKED EV</span><strong>{% if item.ev is not none and item.ev > 0 %}+{% endif %}{{ "%.1f"|format(item.ev) if item.ev is not none else '—' }}{% if item.ev is not none %}%{% endif %}</strong></div>
+        <div class="postgame-metric"><span>CLV</span><strong>{% if item.clv is not none and item.clv > 0 %}+{% endif %}{{ "%.2f"|format(item.clv) if item.clv is not none else '—' }}{% if item.clv is not none %}pp{% endif %}</strong></div>
+        {% if item.pick_type == 'totals' %}
+        <div class="postgame-metric"><span>PROJECTED RUNS</span><strong>{{ "%.2f"|format(item.expected_total) if item.expected_total is not none else '—' }}</strong></div>
+        <div class="postgame-metric"><span>ACTUAL RUNS</span><strong>{{ item.actual_total }}</strong></div>
+        <div class="postgame-metric"><span>FORECAST ERROR</span><strong>{% if item.projection_error is not none and item.projection_error > 0 %}+{% endif %}{{ "%.2f"|format(item.projection_error) if item.projection_error is not none else '—' }}</strong></div>
+        {% endif %}
+      </div>
+      <div class="postgame-copy">{{ item.analysis }}</div>
+      {% if item.clv is none %}<div style="font-size:9px;color:#a65b00;margin-top:10px">⚠ Closing price was unavailable, so this game cannot be used for CLV conclusions.</div>{% endif %}
+    </article>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="no-pick-msg">No official pregame picks were stored for this game, so there is nothing legitimate to grade or regenerate after the result.</div>
+  {% endif %}
+</div>
+{% else %}
+<div class="picks-section">
+  <div class="picks-section-title">🏆 PREVIEW THIS GAME</div>
+  <p>Preview the current model calculation without recording it. The one official Moneyline and one official Total lock automatically when MLB confirms both starting lineups.</p>
+
+  {% if existing_picks %}
+    <div class="existing-picks-notice">🔒 Official final picks are locked and recorded for this game.</div>
+  {% endif %}
+
+  <button id="generate-btn" class="btn" onclick="generatePicks()">
+    {% if existing_picks %}🔄 REGENERATE PICKS{% else %}⚡ GENERATE PICKS{% endif %}
+  </button>
+
+  <div id="picks-result">
+    <div id="picks-content"></div>
+  </div>
+
+  {% if existing_picks %}
+  <div id="picks-result" style="display:block;margin-top:20px">
+    <div class="pick-result-grid">
+      {% for pick in existing_picks %}
+      <div class="pick-result-card">
+        <span class="pick-type-badge">{{ pick.pick_type|upper }}</span>
+        {% if pick.pick_type == 'totals' %}<span style="float:right;font-size:8px;padding:4px 7px;background:{% if pick.recommendation_tier == 'strong_lock' %}#6f42c1{% elif pick.recommendation_tier == 'qualified_pick' %}#16823a{% else %}#777{% endif %};color:var(--text)">{% if pick.recommendation_tier == 'strong_lock' %}🔒 STRONG LOCK{% elif pick.recommendation_tier == 'qualified_pick' %}✅ QUALIFIED PICK{% else %}⏭ NO BET · DAILY FORECAST{% endif %}</span>{% endif %}
+        <div class="pick-name">{{ pick.pick }}</div>
+        {% if pick.pick_type == 'totals' and pick.qualification_checklist %}<details style="font-size:8px;margin:7px 0;text-align:left"><summary>CLASSIFICATION CHECKLIST</summary>{% for name, passed in pick.qualification_checklist.items() %}<div style="padding:3px;color:{% if passed %}#16823a{% else %}#b42318{% endif %}">{% if passed %}✓{% else %}✕{% endif %} {{ name|replace('_',' ')|upper }}</div>{% endfor %}</details>{% endif %}
+        <div class="pick-stat-row">
+          <span class="pick-stat-label">MODEL PROB</span>
+          <span class="pick-stat-val">{{ "%.1f"|format(pick.model_prob * 100) }}%</span>
+        </div>
+        <div class="pick-stat-row">
+          <span class="pick-stat-label">MARKET ODDS</span>
+          <span class="pick-stat-val">{{ pick.odds }}</span>
+        </div>
+        <div class="pick-stat-row">
+          <span class="pick-stat-label">EV</span>
+          <span class="pick-stat-val {% if pick.ev > 0 %}green{% else %}red{% endif %}">
+            {% if pick.ev > 0 %}+{% endif %}{{ "%.1f"|format(pick.ev) }}%
+          </span>
+        </div>
+        <div class="pick-ev-bar">
+          <div class="pick-ev-fill" style="width:{{ [pick.ev * 3, 100]|min }}%"></div>
+        </div>
+        <div style="font-size:10px;color:var(--text-dim);margin-top:6px;letter-spacing:1px">STATUS: {{ pick.status|upper }}</div>
+        {% if pick.summary %}
+        <button type="button" class="btn" style="width:100%;margin-top:10px;font-size:11px" onclick="toggleSavedPanel('saved-summary-{{ loop.index }}')">📋 VIEW SUMMARY</button>
+        <div id="saved-summary-{{ loop.index }}" style="display:none;margin-top:8px;background:#f6f2ff;border:2px solid #44015e;padding:12px;text-align:left">
+          <div style="font-size:11px;font-weight:bold;color:var(--violet);margin-bottom:8px">{{ pick.summary.title }}</div>
+          <div style="font-size:9px;line-height:1.7;color:var(--text)">{{ pick.summary.overview }} {{ pick.summary.decision }}</div>
+        </div>
+        <button type="button" class="btn" style="width:100%;margin-top:8px;font-size:11px;background:var(--amber)!important;color:#07070f!important" onclick="toggleSavedPanel('saved-advanced-{{ loop.index }}')">🔬 VIEW ADVANCED SUMMARY</button>
+        <div id="saved-advanced-{{ loop.index }}" style="display:none;margin-top:8px;background:rgba(245,158,11,0.10);border:2px solid #b8860b;padding:12px;text-align:left">
+          <div style="font-size:11px;font-weight:bold;color:#6b4d00;margin-bottom:8px">COMPREHENSIVE MODEL ANALYSIS</div>
+          <div style="font-size:10px;line-height:1.8;color:var(--text)">{{ pick.summary.advanced }}</div>
+        </div>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+</div>
+
+<script>
+function toggleSavedPanel(id) {
+  const panel = document.getElementById(id);
+  if (panel) panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+}
+function generatePicks() {
+  const btn = document.getElementById('generate-btn');
+  btn.textContent = '⏳ GENERATING...';
+  btn.disabled = true;
+  btn.classList.remove('is-primary');
+  btn.classList.add('is-disabled');
+
+  const away = '{{ game.away_abbr }}';
+  const home = '{{ game.home_abbr }}';
+
+  fetch('/api/generate-pick', {method:'POST', headers:{'Content-Type':'application/json','X-Requested-With':'Jingleez'}, body:JSON.stringify({away,home})})
+    .then(r => r.json())
+    .then(data => {
+      btn.textContent = '✅ PICKS GENERATED';
+
+      const resultDiv = document.getElementById('picks-result');
+      const contentDiv = document.getElementById('picks-content');
+      resultDiv.style.display = 'block';
+
+      if (data.error) {
+        contentDiv.innerHTML = `<div class="no-pick-msg">⚠️ ${data.error}</div>`;
+        return;
+      }
+
+      const picks = data.picks || [];
+      if (picks.length === 0) {
+        contentDiv.innerHTML = `<div class="no-pick-msg">No +EV picks found for this game at current odds.</div>`;
+        return;
+      }
+
+      function kellyUnits(prob, decOdds, frac=0.5) {
+        const b = (decOdds || 0) - 1;
+        if (b <= 0 || !prob) return null;
+        const q = 1 - prob;
+        const k = ((b * prob - q) / b) * frac;
+        if (k <= 0) return null;
+        if (k < 0.05) return 0.25;
+        if (k < 0.10) return 0.50;
+        return 1.00;
+      }
+
+      function escapeHtml(value) {
+        return String(value ?? '').replace(/[&<>"']/g, ch => ({
+          '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
+        })[ch]);
+      }
+
+      function renderPickSummary(summary, index) {
+        if (!summary) return '';
+        const factors = (summary.factors || []).map(f => {
+          const color = f.effect === 'supports' ? '#155a1e' :
+                        f.effect === 'opposes' ? '#8b0000' : '#555';
+          const label = f.effect === 'supports' ? 'HELPS PICK' :
+                        f.effect === 'opposes' ? 'CONFLICT' : 'CONTEXT';
+          return `<div style="border-left:4px solid ${color};padding:7px 9px;margin:6px 0;background:var(--bg-card)">
+            <div style="display:flex;justify-content:space-between;gap:8px;font-size:9px;font-weight:bold;color:${color}">
+              <span>${escapeHtml(f.name)}</span><span>${label}</span>
+            </div>
+            <div style="font-size:10px;color:var(--text);margin-top:4px;line-height:1.5">${escapeHtml(f.detail)}</div>
+          </div>`;
+        }).join('');
+        const advanced = summary.advanced ? `<button type="button" class="btn" style="width:100%;margin-top:8px;font-size:11px;background:var(--amber)!important;color:#07070f!important" onclick="toggleAdvancedSummary(${index})">🔬 VIEW ADVANCED SUMMARY</button>
+          <div id="advanced-summary-${index}" style="display:none;margin-top:8px;background:rgba(245,158,11,0.10);border:2px solid #b8860b;padding:12px;text-align:left">
+            <div style="font-size:11px;font-weight:bold;color:#6b4d00;margin-bottom:8px">COMPREHENSIVE MODEL ANALYSIS</div>
+            <div style="font-size:10px;line-height:1.8;color:var(--text)">${escapeHtml(summary.advanced)}</div>
+          </div>` : '';
+        return `<button type="button" class="btn" style="width:100%;margin-top:10px;font-size:11px" onclick="togglePickSummary(${index})">📋 VIEW SUMMARY</button>
+          <div id="pick-summary-${index}" style="display:none;margin-top:10px;background:#f6f2ff;border:2px solid #44015e;padding:12px;text-align:left">
+            <div style="font-size:12px;font-weight:bold;color:var(--violet);margin-bottom:8px">${escapeHtml(summary.title)}</div>
+            <div style="font-size:10px;line-height:1.6;color:var(--text);margin-bottom:8px">${escapeHtml(summary.overview)}</div>
+            <div style="font-size:10px;line-height:1.6;color:var(--text);margin-bottom:8px">${escapeHtml(summary.decision)}</div>
+            ${factors}
+            <div style="font-size:9px;line-height:1.5;color:#8b5a00;margin-top:8px"><strong>RISK:</strong> ${escapeHtml(summary.risk)}</div>
+            <div style="font-size:9px;line-height:1.5;color:var(--text-dim);margin-top:5px"><strong>DATA:</strong> ${escapeHtml(summary.data_quality)}</div>
+          </div>${advanced}`;
+      }
+
+      window.togglePickSummary = function(index) {
+        const panel = document.getElementById(`pick-summary-${index}`);
+        if (panel) panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+      };
+      window.toggleAdvancedSummary = function(index) {
+        const panel = document.getElementById(`advanced-summary-${index}`);
+        if (panel) panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+      };
+
+      let html = '<div class="pick-result-grid">';
+      for (const [pickIndex, p] of picks.entries()) {
+        const isSkipped = p.skipped === true;
+        const evClass = p.ev >= 10 ? 'green' : p.ev > 0 ? 'gold' : 'red';
+        const evSign  = p.ev > 0 ? '+' : '';
+        const evWidth = Math.min(Math.abs(p.ev) * 3, 100);
+        const edgeSign = (p.model_edge || 0) >= 0 ? '+' : '';
+        const kelly = p.kelly_units != null
+          ? p.kelly_units
+          : kellyUnits(p.model_prob, p.odds_dec);
+        const kellyLine = (!isSkipped && kelly != null && kelly > 0)
+          ? `<div style="background:#1a3a1a;color:#7eff7e;padding:6px 8px;margin-top:8px;font-size:11px;letter-spacing:1px;display:flex;justify-content:space-between">
+               <span>🎯 RESEARCH WEIGHT</span><strong>${kelly}u</strong>
+             </div>`
+          : '';
+        const savedLine = isSkipped
+          ? `<div style="font-size:10px;color:var(--amber);margin-top:6px;letter-spacing:1px">⏭️ SKIPPED — ${p.skip_reason}</div>`
+          : (p.recorded
+            ? `<div style="font-size:10px;color:var(--green);margin-top:6px;letter-spacing:1px">OFFICIAL LINEUP LOCK RECORDED ✅</div>`
+            : `<div style="font-size:10px;color:var(--amber);margin-top:6px;letter-spacing:1px">PREVIEW ONLY · NOT RECORDED · LOCKS AFTER CONFIRMED LINEUPS</div>`);
+        const tierChecks = Object.entries(p.qualification_checklist||{}).map(([name,pass])=>`<span style="color:${pass?'#8cffab':'#ffb3b3'};margin-right:8px">${pass?'✓':'✕'} ${escapeHtml(name.replaceAll('_',' ').toUpperCase())}</span>`).join('');
+        const tierLine = p.pick_type === 'totals' ? `<div style="margin:7px 0;padding:7px;background:${p.recommendation_tier==='strong_lock'?'#4b277d':p.recommendation_tier==='qualified_pick'?'#155a1e':'#555'};color:var(--text);font-size:9px">${p.recommendation_tier==='strong_lock'?'🔒 STRONG LOCK':p.recommendation_tier==='qualified_pick'?'✅ QUALIFIED PICK':'⏭ NO BET · DAILY FORECAST'}<details style="margin-top:6px"><summary>CLASSIFICATION CHECKLIST</summary><div style="line-height:1.8;margin-top:5px">${tierChecks}</div></details></div>` : '';
+        html += `
+          <div class="pick-result-card" style="${isSkipped ? 'opacity:0.7;border-color:var(--text-muted)' : ''}">
+            <span class="pick-type-badge">${p.pick_type.toUpperCase()}</span>
+            ${tierLine}
+            <div class="pick-name">${p.pick}</div>
+            <div class="pick-stat-row">
+              <span class="pick-stat-label">MODEL PROB</span>
+              <span class="pick-stat-val">${(p.model_prob * 100).toFixed(1)}%</span>
+            </div>
+            <div class="pick-stat-row">
+              <span class="pick-stat-label">MARKET CONSENSUS</span>
+              <span class="pick-stat-val">${(p.market_prob * 100).toFixed(1)}%</span>
+            </div>
+            <div class="pick-stat-row">
+              <span class="pick-stat-label">MODEL EDGE</span>
+              <span class="pick-stat-val" style="color:${(p.model_edge||0)>=0?'#155a1e':'#8b0000'}">${edgeSign}${(p.model_edge||0).toFixed(1)}pp</span>
+            </div>
+            <div class="pick-stat-row">
+              <span class="pick-stat-label">BEST ODDS</span>
+              <span class="pick-stat-val">${p.odds_display}</span>
+            </div>
+            <div class="pick-stat-row">
+              <span class="pick-stat-label">EV</span>
+              <span class="pick-stat-val ${evClass}">${evSign}${p.ev.toFixed(1)}%</span>
+            </div>
+            ${kellyLine}
+            ${renderPickSummary(p.summary, pickIndex)}
+            ${p.ml_features ? `
+            <div style="border-top:1px dashed #ddd;margin-top:8px;padding-top:6px">
+              <div style="font-size:8px;color:var(--text-muted);letter-spacing:1px;margin-bottom:4px">ML MODEL v3 FEATURES</div>
+              <div class="pick-stat-row">
+                <span class="pick-stat-label" style="font-size:8px">SP FIP ADV</span>
+                <span class="pick-stat-val" style="font-size:10px;color:${(p.ml_features.fip_adv||0)>=0?'#155a1e':'#8b0000'}">${(p.ml_features.fip_adv>=0?'+':'')}${p.ml_features.fip_adv?.toFixed(2)||'—'} (H:${p.ml_features.home_fip} / A:${p.ml_features.away_fip})</span>
+              </div>
+              <div class="pick-stat-row">
+                <span class="pick-stat-label" style="font-size:8px">RS/G ADV (venue)</span>
+                <span class="pick-stat-val" style="font-size:10px;color:${(p.ml_features.rsg_adv||0)>=0?'#155a1e':'#8b0000'}">${(p.ml_features.rsg_adv>=0?'+':'')}${p.ml_features.rsg_adv?.toFixed(2)||'—'} (H:${p.ml_features.home_rsg} / A:${p.ml_features.away_rsg})</span>
+              </div>
+              <div class="pick-stat-row">
+                <span class="pick-stat-label" style="font-size:8px">FORM L10 W% ADV</span>
+                <span class="pick-stat-val" style="font-size:10px;color:${(p.ml_features.form_adv||0)>=0?'#155a1e':'#8b0000'}">${(p.ml_features.form_adv>=0?'+':'')}${((p.ml_features.form_adv||0)*100).toFixed(1)}pp (H:${((p.ml_features.home_l10_wl||0)*100).toFixed(0)}% / A:${((p.ml_features.away_l10_wl||0)*100).toFixed(0)}%)</span>
+              </div>
+              <div class="pick-stat-row">
+                <span class="pick-stat-label" style="font-size:8px">BULLPEN ERA ADV</span>
+                <span class="pick-stat-val" style="font-size:10px;color:${(p.ml_features.bp_adv||0)>=0?'#155a1e':'#8b0000'}">${(p.ml_features.bp_adv>=0?'+':'')}${p.ml_features.bp_adv?.toFixed(2)||'—'} (H:${p.ml_features.home_bp_era} / A:${p.ml_features.away_bp_era})</span>
+              </div>
+              <div class="pick-stat-row"><span class="pick-stat-label" style="font-size:8px">LINEUPS</span><span class="pick-stat-val" style="font-size:10px">${p.ml_features.context_complete ? 'CONFIRMED' : 'NOT CONFIRMED'} · OPS H:${p.ml_features.home_lineup_ops} / A:${p.ml_features.away_lineup_ops}</span></div>
+              <div class="pick-stat-row"><span class="pick-stat-label" style="font-size:8px">REST</span><span class="pick-stat-val" style="font-size:10px">H:${p.ml_features.home_rest_days}d / A:${p.ml_features.away_rest_days}d</span></div>
+              <div class="pick-stat-row"><span class="pick-stat-label" style="font-size:8px">GAMES LAST 3 DAYS</span><span class="pick-stat-val" style="font-size:10px">H:${p.ml_features.home_games_last_3} / A:${p.ml_features.away_games_last_3}</span></div>
+              <div class="pick-stat-row"><span class="pick-stat-label" style="font-size:8px">DEFENSE</span><span class="pick-stat-val" style="font-size:10px">Fld% H:${p.ml_features.home_fielding_pct} / A:${p.ml_features.away_fielding_pct}</span></div>
+              <div class="pick-stat-row">
+                <span class="pick-stat-label" style="font-size:8px">SEASON W% ADV</span>
+                <span class="pick-stat-val" style="font-size:10px;color:${(p.ml_features.wpct_adv||0)>=0?'#155a1e':'#8b0000'}">${(p.ml_features.wpct_adv>=0?'+':'')}${((p.ml_features.wpct_adv||0)*100).toFixed(1)}pp (H:${((p.ml_features.home_wpct||0)*100).toFixed(0)}% / A:${((p.ml_features.away_wpct||0)*100).toFixed(0)}%)</span>
+              </div>
+              ${p.ml_logit_delta != null ? `<div class="pick-stat-row">
+                <span class="pick-stat-label" style="font-size:8px">LOGIT DELTA</span>
+                <span class="pick-stat-val" style="font-size:10px">${p.ml_logit_delta>=0?'+':''}${p.ml_logit_delta?.toFixed(3)||'0'} (from market)</span>
+              </div>` : ''}
+            </div>` : ''}
+            ${p.expected_total ? `
+            <div class="pick-stat-row" style="border-top:1px dashed #ddd;margin-top:8px;padding-top:6px">
+              <span class="pick-stat-label">EXPECTED RUNS (λ)</span>
+              <span class="pick-stat-val">${p.expected_total.toFixed(1)}</span>
+            </div>
+            <div class="pick-stat-row">
+              <span class="pick-stat-label" style="font-size:8px">HOME/AWAY FIP</span>
+              <span class="pick-stat-val" style="font-size:10px">${p.home_fip?.toFixed(2)||'—'} / ${p.away_fip?.toFixed(2)||'—'}</span>
+            </div>
+            ${p.home_starter_usage ? `<div class="pick-stat-row"><span class="pick-stat-label" style="font-size:8px">EXPECTED STARTER IP</span><span class="pick-stat-val" style="font-size:10px">H:${p.home_starter_usage.expected_innings} (${p.home_starter_usage.role}) / A:${p.away_starter_usage.expected_innings} (${p.away_starter_usage.role})</span></div>` : ''}
+            ${p.home_team_available_bp_era ? `<div class="pick-stat-row"><span class="pick-stat-label" style="font-size:8px">AVAILABLE BULLPEN ERA</span><span class="pick-stat-val" style="font-size:10px">H:${p.home_team_available_bp_era.toFixed(2)} / A:${p.away_team_available_bp_era.toFixed(2)}</span></div>` : ''}
+            <div class="pick-stat-row">
+              <span class="pick-stat-label" style="font-size:8px">HOME/AWAY RS/G</span>
+              <span class="pick-stat-val" style="font-size:10px">${p.home_rsg?.toFixed(2)||'—'} / ${p.away_rsg?.toFixed(2)||'—'}</span>
+            </div>
+            <div class="pick-stat-row">
+              <span class="pick-stat-label" style="font-size:8px">PARK FACTOR</span>
+              <span class="pick-stat-val" style="font-size:10px">${p.park_factor?.toFixed(2)||'—'}</span>
+            </div>
+            ${p.weather_factor != null ? `
+            <div class="pick-stat-row">
+              <span class="pick-stat-label" style="font-size:8px">🌤 WEATHER</span>
+              <span class="pick-stat-val" style="font-size:10px">${p.temp_f ? p.temp_f+'°F' : ''} ${p.wind_info||''} (×${p.weather_factor?.toFixed(3)||'1.000'})</span>
+            </div>` : ''}
+            ${p.ump_name && p.ump_name !== 'Unknown' ? `
+            <div class="pick-stat-row">
+              <span class="pick-stat-label" style="font-size:8px">👨‍⚖️ UMPIRE</span>
+              <span class="pick-stat-val" style="font-size:10px">${p.ump_name} (${p.ump_runs_adj >= 0 ? '+' : ''}${p.ump_runs_adj?.toFixed(2)||'0.00'}R)</span>
+            </div>` : ''}` : ''}
+            ${p.context ? `
+            <div style="border-top:1px dashed #ddd;margin-top:8px;padding-top:6px">
+              <div style="font-size:8px;color:var(--text-muted);letter-spacing:1px;margin-bottom:4px">LIVE CONTEXT ADJUSTMENTS</div>
+              <div class="pick-stat-row"><span class="pick-stat-label" style="font-size:8px">LINEUPS</span><span class="pick-stat-val" style="font-size:10px">${p.context.context_complete ? 'CONFIRMED' : 'NOT CONFIRMED'} · ${p.lineup_runs_adj >= 0 ? '+' : ''}${(p.lineup_runs_adj||0).toFixed(2)} runs</span></div>
+              <div class="pick-stat-row"><span class="pick-stat-label" style="font-size:8px">BULLPEN LOAD</span><span class="pick-stat-val" style="font-size:10px">H:${p.context.home_games_last_3} / A:${p.context.away_games_last_3} games · +${(p.bullpen_workload_adj||0).toFixed(2)} runs</span></div>
+              <div class="pick-stat-row"><span class="pick-stat-label" style="font-size:8px">DEFENSE</span><span class="pick-stat-val" style="font-size:10px">${p.defense_runs_adj >= 0 ? '+' : ''}${(p.defense_runs_adj||0).toFixed(2)} runs</span></div>
+            </div>` : ''}
+            <div class="pick-ev-bar">
+              <div class="pick-ev-fill" style="width:${evWidth}%"></div>
+            </div>
+            ${savedLine}
+          </div>`;
+      }
+      html += '</div>';
+      contentDiv.innerHTML = html;
+    })
+    .catch(err => {
+      btn.textContent = '⚡ GENERATE PICKS';
+      btn.disabled = false;
+      btn.classList.add('is-primary');
+      btn.classList.remove('is-disabled');
+      document.getElementById('picks-content').innerHTML =
+        `<div class="no-pick-msg">⚠️ Error: ${err.message}</div>`;
+      document.getElementById('picks-result').style.display = 'block';
+    });
+}
+</script>
+{% endif %}
+
+{% endif %}
+{% endblock %}

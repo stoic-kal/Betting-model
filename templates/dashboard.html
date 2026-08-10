@@ -1,0 +1,1649 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+  .dash-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .dash-title { font-size: 20px; color:var(--amber); margin: 0; text-shadow: 2px 2px #1a1a2e; }
+  .dash-subtitle { font-size: 11px; color:var(--text); margin: 4px 0 0; letter-spacing: 1px; }
+  .btn {
+    font-family: inherit !important;
+    background:var(--violet) !important;
+    color:var(--text) !important;
+    border: 3px solid #000 !important;
+    padding: 8px 14px !important;
+    cursor: pointer;
+    font-size: 10px !important;
+  }
+  .btn:hover { background: #6b0288 !important; }
+  .btn-green { background: #155a1e !important; }
+  .btn-green:hover { background: #1e7d2b !important; }
+
+  /* ── KPI grid ── */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .kpi-card {
+    background:var(--bg-card);
+    border:1px solid var(--border);
+    padding: 14px 10px;
+    text-align: center;
+    
+  }
+  .kpi-label { font-size: 9px; color:var(--text-muted); letter-spacing: 1px; text-transform: uppercase; }
+  .kpi-value { font-size: 22px; font-weight: 900; color:var(--text); margin-top: 8px; }
+  .kpi-value.green { color: #155a1e; }
+  .kpi-value.red   { color: #8b0000; }
+  .kpi-value.gold  { color: #b8860b; }
+
+  /* ── Section card ── */
+  .section-card {
+    background:var(--bg-card);
+    border:1px solid var(--border);
+    padding: 16px 20px;
+    margin-bottom: 20px;
+    
+  }
+  .section-title {
+    font-size: 12px;
+    font-weight: 900;
+    color:var(--text);
+    border-bottom:1px solid var(--border);
+    padding-bottom: 6px;
+    margin-bottom: 14px;
+    letter-spacing: 1px;
+  }
+
+  /* ── ML vs Totals breakdown ── */
+  .type-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .type-card {
+    border:1px solid var(--border);
+    
+    padding: 12px;
+  }
+  .type-card.ml-card   { border-color: var(--green); background: rgba(16,185,129,0.10); }
+  .type-card.tot-card  { border-color: var(--red); background: rgba(239,68,68,0.10); }
+  .type-header {
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+  }
+  .type-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 6px;
+    font-size: 10px;
+  }
+  .type-stat-box { text-align: center; }
+  .type-stat-label { color:var(--text-muted); display: block; margin-bottom: 3px; }
+  .type-stat-val { font-size: 16px; font-weight: 900; }
+
+  /* ── Charts ── */
+  .charts-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 20px;
+  }
+  .chart-card {
+    background:var(--bg-card);
+    border:1px solid var(--border);
+    padding: 16px;
+    
+  }
+  .chart-title {
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+    color:var(--text);
+  }
+  canvas { max-width: 100%; }
+
+  @media (max-width: 900px) {
+    .charts-grid, .type-grid { grid-template-columns: 1fr; }
+    #kelly-kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+    .section-card, .chart-card { min-width: 0; overflow-x: auto; }
+  }
+  @media (max-width: 560px) {
+    .dash-header { align-items: stretch; }
+    .dash-header > div:last-child { display: grid; gap: 8px; }
+    .dash-header .btn { width: 100%; }
+    .kpi-grid, #kelly-kpi-grid { grid-template-columns: 1fr !important; }
+    .type-stats { grid-template-columns: 1fr; }
+    .section-card, .chart-card { padding: 12px 10px; }
+  }
+
+  /* ── Recommendations ── */
+  .rec-card {
+    display: flex;
+    gap: 12px;
+    padding: 10px 12px;
+    
+    margin-bottom: 8px;
+    font-size: 11px;
+    border: 2px solid;
+  }
+  .rec-card.success { background: rgba(16,185,129,0.10); border-color: var(--green); }
+  .rec-card.warning { background: rgba(245,158,11,0.11); border-color: var(--amber); }
+  .rec-card.info    { background: rgba(124,58,237,0.10); border-color: var(--violet); }
+  .rec-icon { font-size: 18px; flex-shrink: 0; }
+  .rec-title { font-weight: 900; margin-bottom: 3px; color:var(--text); }
+  .rec-detail { color:var(--text-dim); line-height: 1.5; }
+
+  /* ── Results table ── */
+  .results-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 9px;
+  }
+  .results-table th {
+    background:var(--violet);
+    border: 2px solid #000;
+    padding: 7px;
+    text-align: center;
+    letter-spacing: 1px;
+  }
+  .results-table td {
+    border: 1px solid #ccc;
+    padding: 6px 8px;
+    text-align: center;
+    color: var(--text);
+  }
+  .results-table tr.row-won  { background: rgba(16,185,129,0.13); }
+  .results-table tr.row-lost { background: rgba(239,68,68,0.13); }
+  .results-table tr.row-pending { background: rgba(245,158,11,0.10); }
+
+  /* ── EV threshold table ── */
+  .ev-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 10px;
+  }
+  .ev-table th {
+    background:rgba(124,58,237,0.12);
+    color:var(--amber);
+    padding: 7px;
+    text-align: center;
+    font-size: 9px;
+    letter-spacing: 1px;
+  }
+  .ev-table td {
+    border: 1px solid #ddd;
+    padding: 7px;
+    text-align: center;
+  }
+  .ev-table tr:nth-child(even) { background: rgba(255,255,255,0.025); }
+
+  .filter-bar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 16px; }
+  .filter-bar label { font-size: 10px; color:var(--text); }
+  .filter-bar input { padding: 6px; font-size: 10px; border: 2px solid #000; font-family: inherit; }
+
+  #message { margin-bottom: 12px; }
+  .msg-box { padding: 8px 12px; border: 2px solid #000; font-size: 10px; }
+  .msg-success { background: rgba(16,185,129,0.13); }
+  .msg-error   { background: rgba(239,68,68,0.13); }
+  .msg-info    { background: rgba(245,158,11,0.10); }
+</style>
+
+<!-- Header -->
+<div class="dash-header">
+  <div>
+    <div class="dash-title">⚾ JINGLEEZ PICKS</div>
+    <div class="dash-subtitle" style="color:var(--amber);letter-spacing:2px">MLB MONEYLINE + TOTALS · 1 UNIT = $20</div>
+  </div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap">
+    <button class="btn" onclick="loadAnalytics()">🔄 REFRESH</button>
+    <button class="btn btn-green" onclick="updateResults()">✅ RESULTS</button>
+    <button class="btn" style="background:rgba(124,58,237,0.12)!important" onclick="captureClv()" title="Snapshot current market odds as closing line (run ~30min before first pitch)">📍 CLV</button>
+    <button class="btn" id="versionToggle" style="background:#555!important" onclick="toggleVersion()" title="Toggle between all picks and v3 (fixed model) only">📊 ALL PICKS</button>
+  </div>
+</div>
+
+<div id="message"></div>
+
+<!-- KPI Cards — Row 1: core stats -->
+<div class="kpi-grid" id="kpi-grid">
+  <div class="kpi-card" style="border-top:4px solid #1a1a2e">
+    <div class="kpi-label">📦 TOTAL PICKS</div>
+    <div class="kpi-value" id="kpi-total">—</div>
+  </div>
+  <div class="kpi-card" style="border-top:4px solid #155a1e">
+    <div class="kpi-label">🏆 WIN RATE</div>
+    <div class="kpi-value" id="kpi-wr">—</div>
+    <div style="font-size:8px;color:var(--text-muted);margin-top:4px">break-even: 52.4%</div>
+  </div>
+  <div class="kpi-card" style="border-top:4px solid #b8860b">
+    <div class="kpi-label">💵 FLAT P&amp;L</div>
+    <div class="kpi-value" id="kpi-pnl">—</div>
+  </div>
+  <div class="kpi-card" style="border-top:4px solid #b8860b">
+    <div class="kpi-label">📈 FLAT ROI</div>
+    <div class="kpi-value" id="kpi-roi">—</div>
+  </div>
+  <div class="kpi-card" style="border-top:4px solid #ffd700">
+    <div class="kpi-label">🔥 STREAK</div>
+    <div class="kpi-value gold" id="kpi-streak">—</div>
+  </div>
+  <div class="kpi-card" style="border-top:4px solid #888">
+    <div class="kpi-label">⏳ PENDING</div>
+    <div class="kpi-value" id="kpi-pending">—</div>
+  </div>
+  <div class="kpi-card" style="border-top:4px solid #44015e;background:rgba(124,58,237,0.10)" title="Closing Line Value — positive means we got better odds than where the market settled">
+    <div class="kpi-label" style="color:var(--violet)">📍 AVG CLV</div>
+    <div class="kpi-value" id="kpi-clv">—</div>
+    <div style="font-size:8px;color:var(--text-muted);margin-top:4px" id="kpi-clv-sub">—</div>
+  </div>
+</div>
+
+<!-- KPI Cards — Row 2: Kelly sizing -->
+<div style="border:3px solid #44015e;margin-bottom:24px;overflow:hidden">
+  <div style="background:var(--violet);padding:6px 14px;display:flex;align-items:center;gap:8px">
+    <span style="color:var(--amber);font-size:10px;font-weight:900;letter-spacing:1px">🎯 KELLY SIZING PERFORMANCE</span>
+    <span style="color:var(--text-dim);font-size:8px">(standard tiers: 0.25u / 0.50u / 1.00u)</span>
+  </div>
+  <div class="kpi-grid" style="margin:0;gap:0;grid-template-columns:repeat(4,1fr)" id="kelly-kpi-grid">
+    <div class="kpi-card" style="border:none;border-right:2px solid var(--border);background:rgba(124,58,237,0.08)" title="Half-Kelly weighted P&L">
+      <div class="kpi-label" style="color:var(--violet)">KELLY P&amp;L ($)</div>
+      <div class="kpi-value" id="kpi-kelly-pnl">—</div>
+    </div>
+    <div class="kpi-card" style="border:none;border-right:2px solid var(--border);background:rgba(124,58,237,0.08)" title="ROI on Kelly-sized bets">
+      <div class="kpi-label" style="color:var(--violet)">KELLY ROI</div>
+      <div class="kpi-value" id="kpi-kelly-roi">—</div>
+    </div>
+    <div class="kpi-card" style="border:none;border-right:2px solid var(--border);background:rgba(124,58,237,0.08)" title="Total dollars risked under Kelly sizing">
+      <div class="kpi-label" style="color:var(--violet)">WAGERED ($)</div>
+      <div class="kpi-value" style="font-size:16px" id="kpi-kelly-wagered">—</div>
+    </div>
+    <div class="kpi-card" style="border:none;background:rgba(124,58,237,0.08)" title="Kelly ROI minus Flat ROI — positive means sizing by conviction adds value">
+      <div class="kpi-label" style="color:var(--violet)">vs FLAT BET</div>
+      <div class="kpi-value" style="font-size:16px" id="kpi-kelly-vs-flat">—</div>
+      <div style="font-size:8px;color:var(--text-muted);margin-top:4px">edge from sizing</div>
+    </div>
+  </div>
+</div>
+
+<!-- ML vs Totals -->
+<div class="section-card" style="border-top:4px solid #ffd700">
+  <div class="section-title" style="border-left:4px solid #ffd700;padding-left:10px;border-bottom:none;margin-bottom:16px">⚾ MONEYLINE vs TOTALS BREAKDOWN</div>
+  <div class="type-grid">
+    <!-- Moneyline card -->
+    <div class="type-card ml-card" style="border-width:3px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <div class="type-header" style="color:var(--green);margin-bottom:0">🏆 MONEYLINE</div>
+        <div id="ml-badge" style="font-size:8px;padding:3px 7px;font-weight:900;background:#155a1e;color:var(--text)">—</div>
+      </div>
+      <div class="type-stats">
+        <div class="type-stat-box">
+          <span class="type-stat-label">RECORD</span>
+          <span class="type-stat-val" id="ml-record" style="color:var(--text)">—</span>
+        </div>
+        <div class="type-stat-box">
+          <span class="type-stat-label">WIN RATE</span>
+          <span class="type-stat-val" id="ml-wr">—</span>
+        </div>
+        <div class="type-stat-box">
+          <span class="type-stat-label">FLAT ROI</span>
+          <span class="type-stat-val" id="ml-roi">—</span>
+        </div>
+      </div>
+      <div style="margin:10px 0 0;border-top:1px solid #c8e6c9;padding-top:8px;display:grid;grid-template-columns:1fr 1fr;gap:6px">
+        <div style="background:var(--bg-card);border:1px solid #c8e6c9;padding:5px;text-align:center">
+          <div style="font-size:8px;color:var(--text-muted);margin-bottom:3px">🎯 KELLY ROI</div>
+          <div style="font-weight:900;font-size:13px" id="ml-kelly-roi">—</div>
+        </div>
+        <div style="background:var(--bg-card);border:1px solid #c8e6c9;padding:5px;text-align:center">
+          <div style="font-size:8px;color:var(--text-muted);margin-bottom:3px">AVG BET SIZE</div>
+          <div style="font-weight:900;font-size:13px;color:var(--violet)"><span id="ml-kelly-avg">—</span>u</div>
+        </div>
+      </div>
+      <div style="margin-top:8px;font-size:8px;color:var(--text-dim);display:flex;justify-content:space-between">
+        <span>Avg prob: <strong id="ml-prob">—</strong></span>
+        <span>Avg EV: <strong id="ml-ev">—</strong></span>
+      </div>
+    </div>
+    <!-- Totals card -->
+    <div class="type-card tot-card" style="border-width:3px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <div class="type-header" style="color:var(--red);margin-bottom:0">📊 TOTALS</div>
+        <div id="tot-badge" style="font-size:8px;padding:3px 7px;font-weight:900;background:#8b0000;color:var(--text)">—</div>
+      </div>
+      <div class="type-stats">
+        <div class="type-stat-box">
+          <span class="type-stat-label">RECORD</span>
+          <span class="type-stat-val" id="tot-record" style="color:var(--text)">—</span>
+        </div>
+        <div class="type-stat-box">
+          <span class="type-stat-label">WIN RATE</span>
+          <span class="type-stat-val" id="tot-wr">—</span>
+        </div>
+        <div class="type-stat-box">
+          <span class="type-stat-label">FLAT ROI</span>
+          <span class="type-stat-val" id="tot-roi">—</span>
+        </div>
+      </div>
+      <div style="margin:10px 0 0;border-top:1px solid #ffcdd2;padding-top:8px;display:grid;grid-template-columns:1fr 1fr;gap:6px">
+        <div style="background:var(--bg-card);border:1px solid #ffcdd2;padding:5px;text-align:center">
+          <div style="font-size:8px;color:var(--text-muted);margin-bottom:3px">🎯 KELLY ROI</div>
+          <div style="font-weight:900;font-size:13px" id="tot-kelly-roi">—</div>
+        </div>
+        <div style="background:var(--bg-card);border:1px solid #ffcdd2;padding:5px;text-align:center">
+          <div style="font-size:8px;color:var(--text-muted);margin-bottom:3px">AVG BET SIZE</div>
+          <div style="font-weight:900;font-size:13px;color:var(--violet)"><span id="tot-kelly-avg">—</span>u</div>
+        </div>
+      </div>
+      <div style="margin-top:8px;font-size:8px;color:var(--text-dim);display:flex;justify-content:space-between">
+        <span>Avg prob: <strong id="tot-prob">—</strong></span>
+        <span>Avg EV: <strong id="tot-ev">—</strong></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Charts Row -->
+<div class="charts-grid">
+  <div class="chart-card" style="border-top:4px solid #155a1e">
+    <div class="chart-title" style="color:var(--green)">📈 CUMULATIVE P&amp;L OVER TIME ($)</div>
+    <canvas id="pnlChart" height="200"></canvas>
+  </div>
+  <div class="chart-card" style="border-top:4px solid #44015e">
+    <div class="chart-title" style="color:var(--violet)">🎯 CALIBRATION — Model Prob vs Actual Win Rate</div>
+    <canvas id="calChart" height="200"></canvas>
+  </div>
+</div>
+
+<!-- EV Threshold Analysis -->
+<div class="section-card" style="border-top:4px solid #1a1a2e">
+  <div class="section-title" style="border-left:4px solid #1a1a2e;padding-left:10px;border-bottom:none;margin-bottom:16px">🔬 EV THRESHOLD ANALYSIS</div>
+  <div style="font-size:9px;color:var(--text-muted);margin-bottom:10px">Does filtering for higher expected value actually improve results?</div>
+  <table class="ev-table" id="ev-table">
+    <thead>
+      <tr><th>MIN EV</th><th>PICKS</th><th>WIN RATE</th><th>PROFIT ($)</th><th>ROI</th></tr>
+    </thead>
+    <tbody id="ev-tbody"><tr><td colspan="5">Loading...</td></tr></tbody>
+  </table>
+</div>
+
+<!-- Recommendations -->
+<div class="section-card" style="border-top:4px solid #ffd700">
+  <div class="section-title" style="border-left:4px solid #ffd700;padding-left:10px;border-bottom:none;margin-bottom:16px">💡 MODEL RECOMMENDATIONS</div>
+  <div id="recommendations">Loading...</div>
+</div>
+
+<!-- Results Table -->
+<div class="section-card" style="border-top:4px solid #b8860b">
+  <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:8px">
+    <div class="section-title" style="margin-bottom:0;border-left:4px solid #b8860b;padding-left:10px">📋 DETAILED RESULTS</div>
+    <span id="resultsCount" style="font-size:9px;color:var(--text-muted)"></span>
+  </div>
+  <div class="filter-bar" style="margin-bottom:12px;display:flex;flex-wrap:wrap;align-items:center;gap:8px">
+    <label style="font-size:10px;color:var(--text-muted)">Date:</label>
+    <input type="date" id="dateFilter">
+    <button onclick="filterByDate()" class="btn">APPLY</button>
+    <button onclick="clearFilter()" class="btn" style="background:#555!important">CLEAR</button>
+    <div style="width:1px;height:24px;background:var(--border);margin:0 4px"></div>
+    <label style="font-size:10px;color:var(--text-muted)">Type:</label>
+    <button id="typeBtn-all" onclick="setTypeFilter('all')" class="btn" style="background:var(--violet)!important">ALL</button>
+    <button id="typeBtn-moneyline" onclick="setTypeFilter('moneyline')" class="btn" style="background:#333!important">MONEYLINE</button>
+    <button id="typeBtn-totals" onclick="setTypeFilter('totals')" class="btn" style="background:#333!important">TOTALS</button>
+  </div>
+  <div style="overflow-x:auto">
+    <table class="results-table">
+      <thead>
+        <tr>
+          <th>DATE</th><th>GAME</th><th>TYPE</th><th>PICK</th>
+          <th>MODEL PROB</th><th>OPEN ODDS</th><th>CLOSE ODDS</th>
+          <th title="Closing Line Value: positive = we beat the close">CLV</th>
+          <th>EV</th><th style="background:var(--violet);color:var(--amber)">🎯 KELLY</th><th>RESULT</th><th>PROFIT ($)</th>
+        </tr>
+      </thead>
+      <tbody id="resultsTableBody">
+        <tr><td colspan="12" style="padding:20px;text-align:center">Loading...</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <!-- Pagination -->
+  <div id="resultsPagination" style="display:flex;justify-content:center;align-items:center;gap:10px;margin-top:14px;flex-wrap:wrap"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     🧠 MODEL INTELLIGENCE REPORT — additive section, appended after
+     Detailed Results. Everything above this comment is untouched.
+     Entirely self-contained: its own <style> block (namespaced "mir-" to
+     avoid any collision with existing classes) and its own <script> block
+     at the end of the file. Computes everything client-side from data
+     already returned by /api/dashboard-analytics and /api/results — no
+     new endpoints, no AI/LLM calls, fully deterministic and reproducible.
+     ═══════════════════════════════════════════════════════════════════════ -->
+<style>
+  #mir-root { margin-top: 8px; }
+  .mir-header { display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:10px; margin: 36px 0 18px; padding-top: 28px; border-top: 1px solid var(--border); }
+  .mir-header h2 { font-size: 18px; font-weight: 800; letter-spacing: -0.01em; color: var(--text); margin: 0 0 6px; display:flex; align-items:center; gap:9px; }
+  .mir-header .mir-sub { font-size: 11.5px; color: var(--text-dim); line-height: 1.6; max-width: 640px; }
+  .mir-refresh-note { font-size: 9.5px; color: var(--text-muted); }
+
+  .mir-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
+  @media (min-width: 980px) { .mir-grid.mir-cols-2 { grid-template-columns: 1fr 1fr; } }
+
+  .mir-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; padding: 0; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.25); }
+  .mir-card.mir-hero { border-color: var(--border-active, var(--violet)); }
+  .mir-card-head { display:flex; align-items:center; gap: 10px; padding: 16px 20px; cursor: pointer; user-select:none; }
+  .mir-card-head:hover { background: var(--bg-card-hover); }
+  .mir-icon { font-size: 17px; flex-shrink:0; }
+  .mir-title { font-size: 13px; font-weight: 700; letter-spacing: -0.005em; color: var(--text); flex: 1; }
+  .mir-conf-pill { font-size: 9px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; padding: 4px 9px; border-radius: 20px; white-space: nowrap; }
+  .mir-conf-HIGH { background: rgba(16,185,129,0.15); color: #34d399; }
+  .mir-conf-MEDIUM { background: rgba(245,158,11,0.15); color: var(--amber); }
+  .mir-conf-LOW { background: rgba(239,68,68,0.15); color: #f87171; }
+  .mir-conf-INSUFFICIENT { background: rgba(255,255,255,0.06); color: var(--text-muted); font-style: italic; }
+  .mir-toggle { font-size: 11px; color: var(--text-muted); transition: transform .15s; flex-shrink:0; }
+  .mir-card.mir-collapsed .mir-toggle { transform: rotate(-90deg); }
+  .mir-card.mir-collapsed .mir-card-body { display: none; }
+  .mir-card-body { padding: 0 20px 20px; }
+
+  .mir-summary { font-size: 12px; line-height: 1.75; color: var(--text-dim); margin: 0 0 14px; }
+  .mir-findings { margin: 0 0 14px; padding: 0; list-style: none; }
+  .mir-findings li { position: relative; padding-left: 16px; font-size: 11.5px; line-height: 1.7; color: var(--text); margin-bottom: 5px; }
+  .mir-findings li::before { content: ''; position: absolute; left: 0; top: 8px; width: 5px; height: 5px; border-radius: 50%; background: var(--violet); }
+
+  .mir-metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin-bottom: 14px; }
+  .mir-metric { border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; text-align: center; }
+  .mir-metric .v { font-size: 17px; font-weight: 800; }
+  .mir-metric .v.pos { color: #34d399; } .mir-metric .v.neg { color: #f87171; } .mir-metric .v.warn { color: var(--amber); }
+  .mir-metric .l { font-size: 8.5px; color: var(--text-muted); margin-top: 4px; text-transform: uppercase; letter-spacing: .03em; }
+
+  .mir-rec-box { display:flex; align-items: flex-start; gap: 10px; padding: 11px 13px; border-radius: 10px; background: rgba(124,58,237,0.08); border: 1px solid var(--border-active, var(--violet)); font-size: 11.5px; line-height: 1.6; }
+  .mir-rec-box b { color: var(--text); white-space: nowrap; }
+  .mir-history { font-size: 10.5px; color: var(--text-muted); margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--border); font-style: italic; }
+
+  /* Gauges / progress bars */
+  .mir-gauge-row { display:flex; align-items:center; gap: 10px; margin-bottom: 10px; }
+  .mir-gauge-label { flex: 0 0 150px; font-size: 10.5px; color: var(--text-dim); }
+  .mir-gauge-track { flex: 1; height: 8px; border-radius: 6px; background: rgba(255,255,255,0.06); overflow: hidden; }
+  .mir-gauge-fill { height: 100%; border-radius: 6px; }
+  .mir-gauge-val { flex: 0 0 42px; text-align: right; font-size: 11px; font-weight: 700; }
+
+  .mir-health-score { display:flex; align-items:center; gap: 22px; margin-bottom: 18px; }
+  .mir-health-score .big { font-size: 46px; font-weight: 900; letter-spacing: -0.02em; }
+  .mir-health-score .big .of100 { font-size: 18px; color: var(--text-muted); font-weight: 600; }
+  .mir-trend-arrow { font-size: 13px; margin-left: 4px; }
+  .mir-trend-up { color: #34d399; } .mir-trend-down { color: #f87171; } .mir-trend-flat { color: var(--text-muted); }
+
+  /* Action queue */
+  .mir-aq-item { display:flex; gap: 12px; align-items: flex-start; padding: 12px 0; border-top: 1px solid var(--border); }
+  .mir-aq-item:first-child { border-top: none; }
+  .mir-aq-badge { flex-shrink:0; font-size: 9px; font-weight: 800; letter-spacing: .04em; padding: 4px 9px; border-radius: 6px; text-transform: uppercase; }
+  .mir-aq-HIGH { background: rgba(239,68,68,0.18); color: #f87171; }
+  .mir-aq-MEDIUM { background: rgba(245,158,11,0.18); color: var(--amber); }
+  .mir-aq-LOW { background: rgba(255,255,255,0.07); color: var(--text-dim); }
+  .mir-aq-body .t { font-size: 12px; font-weight: 700; color: var(--text); margin-bottom: 3px; }
+  .mir-aq-body .r { font-size: 10.5px; color: var(--text-dim); line-height: 1.6; }
+  .mir-aq-meta { display:flex; gap: 10px; margin-top: 5px; font-size: 9.5px; color: var(--text-muted); }
+
+  /* Ranked hotspot / root-cause cards */
+  .mir-rank-card { border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; margin-bottom: 9px; }
+  .mir-rank-card .top { display:flex; justify-content:space-between; align-items:center; margin-bottom: 6px; }
+  .mir-rank-card .name { font-size: 12px; font-weight: 700; color: var(--text); }
+  .mir-rank-card .sev { font-size: 8.5px; font-weight: 800; letter-spacing:.04em; text-transform:uppercase; padding: 3px 8px; border-radius: 20px; }
+  .mir-sev-High { background: rgba(239,68,68,0.18); color: #f87171; }
+  .mir-sev-Medium { background: rgba(245,158,11,0.18); color: var(--amber); }
+  .mir-sev-Low { background: rgba(255,255,255,0.07); color: var(--text-dim); }
+  .mir-sev-Best { background: rgba(16,185,129,0.18); color: #34d399; }
+  .mir-rank-card .row { font-size: 10.5px; color: var(--text-dim); line-height: 1.65; margin-top: 3px; }
+  .mir-rank-card .row b { color: var(--text); }
+
+  /* Roadmap columns */
+  .mir-roadmap { display:grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  @media (max-width: 760px) { .mir-roadmap { grid-template-columns: 1fr; } }
+  .mir-roadmap-col h4 { font-size: 10px; text-transform: uppercase; letter-spacing: .05em; color: var(--text-muted); margin: 0 0 10px; }
+  .mir-roadmap-item { font-size: 11px; line-height: 1.6; padding: 9px 10px; border-radius: 8px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); margin-bottom: 8px; }
+
+  .mir-bucket-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+  .mir-bucket-table th { text-align: left; font-size: 9px; text-transform: uppercase; letter-spacing: .04em; color: var(--text-muted); padding: 6px 8px; border-bottom: 1px solid var(--border); }
+  .mir-bucket-table td { padding: 7px 8px; border-bottom: 1px solid var(--border); }
+  .mir-bucket-table tr:last-child td { border-bottom: none; }
+  .mir-tag { display:inline-block; font-size: 8.5px; font-weight: 700; padding: 2px 7px; border-radius: 20px; text-transform: uppercase; letter-spacing: .03em; }
+  .mir-tag-trusted { background: rgba(16,185,129,0.15); color: #34d399; }
+  .mir-tag-weak { background: rgba(239,68,68,0.15); color: #f87171; }
+  .mir-tag-needsdata { background: rgba(255,255,255,0.07); color: var(--text-dim); }
+
+  .mir-verdict-hero { text-align: center; padding: 26px 20px 8px; }
+  .mir-verdict-hero .label { font-size: 10px; text-transform: uppercase; letter-spacing: .06em; color: var(--text-muted); margin-bottom: 8px; }
+  .mir-verdict-hero .value { font-size: 24px; font-weight: 900; color: var(--text); }
+  .mir-final-grid { display:grid; grid-template-columns: repeat(auto-fit,minmax(160px,1fr)); gap: 14px; padding: 4px 20px 20px; }
+  .mir-final-item { text-align:center; }
+  .mir-final-item .l { font-size: 9px; text-transform: uppercase; letter-spacing: .04em; color: var(--text-muted); margin-bottom: 6px; }
+  .mir-final-item .v { font-size: 13.5px; font-weight: 700; color: var(--text); }
+
+  .mir-loading { padding: 40px 20px; text-align: center; color: var(--text-muted); font-size: 12px; }
+</style>
+
+<div id="mir-root">
+  <div class="mir-header">
+    <div>
+      <h2>🧠 Model Intelligence Report</h2>
+      <div class="mir-sub">A deterministic, rule-based read of the same data above — no AI, no external calls. Every finding traces to a computable statistic; where evidence is thin, this report says so instead of guessing.</div>
+    </div>
+    <div class="mir-refresh-note">Recomputed automatically alongside the dashboard above.</div>
+  </div>
+  <div id="mir-body" class="mir-grid">
+    <div class="mir-loading">⏳ Building intelligence report…</div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script>
+let pnlChart = null;
+let calChart = null;
+let currentDateFilter = null;
+let currentVersion = null;  // null = all picks, 'v3' = fixed model only
+
+function toggleVersion() {
+  const btn = document.getElementById('versionToggle');
+  if (currentVersion === null) {
+    currentVersion = 'v3';
+    btn.textContent = '🔬 V3 MODEL ONLY';
+    btn.style.background = '#44015e';
+  } else {
+    currentVersion = null;
+    btn.textContent = '📊 ALL PICKS';
+    btn.style.background = '#555';
+  }
+  loadAnalytics();
+}
+
+async function loadAnalytics() {
+  showMsg('⏳ Loading analytics...', 'info');
+  try {
+    const url = currentVersion
+      ? `/api/dashboard-analytics?version=${currentVersion}`
+      : '/api/dashboard-analytics';
+    const res  = await fetch(url, { cache: 'no-store' });
+    const data = await res.json();
+    if (data.status !== 'success') {
+      showMsg('❌ ' + (data.message || 'Error loading analytics'), 'error');
+      return;
+    }
+    renderKPIs(data.summary);
+    renderTypeBreakdown(data.by_type);
+    renderPnLChart(data.pnl_over_time);
+    renderCalibrationChart(data.calibration);
+    renderEVTable(data.ev_analysis);
+    renderRecommendations(data.recommendations);
+    loadResultsTable();
+    showMsg('✅ Analytics updated', 'success');
+  } catch(e) {
+    showMsg('❌ ' + e.message, 'error');
+  }
+}
+
+function renderKPIs(s) {
+  if (!s) throw new Error('Dashboard analytics response is missing summary data');
+  document.getElementById('kpi-total').textContent   = s.total_picks;
+  document.getElementById('kpi-pending').textContent = s.pending;
+  const streakEl = document.getElementById('kpi-streak');
+  streakEl.textContent = s.streak;
+  streakEl.className   = 'kpi-value ' + (String(s.streak).includes('W') ? 'green' : String(s.streak).includes('L') ? 'red' : 'gold');
+
+  const wrEl = document.getElementById('kpi-wr');
+  wrEl.textContent = s.win_rate + '%';
+  wrEl.className   = 'kpi-value ' + (s.win_rate >= 52.5 ? 'green' : 'red');
+
+  const pnlEl = document.getElementById('kpi-pnl');
+  pnlEl.textContent = (s.total_profit >= 0 ? '+' : '') + '$' + s.total_profit.toFixed(2);
+  pnlEl.className   = 'kpi-value ' + (s.total_profit >= 0 ? 'green' : 'red');
+
+  const roiEl = document.getElementById('kpi-roi');
+  roiEl.textContent = (s.roi >= 0 ? '+' : '') + s.roi + '%';
+  roiEl.className   = 'kpi-value ' + (s.roi >= 0 ? 'green' : 'red');
+
+  // Kelly KPI row
+  const kpnl = s.kelly_profit != null ? s.kelly_profit : null;
+  const kroi  = s.kelly_roi   != null ? s.kelly_roi   : null;
+  const kwag  = s.kelly_wagered != null ? s.kelly_wagered : null;
+
+  const kpnlEl = document.getElementById('kpi-kelly-pnl');
+  if (kpnl != null) {
+    kpnlEl.textContent = (kpnl >= 0 ? '+' : '') + '$' + kpnl.toFixed(2);
+    kpnlEl.className   = 'kpi-value ' + (kpnl >= 0 ? 'green' : 'red');
+  }
+
+  const kroiEl = document.getElementById('kpi-kelly-roi');
+  if (kroi != null) {
+    kroiEl.textContent = (kroi >= 0 ? '+' : '') + kroi + '%';
+    kroiEl.className   = 'kpi-value ' + (kroi >= 0 ? 'green' : 'red');
+  }
+
+  const kwagEl = document.getElementById('kpi-kelly-wagered');
+  if (kwag != null) {
+    kwagEl.textContent = '$' + kwag.toFixed(2);
+  }
+
+  const kvfEl = document.getElementById('kpi-kelly-vs-flat');
+  if (kroi != null && s.roi != null) {
+    const delta = (parseFloat(kroi) - parseFloat(s.roi));
+    kvfEl.textContent  = (delta >= 0 ? '+' : '') + delta.toFixed(1) + 'pp';
+    kvfEl.className    = 'kpi-value ' + (delta >= 0 ? 'green' : 'red');
+    kvfEl.style.fontSize = '16px';
+  }
+}
+
+function _colorVal(el, val, threshold=0) {
+  el.style.color = val >= threshold ? '#155a1e' : '#8b0000';
+}
+
+function renderTypeBreakdown(bt) {
+  const ml  = bt.moneyline || {};
+  const tot = bt.totals    || {};
+
+  // — Moneyline —
+  document.getElementById('ml-record').textContent = ml.n ? `${ml.won}W-${ml.lost}L` : '—';
+
+  const mlWrEl = document.getElementById('ml-wr');
+  mlWrEl.textContent = ml.win_rate ? ml.win_rate + '%' : '—';
+  _colorVal(mlWrEl, ml.win_rate || 0, 52.5);
+
+  const mlRoiEl = document.getElementById('ml-roi');
+  mlRoiEl.textContent = ml.roi !== undefined ? (ml.roi >= 0 ? '+' : '') + ml.roi + '%' : '—';
+  _colorVal(mlRoiEl, ml.roi || 0);
+
+  document.getElementById('ml-prob').textContent = ml.avg_prob ? ml.avg_prob + '%' : '—';
+  document.getElementById('ml-ev').textContent   = ml.avg_ev !== undefined ? ml.avg_ev + '%' : '—';
+
+  const mlKRoi = ml.kelly_roi;
+  const mlKroiEl = document.getElementById('ml-kelly-roi');
+  mlKroiEl.textContent = mlKRoi != null ? (mlKRoi >= 0 ? '+' : '') + mlKRoi + '%' : '—';
+  if (mlKRoi != null) _colorVal(mlKroiEl, mlKRoi);
+
+  document.getElementById('ml-kelly-avg').textContent = ml.avg_kelly != null
+    ? parseFloat(ml.avg_kelly).toFixed(2) : '—';
+
+  // Badge: edge indicator
+  const mlBadge = document.getElementById('ml-badge');
+  if (ml.win_rate) {
+    const edge = ml.win_rate >= 55 ? '🔥 EDGE' : ml.win_rate >= 52.5 ? '✅ +EV' : '⚠️ BELOW';
+    mlBadge.textContent = edge;
+    mlBadge.style.background = ml.win_rate >= 55 ? '#155a1e' : ml.win_rate >= 52.5 ? '#2e7d32' : '#8b0000';
+  }
+
+  // — Totals —
+  document.getElementById('tot-record').textContent = tot.n ? `${tot.won}W-${tot.lost}L` : '—';
+
+  const totWrEl = document.getElementById('tot-wr');
+  totWrEl.textContent = tot.win_rate ? tot.win_rate + '%' : '—';
+  _colorVal(totWrEl, tot.win_rate || 0, 52.5);
+
+  const totRoiEl = document.getElementById('tot-roi');
+  totRoiEl.textContent = tot.roi !== undefined ? (tot.roi >= 0 ? '+' : '') + tot.roi + '%' : '—';
+  _colorVal(totRoiEl, tot.roi || 0);
+
+  document.getElementById('tot-prob').textContent = tot.avg_prob ? tot.avg_prob + '%' : '—';
+  document.getElementById('tot-ev').textContent   = tot.avg_ev !== undefined ? tot.avg_ev + '%' : '—';
+
+  const totKRoi = tot.kelly_roi;
+  const totKroiEl = document.getElementById('tot-kelly-roi');
+  totKroiEl.textContent = totKRoi != null ? (totKRoi >= 0 ? '+' : '') + totKRoi + '%' : '—';
+  if (totKRoi != null) _colorVal(totKroiEl, totKRoi);
+
+  document.getElementById('tot-kelly-avg').textContent = tot.avg_kelly != null
+    ? parseFloat(tot.avg_kelly).toFixed(2) : '—';
+
+  const totBadge = document.getElementById('tot-badge');
+  if (tot.win_rate) {
+    const edge = tot.win_rate >= 55 ? '🔥 EDGE' : tot.win_rate >= 52.5 ? '✅ +EV' : '⚠️ BELOW';
+    totBadge.textContent = edge;
+    totBadge.style.background = tot.win_rate >= 55 ? '#8b0000' : tot.win_rate >= 52.5 ? '#c62828' : '#555';
+  }
+}
+
+function renderPnLChart(data) {
+  if (!data || !data.length) return;
+  if (typeof Chart === 'undefined') {
+    console.warn('Chart.js unavailable; dashboard metrics and tables will still render.');
+    return;
+  }
+  const ctx = document.getElementById('pnlChart').getContext('2d');
+  if (pnlChart) pnlChart.destroy();
+  const hasKelly = data.some(d => d.kelly_cum != null);
+  const datasets = [{
+    label: 'Flat P&L ($)',
+    data: data.map(d => d.cumulative),
+    borderColor: data[data.length-1].cumulative >= 0 ? '#155a1e' : '#8b0000',
+    backgroundColor: 'transparent',
+    borderWidth: 3,
+    pointRadius: 4,
+    tension: 0.3,
+  }];
+  if (hasKelly) {
+    datasets.push({
+      label: '🎯 Kelly P&L ($)',
+      data: data.map(d => d.kelly_cum ?? null),
+      borderColor: '#6b0288',
+      backgroundColor: 'transparent',
+      borderWidth: 2,
+      borderDash: [5, 3],
+      pointRadius: 3,
+      tension: 0.3,
+    });
+  }
+  pnlChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: data.map(d => d.date.slice(5)),
+      datasets,
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: hasKelly, labels: { font: { size: 10 } } }
+      },
+      scales: {
+        y: { grid: { color: '#eee' } },
+        x: { grid: { color: '#eee' } }
+      }
+    }
+  });
+}
+
+function renderCalibrationChart(data) {
+  if (!data || !data.length) return;
+  if (typeof Chart === 'undefined') return;
+  const ctx = document.getElementById('calChart').getContext('2d');
+  if (calChart) calChart.destroy();
+  calChart = new Chart(ctx, {
+    type: 'scatter',
+    data: {
+      datasets: [
+        {
+          label: 'Actual Win Rate',
+          data: data.map(d => ({ x: d.predicted, y: d.actual })),
+          backgroundColor: '#1a1a2e',
+          pointRadius: 8,
+        },
+        {
+          label: 'Perfect Calibration',
+          data: [{ x: 40, y: 40 }, { x: 80, y: 80 }],
+          type: 'line',
+          borderColor: '#ffd700',
+          borderDash: [5, 5],
+          borderWidth: 2,
+          pointRadius: 0,
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        tooltip: {
+          callbacks: {
+            label: (ctx) => {
+              const d = data[ctx.dataIndex];
+              return d ? `Predicted: ${d.predicted}% | Actual: ${d.actual}% (n=${d.n})` : '';
+            }
+          }
+        }
+      },
+      scales: {
+        x: { title: { display: true, text: 'Model Probability (%)' }, min: 40, max: 80 },
+        y: { title: { display: true, text: 'Actual Win Rate (%)' },  min: 30, max: 80 }
+      }
+    }
+  });
+}
+
+function renderEVTable(data) {
+  if (!data || !data.length) return;
+  const tbody = document.getElementById('ev-tbody');
+  tbody.innerHTML = data.map(row => {
+    const roiColor = row.roi >= 0 ? '#155a1e' : '#8b0000';
+    return `<tr>
+      <td>≥ ${row.min_ev}%</td>
+      <td>${row.n}</td>
+      <td>${row.win_rate}%</td>
+      <td style="color:${roiColor}"><strong>${row.profit >= 0 ? '+' : ''}$${row.profit.toFixed(2)}</strong></td>
+      <td style="color:${roiColor}"><strong>${row.roi >= 0 ? '+' : ''}${row.roi}%</strong></td>
+    </tr>`;
+  }).join('');
+}
+
+function renderRecommendations(recs) {
+  if (!recs || !recs.length) return;
+  const icons = { success: '✅', warning: '⚠️', info: 'ℹ️' };
+  document.getElementById('recommendations').innerHTML = recs.map(r =>
+    `<div class="rec-card ${r.type}">
+       <div class="rec-icon">${icons[r.type] || 'ℹ️'}</div>
+       <div><div class="rec-title">${r.title}</div><div class="rec-detail">${r.detail}</div></div>
+     </div>`
+  ).join('');
+}
+
+// ── Paginated results table ────────────────────────────────────────────────
+let _allResults   = [];
+let _resultsPage  = 1;
+let _typeFilter   = 'all';
+const RESULTS_PER_PAGE = 15;
+
+function setTypeFilter(type) {
+  _typeFilter = type;
+  ['all','moneyline','totals'].forEach(t => {
+    document.getElementById('typeBtn-' + t).style.background =
+      t === type ? 'var(--violet)' : '#333';
+  });
+  _resultsPage = 1;
+  _renderPage();
+}
+
+function _renderRow(r) {
+  const oddsVal  = parseFloat(r.odds);
+  const pnl      = r.status === 'won'
+    ? '+$' + ((oddsVal - 1) * 20).toFixed(2)
+    : r.status === 'lost' ? '-$20.00' : '—';
+  const rowCls   = r.status === 'won' ? 'row-won' : r.status === 'lost' ? 'row-lost' : 'row-pending';
+  const clv      = r.clv != null ? parseFloat(r.clv) : null;
+  const clvStr   = clv != null
+    ? `<span style="color:${clv>=0?'#155a1e':'#8b0000'};font-weight:900">${clv>=0?'+':''}${clv.toFixed(2)}pp</span>`
+    : '<span style="color:var(--text-dim)">—</span>';
+  const closeStr = r.closing_odds
+    ? parseFloat(r.closing_odds).toFixed(3)
+    : '<span style="color:var(--text-dim)">—</span>';
+  const kelly    = r.kelly_units != null ? parseFloat(r.kelly_units) : null;
+  const kellyStr = kelly != null
+    ? `<span style="color:var(--violet);font-weight:900">${kelly.toFixed(2)}u</span>`
+    : '<span style="color:var(--text-dim)">—</span>';
+  return `<tr class="${rowCls}">
+    <td>${r.date}</td>
+    <td style="text-align:left;font-size:8px">${r.matchup}</td>
+    <td>${r.pick_type}</td>
+    <td><strong>${r.pick}</strong></td>
+    <td>${r.model_prob}</td>
+    <td>${r.odds}</td>
+    <td>${closeStr}</td>
+    <td>${clvStr}</td>
+    <td>${r.ev}</td>
+    <td>${kellyStr}</td>
+    <td><strong>${r.status.toUpperCase()}</strong></td>
+    <td><strong>${pnl}</strong></td>
+  </tr>`;
+}
+
+function _renderPage() {
+  const tbody    = document.getElementById('resultsTableBody');
+  const pgDiv    = document.getElementById('resultsPagination');
+  const countEl  = document.getElementById('resultsCount');
+  const filtered = _typeFilter === 'all' ? _allResults : _allResults.filter(r => r.pick_type === _typeFilter);
+  const total    = filtered.length;
+  const pages    = Math.ceil(total / RESULTS_PER_PAGE);
+  const start    = (_resultsPage - 1) * RESULTS_PER_PAGE;
+  const slice    = filtered.slice(start, start + RESULTS_PER_PAGE);
+
+  tbody.innerHTML = slice.length
+    ? slice.map(_renderRow).join('')
+    : '<tr><td colspan="12" style="text-align:center;padding:20px;color:var(--text-muted)">No results</td></tr>';
+
+  countEl.textContent = total
+    ? `Showing ${start + 1}–${Math.min(start + RESULTS_PER_PAGE, total)} of ${total} ${_typeFilter !== 'all' ? _typeFilter + ' ' : ''}picks`
+    : '';
+
+  // Pagination controls
+  if (pages <= 1) { pgDiv.innerHTML = ''; return; }
+  const btnStyle = 'font-family:inherit;font-size:12px;font-weight:600;padding:6px 12px;border:1px solid var(--border);border-radius:5px;cursor:pointer;background:var(--bg-card);color:var(--text);transition:all 0.15s;';
+  let html = `<button style="${btnStyle}background:${_resultsPage>1?'#44015e':'#ccc'};color:var(--text)"
+    onclick="if(${_resultsPage}>1){_resultsPage--;_renderPage()}">&lt;</button>`;
+  // Page numbers — show at most 7 around current
+  const lo = Math.max(1, _resultsPage - 3);
+  const hi = Math.min(pages, _resultsPage + 3);
+  for (let p = lo; p <= hi; p++) {
+    const active = p === _resultsPage;
+    html += `<button style="${btnStyle}background:${active?'#ffd700':'#fff'};color:${active?'#000':'#333'};font-weight:${active?'900':'400'}"
+      onclick="_resultsPage=${p};_renderPage()">${p}</button>`;
+  }
+  html += `<button style="${btnStyle}background:${_resultsPage<pages?'#44015e':'#ccc'};color:var(--text)"
+    onclick="if(${_resultsPage}<${pages}){_resultsPage++;_renderPage()}">&gt;</button>`;
+  pgDiv.innerHTML = html;
+}
+
+async function loadResultsTable() {
+  let url = '/api/results';
+  if (currentDateFilter) url += '?date=' + currentDateFilter;
+  try {
+    const res  = await fetch(url);
+    const data = await res.json();
+    if (data.status !== 'success' || !data.results || data.results.length === 0) {
+      _allResults  = [];
+      _resultsPage = 1;
+      _renderPage();
+      return;
+    }
+    _allResults  = data.results;
+    _resultsPage = 1;
+    _renderPage();
+  } catch(e) {
+    console.error(e);
+  }
+}
+
+function filterByDate() {
+  const v = document.getElementById('dateFilter').value;
+  if (!v) { showMsg('❌ Select a date first', 'error'); return; }
+  currentDateFilter = v;
+  loadResultsTable();
+}
+function clearFilter() {
+  currentDateFilter = null;
+  document.getElementById('dateFilter').value = '';
+  loadResultsTable();
+}
+
+async function updateResults() {
+  showMsg('⏳ Fetching real game results...', 'info');
+  try {
+    const res  = await fetch('/api/update-results', {method:'POST', headers:{'X-Requested-With':'Jingleez'}});
+    const data = await res.json();
+    if (data.status === 'success') {
+      showMsg('✅ Results updated! Recalculating recommendations...', 'success');
+      await loadAnalytics();
+    } else {
+      showMsg('❌ ' + (data.message || 'Error'), 'error');
+    }
+  } catch(e) {
+    showMsg('❌ ' + e.message, 'error');
+  }
+}
+
+function showMsg(msg, type) {
+  const cls = type === 'success' ? 'msg-success' : type === 'error' ? 'msg-error' : 'msg-info';
+  document.getElementById('message').innerHTML =
+    `<div class="msg-box ${cls}">${msg}</div>`;
+  if (type === 'success') setTimeout(() => {
+    document.getElementById('message').innerHTML = '';
+  }, 3000);
+}
+
+async function captureClv() {
+  showMsg('⏳ Capturing closing lines...', 'info');
+  try {
+    const res  = await fetch('/api/capture-clv', {method:'POST', headers:{'X-Requested-With':'Jingleez'}});
+    const data = await res.json();
+    if (data.status === 'success') {
+      const msg = `✅ CLV captured: ${data.captured} picks | Avg CLV: ${data.avg_clv > 0 ? '+' : ''}${data.avg_clv}pp | Beat close: ${data.beat_close_pct}%`;
+      showMsg(msg, 'success');
+      setTimeout(loadAnalytics, 600);
+    } else {
+      showMsg('❌ ' + (data.message || 'Error'), 'error');
+    }
+  } catch(e) {
+    showMsg('❌ ' + e.message, 'error');
+  }
+}
+
+async function loadClv() {
+  try {
+    const res  = await fetch('/api/clv-summary');
+    const data = await res.json();
+    if (data.status !== 'success' || !data.n) return;
+    const el  = document.getElementById('kpi-clv');
+    const sub = document.getElementById('kpi-clv-sub');
+    el.textContent = (data.avg_clv >= 0 ? '+' : '') + data.avg_clv + 'pp';
+    el.className   = 'kpi-value ' + (data.avg_clv >= 0 ? 'green' : 'red');
+    sub.textContent = `Beat close: ${data.beat_close_pct}% (n=${data.n})`;
+  } catch(e) { /* CLV not yet captured — silent fail */ }
+}
+
+// Load on page open
+loadAnalytics();
+loadClv();
+</script>
+<script>setInterval(loadAnalytics, 60000);</script>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     🧠 MODEL INTELLIGENCE REPORT — script
+     Entirely separate from the script blocks above. Does not call, modify,
+     or depend on any function defined above other than reading the same
+     two endpoints (/api/dashboard-analytics, /api/results) independently.
+     Everything here is deterministic arithmetic on data already returned
+     by those endpoints — no AI, no LLM, no external calls, no new routes.
+     ═══════════════════════════════════════════════════════════════════════ -->
+<script>
+(function(){
+  const BREAKEVEN = 52.4; // vig-adjusted breakeven win rate used elsewhere on this page
+  const esc = v => String(v ?? '—').replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+  const pct = v => v == null ? '—' : String(v).replace('%','') + '%';
+  const num = v => { if (v == null || v === '-' || v === '—') return null; const n = parseFloat(String(v).replace(/[^0-9.\-]/g,'')); return isNaN(n) ? null : n; };
+
+  // ── Fetch + normalize ─────────────────────────────────────────────────
+  async function mirLoad(){
+    try {
+      const [aRes, rRes] = await Promise.all([
+        fetch('/api/dashboard-analytics', {cache:'no-store'}),
+        fetch('/api/results', {cache:'no-store'}),
+      ]);
+      const analytics = await aRes.json();
+      const resultsPayload = await rRes.json();
+      if (analytics.status !== 'success') throw new Error(analytics.message || 'analytics unavailable');
+      const rows = (resultsPayload.results || []).map(r => ({
+        date: r.date, matchup: r.matchup, pick_type: r.pick_type, pick: r.pick,
+        prob: num(r.model_prob) != null ? num(r.model_prob)/100 : null,
+        odds: num(r.odds), ev: num(r.ev), clv: r.clv, closing_odds: r.closing_odds,
+        kelly_units: r.kelly_units, status: r.status,
+      }));
+      const resolved = rows.filter(r => r.status === 'won' || r.status === 'lost');
+      mirRender(analytics, resolved);
+    } catch(e) {
+      document.getElementById('mir-body').innerHTML =
+        `<div class="mir-loading">⚠ Could not build intelligence report: ${esc(e.message)}</div>`;
+    }
+  }
+
+  // ── Shared helpers ────────────────────────────────────────────────────
+  function wilsonLike(win_rate, n){
+    // Not a real Wilson interval (that machinery lives server-side and
+    // isn't part of the two endpoints this report is restricted to) —
+    // used only as a conservative "is this sample big enough to trust"
+    // gate, labeled honestly wherever shown.
+    if (n == null || n < 8) return 'INSUFFICIENT';
+    if (n < 25) return 'LOW';
+    if (n < 60) return 'MEDIUM';
+    return 'HIGH';
+  }
+  function roiOf(rows){
+    if (!rows.length) return null;
+    const wagered = rows.length * 20;
+    const profit = rows.reduce((s,r) => s + (r.status==='won' ? (r.odds-1)*20 : -20), 0);
+    return {profit: round2(profit), roi: round1(profit/wagered*100), n: rows.length,
+             win_rate: round1(rows.filter(r=>r.status==='won').length/rows.length*100)};
+  }
+  function round1(x){ return Math.round(x*10)/10; }
+  function round2(x){ return Math.round(x*100)/100; }
+  function fmtMoney(x){ return (x>=0?'+':'') + '$' + x.toFixed(2); }
+  function fmtPct(x, digits){ digits = digits==null?1:digits; return (x>=0?'+':'') + x.toFixed(digits) + '%'; }
+  function cls(v){ return v > 0 ? 'pos' : v < 0 ? 'neg' : ''; }
+
+  // ── Generic card renderer ────────────────────────────────────────────
+  // Every section gets: icon, title, confidence pill, summary, key
+  // findings, supporting metrics, recommendation, optional history line,
+  // optional custom body (for gauges/lists/tables), and an expand/collapse
+  // toggle. This is the shared envelope every section in the spec needs.
+  let _cardId = 0;
+  function card({icon, title, confidence, summary, findings, metrics, recommendation, history, custom, collapsedByDefault, hero}){
+    const id = 'mirc' + (_cardId++);
+    const metricsHtml = (metrics && metrics.length) ? `<div class="mir-metrics">${metrics.map(m =>
+      `<div class="mir-metric"><div class="v ${m.cls||''}">${esc(m.v)}</div><div class="l">${esc(m.l)}</div></div>`).join('')}</div>` : '';
+    const findingsHtml = (findings && findings.length) ? `<ul class="mir-findings">${findings.map(f=>`<li>${f}</li>`).join('')}</ul>` : '';
+    const recHtml = recommendation ? `<div class="mir-rec-box"><span>🎯</span><span><b>Recommendation:</b> ${recommendation}</span></div>` : '';
+    const historyHtml = history ? `<div class="mir-history">🕘 ${history}</div>` : '';
+    return `<div class="mir-card ${hero?'mir-hero':''} ${collapsedByDefault?'mir-collapsed':''}" id="${id}">
+      <div class="mir-card-head" onclick="document.getElementById('${id}').classList.toggle('mir-collapsed')">
+        <span class="mir-icon">${icon}</span>
+        <span class="mir-title">${title}</span>
+        <span class="mir-conf-pill mir-conf-${confidence}">${confidence}</span>
+        <span class="mir-toggle">▾</span>
+      </div>
+      <div class="mir-card-body">
+        ${summary ? `<p class="mir-summary">${summary}</p>` : ''}
+        ${findingsHtml}
+        ${metricsHtml}
+        ${custom || ''}
+        ${recHtml}
+        ${historyHtml}
+      </div>
+    </div>`;
+  }
+
+  // ── Section 2 + supporting: Overall Model Health ─────────────────────
+  function computeHealth(analytics, resolved){
+    const s = analytics.summary || {};
+    const cal = analytics.calibration || [];
+    const pnl = analytics.pnl_over_time || [];
+
+    const predictionQuality = clamp(50 + ((s.win_rate||0) - BREAKEVEN) * 4);
+    const calWeightedGap = cal.length ? cal.reduce((sum,b)=> sum + b.n*Math.abs(b.predicted-b.actual),0) / cal.reduce((s2,b)=>s2+b.n,0) : null;
+    const calibrationScore = calWeightedGap == null ? null : clamp(100 - calWeightedGap*3.5);
+    const profitability = clamp(50 + (s.roi||0) * 2);
+    const consistency = pnl.length ? clamp(pnl.filter(d=>d.daily_pnl>=0).length / pnl.length * 100) : null;
+    const clvVals = resolved.map(r=>r.clv).filter(v=>v!=null);
+    const avgClv = clvVals.length ? clvVals.reduce((a,b)=>a+b,0)/clvVals.length : null;
+    const marketEfficiency = avgClv == null ? null : clamp(50 + avgClv*12);
+    const dataQuality = clamp(Math.min(100, (resolved.length/200)*100));
+
+    const dims = [
+      {label:'Prediction Quality', v: predictionQuality},
+      {label:'Calibration', v: calibrationScore},
+      {label:'Profitability', v: profitability},
+      {label:'Consistency', v: consistency},
+      {label:'Market Alignment (CLV)', v: marketEfficiency},
+      {label:'Data Quality', v: dataQuality},
+    ].filter(d => d.v != null);
+
+    const overall = dims.length ? Math.round(dims.reduce((a,b)=>a+b.v,0)/dims.length) : null;
+    return {overall, dims, avgClv, predictionQuality, calibrationScore, profitability, consistency, marketEfficiency, dataQuality};
+  }
+  function clamp(x){ return Math.max(0, Math.min(100, Math.round(x))); }
+  function gaugeColor(v){ return v>=70 ? '#34d399' : v>=45 ? 'var(--amber)' : '#f87171'; }
+
+  // ── Historical trend (first-half vs second-half of resolved, chronological) ──
+  function computeTrend(resolved){
+    if (resolved.length < 20) return {available:false, n:resolved.length};
+    const sorted = [...resolved].sort((a,b)=> a.date < b.date ? -1 : a.date > b.date ? 1 : 0);
+    const half = Math.floor(sorted.length/2);
+    const early = roiOf(sorted.slice(0, half));
+    const recent = roiOf(sorted.slice(half));
+    const clvEarly = avg(sorted.slice(0,half).map(r=>r.clv).filter(v=>v!=null));
+    const clvRecent = avg(sorted.slice(half).map(r=>r.clv).filter(v=>v!=null));
+    return {available:true, early, recent, clvEarly, clvRecent,
+      wrDelta: round1(recent.win_rate - early.win_rate), roiDelta: round1(recent.roi - early.roi)};
+  }
+  function avg(arr){ return arr.length ? arr.reduce((a,b)=>a+b,0)/arr.length : null; }
+  function trendArrow(delta, eps){
+    eps = eps==null?0.5:eps;
+    if (delta == null) return `<span class="mir-trend-arrow mir-trend-flat">→</span>`;
+    if (delta > eps) return `<span class="mir-trend-arrow mir-trend-up">↑</span>`;
+    if (delta < -eps) return `<span class="mir-trend-arrow mir-trend-down">↓</span>`;
+    return `<span class="mir-trend-arrow mir-trend-flat">→</span>`;
+  }
+
+  // ── Calibration stats computed exactly from resolved rows (Brier / log-loss) ──
+  function computeCalibrationStats(resolved){
+    const withProb = resolved.filter(r => r.prob != null);
+    if (!withProb.length) return null;
+    const brier = avg(withProb.map(r => { const y = r.status==='won'?1:0; return (r.prob-y)**2; }));
+    const logLoss = avg(withProb.map(r => {
+      const y = r.status==='won'?1:0; const p = Math.min(Math.max(r.prob, 0.02), 0.98);
+      return -(y*Math.log(p) + (1-y)*Math.log(1-p));
+    }));
+    return {brier: round2(brier), logLoss: round2(logLoss), n: withProb.length};
+  }
+  function calGrade(brier){
+    if (brier == null) return {grade:'—', conf:'INSUFFICIENT'};
+    if (brier < 0.20) return {grade:'Excellent', conf:'HIGH'};
+    if (brier < 0.235) return {grade:'Good', conf:'MEDIUM'};
+    if (brier < 0.26) return {grade:'Fair', conf:'MEDIUM'};
+    return {grade:'Needs Attention', conf:'LOW'};
+  }
+
+  // ── Bucket-level ROI, matched to the exact backend calibration bucket boundaries ──
+  function bucketRoi(resolved, prob_range){
+    const [lo,hi] = prob_range.split('-').map(Number);
+    const rows = resolved.filter(r => r.prob != null && r.prob >= lo && r.prob < hi);
+    return roiOf(rows);
+  }
+
+  // ── EV signal: does win rate rise as the EV threshold rises? ─────────
+  function evSignalDirection(evAnalysis){
+    const usable = (evAnalysis||[]).filter(b => b.n >= 5);
+    if (usable.length < 2) return {direction:'insufficient', usable};
+    let up = 0, down = 0;
+    for (let i=1;i<usable.length;i++){
+      if (usable[i].win_rate > usable[i-1].win_rate) up++;
+      else if (usable[i].win_rate < usable[i-1].win_rate) down++;
+    }
+    return {direction: up>down ? 'positive' : down>up ? 'negative' : 'flat', usable};
+  }
+
+  // ── CLV split: positive vs negative CLV outcomes ──────────────────────
+  function clvSplit(resolved){
+    const withClv = resolved.filter(r => r.clv != null);
+    const pos = roiOf(withClv.filter(r => r.clv > 0));
+    const neg = roiOf(withClv.filter(r => r.clv <= 0));
+    return {withClv, pos, neg};
+  }
+
+  // ── Priority Action Queue — reused by both section 3 and the roadmap ──
+  function buildActionQueue(analytics, resolved, health, calStats){
+    const items = [];
+    const s = analytics.summary || {};
+    const cal = analytics.calibration || [];
+
+    cal.forEach(b => {
+      if (b.n >= 8) {
+        const gap = Math.abs(b.predicted - b.actual);
+        if (gap > 12) items.push({priority:'HIGH', title:`Recalibrate the ${b.prob_range} probability bucket`,
+          reason:`Predicted ${b.predicted}% but actual win rate is ${b.actual}% across ${b.n} picks — a ${gap.toFixed(1)}pp gap.`,
+          impact:'High — this bucket materially misprices bets sized by confidence.', difficulty:'Medium', status:'Open'});
+        else if (gap > 7) items.push({priority:'MEDIUM', title:`Review the ${b.prob_range} probability bucket`,
+          reason:`${gap.toFixed(1)}pp gap between predicted (${b.predicted}%) and actual (${b.actual}%) win rate, n=${b.n}.`,
+          impact:'Medium — noticeable but not yet severe.', difficulty:'Low', status:'Open'});
+      }
+    });
+
+    ['moneyline','totals'].forEach(t => {
+      const st = (analytics.by_type||{})[t];
+      if (st && st.n >= 15 && st.roi < -5) {
+        items.push({priority: st.roi < -15 ? 'HIGH':'MEDIUM', title:`Review ${t} performance`,
+          reason:`${st.win_rate}% win rate, ${fmtPct(st.roi)} ROI across ${st.n} resolved picks.`,
+          impact:'Direct P&L impact if the pattern continues.', difficulty:'Medium', status:'Open'});
+      }
+    });
+
+    const {pos, neg} = clvSplit(resolved);
+    if (pos && neg && pos.n >= 10 && neg.n >= 10 && pos.win_rate <= neg.win_rate) {
+      items.push({priority:'MEDIUM', title:'Investigate why positive CLV is not translating to wins',
+        reason:`Positive-CLV picks won ${pos.win_rate}% (n=${pos.n}) vs negative-CLV picks at ${neg.win_rate}% (n=${neg.n}) — CLV is not behaving as an edge signal here.`,
+        impact:'Undermines confidence in CLV as a leading indicator.', difficulty:'High', status:'Open'});
+    }
+
+    if (resolved.length < 100) {
+      items.push({priority:'LOW', title:'Collect additional resolved samples',
+        reason:`Only ${resolved.length} resolved picks — most statistical findings on this page are directional, not yet conclusive.`,
+        impact:'Improves confidence in every other finding on this page.', difficulty:'Low (passive)', status:'Ongoing'});
+    }
+
+    if (!items.length) {
+      items.push({priority:'LOW', title:'No material issues detected',
+        reason:'No calibration bucket, market segment, or CLV pattern currently crosses this report\'s action thresholds.',
+        impact:'—', difficulty:'—', status:'Monitor'});
+    }
+    const order = {HIGH:0, MEDIUM:1, LOW:2};
+    items.sort((a,b)=> order[a.priority]-order[b.priority]);
+    return items;
+  }
+
+  // ── Root cause style findings, ranked by severity ─────────────────────
+  function buildRootCauses(analytics, resolved){
+    const causes = [];
+    (analytics.calibration||[]).forEach(b => {
+      if (b.n < 8) return;
+      const gap = Math.abs(b.predicted-b.actual);
+      let severity = gap>12 ? 'High' : gap>7 ? 'Medium' : gap>3 ? 'Low' : null;
+      if (!severity) return;
+      causes.push({name:`Calibration drift at ${b.prob_range}`, severity,
+        evidence:`Predicted ${b.predicted}% vs actual ${b.actual}% (n=${b.n}).`,
+        impact: severity==='High' ? 'Materially mispriced confidence in this range.' : 'Modest mispricing; watch for persistence.',
+        fix: b.predicted > b.actual ? 'Shrink confidence toward market for this bucket.' : 'Model may be underconfident here; verify before acting.',
+        status: 'Unconfirmed — statistical pattern, not a mechanistic cause.'});
+    });
+    const overs = resolved.filter(r => /^OVER/i.test(r.pick));
+    const unders = resolved.filter(r => /^UNDER/i.test(r.pick));
+    if (overs.length >= 10) {
+      const o = roiOf(overs);
+      if (o.win_rate < BREAKEVEN - 3) causes.push({name:'OVER-side bias', severity: o.win_rate < BREAKEVEN-8 ? 'High':'Medium',
+        evidence:`OVER picks: ${o.win_rate}% win rate across ${o.n} resolved picks (breakeven ≈ ${BREAKEVEN}%).`,
+        impact:'Recurring drag on totals P&L if concentrated on one side.',
+        fix:'Compare against UNDER performance below; if the gap persists, the run-environment inputs feeding OVER picks warrant review.',
+        status:'Unconfirmed — directional pattern from resolved picks only.'});
+    }
+    if (unders.length >= 10) {
+      const u = roiOf(unders);
+      if (u.win_rate < BREAKEVEN - 3) causes.push({name:'UNDER-side bias', severity: u.win_rate < BREAKEVEN-8 ? 'High':'Medium',
+        evidence:`UNDER picks: ${u.win_rate}% win rate across ${u.n} resolved picks (breakeven ≈ ${BREAKEVEN}%).`,
+        impact:'Recurring drag on totals P&L if concentrated on one side.',
+        fix:'Compare against OVER performance above; if the gap persists, the run-environment inputs feeding UNDER picks warrant review.',
+        status:'Unconfirmed — directional pattern from resolved picks only.'});
+    }
+    const {pos, neg} = clvSplit(resolved);
+    if (pos && neg && pos.n >= 15 && neg.n >= 15 && pos.win_rate <= neg.win_rate) {
+      causes.push({name:'CLV not predicting outcomes', severity:'Medium',
+        evidence:`Positive CLV win rate ${pos.win_rate}% (n=${pos.n}) vs negative CLV win rate ${neg.win_rate}% (n=${neg.n}).`,
+        impact:'Reduces the reliability of CLV as an early-warning signal for pick quality.',
+        fix:'Treat CLV as a market-agreement metric only, not a standalone predictor, until this reverses.',
+        status:'Unconfirmed — needs a larger sample to separate signal from noise.'});
+    }
+    if (resolved.length < 60) {
+      causes.push({name:'Overall sample size is still small', severity:'Low',
+        evidence:`${resolved.length} resolved picks total.`,
+        impact:'Every finding above should be treated as exploratory.',
+        fix:'No action — accumulates naturally as more picks resolve.',
+        status:'Expected, not a defect.'});
+    }
+    const order = {High:0, Medium:1, Low:2};
+    causes.sort((a,b)=>order[a.severity]-order[b.severity]);
+    return causes;
+  }
+
+  // ── "Should the model change?" verdict ────────────────────────────────
+  function shouldModelChange(analytics, resolved, health, actionQueue){
+    const s = analytics.summary || {};
+    const n = resolved.length;
+    const highSeverity = actionQueue.filter(a=>a.priority==='HIGH');
+    let verdict, why;
+    if (n < 50) {
+      verdict = 'Continue Monitoring';
+      why = `Only ${n} resolved picks — below the ~50-pick floor this report uses before recommending any structural change. Collect more data first.`;
+    } else if (highSeverity.some(a => a.title.startsWith('Recalibrate'))) {
+      verdict = 'Recalibrate';
+      why = `${highSeverity.filter(a=>a.title.startsWith('Recalibrate')).length} probability bucket(s) show a >12pp gap between predicted and actual win rate. This is a calibration problem, not a directional one — recalibration is the targeted fix.`;
+    } else if (s.roi != null && s.roi < -8 && n >= 100) {
+      const worst = highSeverity.find(a => a.title.startsWith('Review'));
+      verdict = 'Pause Specific Filters';
+      why = `Overall ROI is ${fmtPct(s.roi)} across ${n} picks.` + (worst ? ` ${worst.reason}` : '') + ' Consider pausing the weakest segment rather than the whole model.';
+    } else if (health.overall != null && health.overall >= 75 && (s.roi||0) >= 0) {
+      verdict = 'No Change Needed';
+      why = `Health score ${health.overall}/100 with ${fmtPct(s.roi||0)} ROI across ${n} picks. No section of this report currently crosses an action threshold.`;
+    } else {
+      verdict = 'Continue Monitoring';
+      why = `Metrics are mixed (health score ${health.overall ?? '—'}/100, ROI ${s.roi!=null?fmtPct(s.roi):'—'}) — not clearly good enough to certify, not clearly bad enough to intervene.`;
+    }
+    return {verdict, why};
+  }
+
+  // ── MAIN RENDER ────────────────────────────────────────────────────────
+  function mirRender(analytics, resolved){
+    const s = analytics.summary || {};
+    const byType = analytics.by_type || {};
+    const cal = analytics.calibration || [];
+    const evAnalysis = analytics.ev_analysis || [];
+    const recs = analytics.recommendations || [];
+    const n = resolved.length;
+    const sampleConf = wilsonLike(s.win_rate, n);
+
+    const health = computeHealth(analytics, resolved);
+    const trend = computeTrend(resolved);
+    const calStats = computeCalibrationStats(resolved);
+    const grade = calGrade(calStats && calStats.brier);
+    const actionQueue = buildActionQueue(analytics, resolved, health, calStats);
+    const rootCauses = buildRootCauses(analytics, resolved);
+    const verdict = shouldModelChange(analytics, resolved, health, actionQueue);
+    const evSignal = evSignalDirection(evAnalysis);
+    const {pos: clvPos, neg: clvNeg} = clvSplit(resolved);
+
+    const strongestDim = health.dims.length ? [...health.dims].sort((a,b)=>b.v-a.v)[0] : null;
+    const weakestDim = health.dims.length ? [...health.dims].sort((a,b)=>a.v-b.v)[0] : null;
+    const topPriority = actionQueue[0];
+
+    let html = '';
+
+    // ── 1. Executive Summary (hero) ──────────────────────────────────
+    html += card({
+      icon:'📋', title:'Executive Summary', confidence: sampleConf, hero:true,
+      summary: n < 20
+        ? `Only ${n} resolved picks are available — too few for a reliable executive read. This section will strengthen as more picks resolve.`
+        : `The model is currently at a <b>${s.win_rate}%</b> win rate (${fmtPct(s.roi||0)} ROI) across ${n} resolved picks. `
+          + (strongestDim ? `Its strongest dimension is <b>${strongestDim.label}</b> (${strongestDim.v}/100). ` : '')
+          + (weakestDim ? `Its weakest is <b>${weakestDim.label}</b> (${weakestDim.v}/100). ` : '')
+          + `Overall health score: <b>${health.overall ?? '—'}/100</b>.`,
+      findings: [
+        strongestDim ? `Biggest strength: <b>${strongestDim.label}</b> at ${strongestDim.v}/100.` : null,
+        weakestDim ? `Biggest weakness: <b>${weakestDim.label}</b> at ${weakestDim.v}/100.` : null,
+        recs.length ? `Top standing recommendation: ${esc(recs[0].title)}.` : null,
+        topPriority ? `Highest queued action: ${esc(topPriority.title)} (${topPriority.priority}).` : null,
+      ].filter(Boolean),
+      metrics: [
+        {v: health.overall!=null?health.overall+'/100':'—', l:'Health Score'},
+        {v: s.win_rate!=null?s.win_rate+'%':'—', l:'Win Rate', cls: s.win_rate>=BREAKEVEN?'pos':'neg'},
+        {v: s.roi!=null?fmtPct(s.roi):'—', l:'ROI', cls: cls(s.roi||0)},
+        {v: n, l:'Resolved Picks'},
+      ],
+      recommendation: `${verdict.verdict} — ${verdict.why}`,
+      history: null,
+    });
+
+    // ── 2. Overall Model Health ───────────────────────────────────────
+    const gaugeRows = health.dims.map(d => `<div class="mir-gauge-row">
+        <div class="mir-gauge-label">${esc(d.label)}</div>
+        <div class="mir-gauge-track"><div class="mir-gauge-fill" style="width:${d.v}%;background:${gaugeColor(d.v)}"></div></div>
+        <div class="mir-gauge-val" style="color:${gaugeColor(d.v)}">${d.v}</div>
+      </div>`).join('');
+    html += card({
+      icon:'🩺', title:'Overall Model Health', confidence: n>=100?'HIGH':n>=40?'MEDIUM':'LOW',
+      custom: `<div class="mir-health-score">
+        <div class="big">${health.overall ?? '—'}<span class="of100">/100</span></div>
+        <div style="font-size:11px;color:var(--text-dim)">Trend: ${trend.available ? trendArrow(trend.roiDelta) + ' ' + (trend.roiDelta>0.5?'Improving':trend.roiDelta<-0.5?'Declining':'Stable') : 'Not enough history yet'}</div>
+      </div>${gaugeRows}`,
+      summary: `Composite score across six dimensions computed from the same data shown above. Each dimension is scored 0–100 using fixed, documented rules (no machine judgment involved).`,
+      findings: [
+        weakestDim ? `Lowest-scoring dimension: <b>${weakestDim.label}</b> — the highest-leverage place to focus next.` : null,
+        health.avgClv != null ? `Average CLV across resolved picks: ${fmtPct(health.avgClv,2)}pp.` : 'CLV not yet available for health scoring.',
+      ].filter(Boolean),
+      recommendation: health.overall == null ? 'Insufficient data to score health yet.' :
+        health.overall >= 75 ? 'Health is strong — maintain current configuration.' :
+        health.overall >= 50 ? 'Health is adequate but uneven — see weakest dimension above.' :
+        'Health is weak across multiple dimensions — see Priority Action Queue below before making further changes.',
+      history: trend.available ? `Comparing the first ${Math.floor(resolved.length/2)} vs. most recent ${Math.ceil(resolved.length/2)} resolved picks (chronological split).` : `Needs at least 20 resolved picks to show trend (currently ${n}).`,
+    });
+
+    // ── 3. Priority Action Queue ───────────────────────────────────────
+    const aqHtml = actionQueue.map(a => `<div class="mir-aq-item">
+      <span class="mir-aq-badge mir-aq-${a.priority}">${a.priority}</span>
+      <div class="mir-aq-body">
+        <div class="t">${esc(a.title)}</div>
+        <div class="r">${esc(a.reason)}</div>
+        <div class="mir-aq-meta"><span>Impact: ${esc(a.impact)}</span><span>Difficulty: ${esc(a.difficulty)}</span><span>Status: ${esc(a.status)}</span></div>
+      </div>
+    </div>`).join('');
+    html += card({
+      icon:'🗂️', title:'Priority Action Queue', confidence: n>=50?'MEDIUM':'INSUFFICIENT',
+      summary:`${actionQueue.length} item(s) generated from calibration gaps, market-segment ROI, and CLV behavior — ranked HIGH → MEDIUM → LOW.`,
+      custom: aqHtml,
+      recommendation: topPriority ? `Start with: ${esc(topPriority.title)}.` : 'No queued items.',
+    });
+
+    // ── 4. Prediction Quality Review ────────────────────────────────────
+    const edgeVals = resolved.filter(r=>r.prob!=null && r.odds).map(r => (r.prob - 1/r.odds)*100);
+    const avgEdge = edgeVals.length ? round1(avg(edgeVals)) : null;
+    html += card({
+      icon:'🎯', title:'Prediction Quality Review', confidence: sampleConf,
+      summary:`Win rate and ROI measure outcomes; probability and edge quality measure whether the model's confidence is honest and whether it's finding real market disagreement.`,
+      metrics:[
+        {v:s.win_rate!=null?s.win_rate+'%':'—', l:'Win Rate', cls:cls((s.win_rate||0)-BREAKEVEN)},
+        {v:s.roi!=null?fmtPct(s.roi):'—', l:'ROI', cls:cls(s.roi||0)},
+        {v:calStats?calStats.brier:'—', l:'Brier Score'},
+        {v:avgEdge!=null?fmtPct(avgEdge,2)+'pp':'—', l:'Avg Model Edge'},
+      ],
+      findings:[
+        `Probability quality (Brier score, lower is better, 0.25 = coin-flip baseline): ${calStats?calStats.brier:'not enough data'}.`,
+        `EV signal: ${evSignal.direction==='positive'?'win rate rises with EV threshold as expected.':evSignal.direction==='negative'?'win rate does NOT reliably rise with EV threshold — worth investigating.':evSignal.direction==='flat'?'no clear relationship between EV threshold and win rate yet.':'not enough EV buckets with sufficient sample to judge.'}`,
+        avgEdge!=null ? `Average edge vs. market-implied probability: ${fmtPct(avgEdge,2)}pp.` : null,
+      ].filter(Boolean),
+      recommendation: evSignal.direction==='negative' ? 'EV is not behaving as a quality filter right now — review before trusting high-EV picks more than others.' : 'EV and probability signals look directionally healthy; keep monitoring as sample grows.',
+    });
+
+    // ── 5. Kelly Performance Review ─────────────────────────────────────
+    const kellyVals = resolved.map(r=>r.kelly_units).filter(v=>v!=null);
+    const avgKelly = kellyVals.length ? round2(avg(kellyVals)) : null;
+    const pnl = analytics.pnl_over_time || [];
+    let maxDrawdown = null;
+    if (pnl.some(d=>d.kelly_cum!=null)) {
+      let peak = -Infinity, dd = 0;
+      pnl.forEach(d => { if (d.kelly_cum==null) return; peak = Math.max(peak, d.kelly_cum); dd = Math.min(dd, d.kelly_cum-peak); });
+      maxDrawdown = round2(dd);
+    }
+    html += card({
+      icon:'💰', title:'Kelly Performance Review', confidence: sampleConf,
+      summary:`Comparing conviction-sized (Kelly) betting against flat 1-unit betting on the same picks.`,
+      metrics:[
+        {v:s.kelly_roi!=null?fmtPct(s.kelly_roi):'—', l:'Kelly ROI', cls:cls(s.kelly_roi||0)},
+        {v:(s.kelly_roi!=null && s.roi!=null)?fmtPct(round1(s.kelly_roi-s.roi))+'pp':'—', l:'Kelly vs Flat', cls:cls((s.kelly_roi||0)-(s.roi||0))},
+        {v:avgKelly!=null?avgKelly+'u':'—', l:'Avg Kelly Size'},
+        {v:maxDrawdown!=null?'$'+maxDrawdown.toFixed(2):'—', l:'Largest Kelly Drawdown', cls: maxDrawdown!=null&&maxDrawdown<0?'neg':''},
+      ],
+      recommendation: (s.kelly_roi!=null && s.roi!=null && s.kelly_roi > s.roi)
+        ? 'Kelly sizing is currently adding value over flat betting — sizing by conviction is earning its keep.'
+        : (s.kelly_roi!=null && s.roi!=null) ? 'Kelly sizing is not currently beating flat betting — review whether stated confidence (model_prob) is well calibrated (see Calibration Review) before increasing bet sizes.' : 'Not enough Kelly-sized picks yet to judge.',
+    });
+
+    // ── 6. Closing Line Value Intelligence ──────────────────────────────
+    const clvVals = resolved.map(r=>r.clv).filter(v=>v!=null);
+    const avgClv = clvVals.length ? round2(avg(clvVals)) : null;
+    const beatClose = clvVals.length ? round1(clvVals.filter(v=>v>0).length/clvVals.length*100) : null;
+    html += card({
+      icon:'📍', title:'Closing Line Value Intelligence', confidence: clvVals.length>=20?'MEDIUM':clvVals.length>=8?'LOW':'INSUFFICIENT',
+      summary:`CLV measures whether our price beat the market's final price. On its own it's a market-agreement signal, not a guarantee of winning — the split below shows whether it's actually correlating with outcomes here.`,
+      metrics:[
+        {v:avgClv!=null?fmtPct(avgClv,2)+'pp':'—', l:'Avg CLV'},
+        {v:beatClose!=null?beatClose+'%':'—', l:'Beat Closing Line'},
+        {v:clvPos?clvPos.win_rate+'%':'—', l:'Positive-CLV Win Rate'},
+        {v:clvNeg?clvNeg.win_rate+'%':'—', l:'Negative-CLV Win Rate'},
+      ],
+      findings:[
+        (clvPos && clvNeg && clvPos.n>=10 && clvNeg.n>=10)
+          ? (clvPos.win_rate > clvNeg.win_rate
+              ? `Positive-CLV picks are winning more often (${clvPos.win_rate}% vs ${clvNeg.win_rate}%) — CLV is translating into results.`
+              : `Positive-CLV picks are NOT winning more often (${clvPos.win_rate}% vs ${clvNeg.win_rate}%) — CLV is not yet behaving as a predictive signal here.`)
+          : 'Not enough picks on both sides of CLV=0 to judge whether CLV predicts outcomes yet.',
+        clvPos ? `Positive-CLV ROI: ${fmtPct(clvPos.roi)} (n=${clvPos.n}).` : null,
+        clvNeg ? `Negative-CLV ROI: ${fmtPct(clvNeg.roi)} (n=${clvNeg.n}).` : null,
+      ].filter(Boolean),
+      recommendation: (clvPos && clvNeg && clvPos.n>=10 && clvNeg.n>=10 && clvPos.win_rate<=clvNeg.win_rate)
+        ? 'Do not over-weight CLV as a standalone confidence signal until this relationship reverses.'
+        : 'CLV tracking looks healthy so far; keep capturing closing lines consistently.',
+    });
+
+    // ── 7. Probability Calibration Review ───────────────────────────────
+    const sortedByGap = [...cal].filter(b=>b.n>=5).sort((a,b)=> Math.abs(b.predicted-b.actual) - Math.abs(a.predicted-a.actual));
+    const strongestBucket = sortedByGap.length ? sortedByGap[sortedByGap.length-1] : null;
+    const weakestBucket = sortedByGap.length ? sortedByGap[0] : null;
+    html += card({
+      icon:'📐', title:'Probability Calibration Review', confidence: grade.conf,
+      summary:`Grade: <b>${grade.grade}</b>. Brier score and log-loss are computed directly from every resolved pick's stated probability vs. actual outcome — not estimated.`,
+      metrics:[
+        {v:calStats?calStats.brier:'—', l:'Brier Score'},
+        {v:calStats?calStats.logLoss:'—', l:'Log Loss'},
+        {v: cal.length ? round1(cal.reduce((s2,b)=>s2+b.n*Math.abs(b.predicted-b.actual),0)/cal.reduce((s2,b)=>s2+b.n,0)) + 'pp' : '—', l:'Weighted ECE (approx)'},
+        {v:grade.grade, l:'Calibration Grade'},
+      ],
+      findings:[
+        strongestBucket ? `Best-calibrated bucket: ${strongestBucket.prob_range} (predicted ${strongestBucket.predicted}%, actual ${strongestBucket.actual}%, n=${strongestBucket.n}).` : null,
+        weakestBucket ? `Worst-calibrated bucket: ${weakestBucket.prob_range} (predicted ${weakestBucket.predicted}%, actual ${weakestBucket.actual}%, n=${weakestBucket.n}).` : null,
+      ].filter(Boolean),
+      recommendation: (weakestBucket && Math.abs(weakestBucket.predicted-weakestBucket.actual) > 12)
+        ? `Recalibration recommended for the ${weakestBucket.prob_range} bucket specifically — do not apply a blanket correction to all buckets.`
+        : 'No bucket currently shows a large enough gap to justify recalibration.',
+    });
+
+    // ── 8. Confidence Bucket Review ─────────────────────────────────────
+    const bucketRows = cal.map(b => {
+      const r = bucketRoi(resolved, b.prob_range);
+      const gap = Math.abs(b.predicted-b.actual);
+      const tag = b.n < 10 ? {c:'needsdata', t:'Needs Data'} : gap <= 6 ? {c:'trusted', t:'Trusted'} : gap > 10 ? {c:'weak', t:'Weak'} : {c:'needsdata', t:'Watch'};
+      return `<tr><td>${b.prob_range}</td><td>${b.actual}%</td><td>${r?fmtPct(r.roi):'—'}</td><td>${b.n}</td><td><span class="mir-tag mir-tag-${tag.c}">${tag.t}</span></td></tr>`;
+    }).join('');
+    html += card({
+      icon:'🪣', title:'Confidence Bucket Review', confidence: cal.length?'MEDIUM':'INSUFFICIENT',
+      summary:'Every probability bucket the model has produced picks in, with actual outcomes and ROI — not just the aggregate calibration curve above.',
+      custom: cal.length ? `<table class="mir-bucket-table"><thead><tr><th>Bucket</th><th>Win Rate</th><th>ROI</th><th>N</th><th>Status</th></tr></thead><tbody>${bucketRows}</tbody></table>` : '<p class="mir-summary">No bucket data yet.</p>',
+      recommendation: 'Trust "Trusted" buckets for sizing decisions; treat "Weak" and "Needs Data" buckets as informational only.',
+    });
+
+    // ── 9. Feature Signal Report ─────────────────────────────────────────
+    html += card({
+      icon:'📡', title:'Feature Signal Report', confidence:'LOW',
+      summary:`This report is restricted to data already returned by <code>/api/dashboard-analytics</code> and <code>/api/results</code>, which do not include per-pick model features (FIP, bullpen, park factor, lineup strength, etc.) — only EV, stated probability, CLV, and pick type. The signals below are limited to those four; deeper feature-level analysis exists elsewhere (the Loss Review debrief) but is out of scope for this report.`,
+      findings:[
+        `EV → outcome: ${evSignal.direction==='positive'?'positive signal (win rate rises with EV threshold).':evSignal.direction==='negative'?'no positive signal — win rate does not rise with EV threshold.':'inconclusive with current sample.'}`,
+        `Stated probability → outcome: ${strongestBucket && weakestBucket ? (Math.abs(weakestBucket.predicted-weakestBucket.actual) <= 8 ? 'reasonably consistent across buckets.' : 'inconsistent in at least one bucket — see Calibration Review.') : 'not enough bucket data yet.'}`,
+        `CLV → outcome: ${(clvPos && clvNeg && clvPos.n>=10 && clvNeg.n>=10) ? (clvPos.win_rate>clvNeg.win_rate?'positive signal.':'no positive signal currently.') : 'not enough data on both sides yet.'}`,
+        `Pick type (Moneyline vs Totals): ${(byType.moneyline&&byType.totals&&byType.moneyline.n>=15&&byType.totals.n>=15) ? `${byType.moneyline.win_rate}% vs ${byType.totals.win_rate}% win rate — ` + (Math.abs(byType.moneyline.win_rate-byType.totals.win_rate) > 8 ? 'a meaningful gap worth tracking.' : 'no meaningful gap currently.') : 'not enough resolved picks in one or both types yet.'}`,
+      ],
+      recommendation: 'No feature currently demonstrates statistically rigorous predictive power from this endpoint alone — treat all four signals above as exploratory until a dedicated feature-level analysis (using stored feature_snapshot data) is run.',
+    });
+
+    // ── 10. Error Hotspots ────────────────────────────────────────────────
+    const segments = [];
+    if (byType.moneyline && byType.moneyline.n>=5) segments.push({name:'Moneyline', win_rate:byType.moneyline.win_rate, n:byType.moneyline.n, roi:byType.moneyline.roi});
+    if (byType.totals && byType.totals.n>=5) segments.push({name:'Totals', win_rate:byType.totals.win_rate, n:byType.totals.n, roi:byType.totals.roi});
+    if (overs_gte(resolved,'OVER',5)) { const o=roiOf(resolved.filter(r=>/^OVER/i.test(r.pick))); segments.push({name:'OVER picks', win_rate:o.win_rate, n:o.n, roi:o.roi}); }
+    if (overs_gte(resolved,'UNDER',5)) { const u=roiOf(resolved.filter(r=>/^UNDER/i.test(r.pick))); segments.push({name:'UNDER picks', win_rate:u.win_rate, n:u.n, roi:u.roi}); }
+    function overs_gte(rows, prefix, min){ return rows.filter(r=>new RegExp('^'+prefix,'i').test(r.pick)).length >= min; }
+    cal.filter(b=>b.n>=8).forEach(b => segments.push({name:`Probability ${b.prob_range}`, win_rate:b.actual, n:b.n, roi:null}));
+    const ranked = segments.map(seg => ({...seg, deficit: BREAKEVEN - seg.win_rate})).sort((a,b)=>b.deficit-a.deficit);
+    const worst = ranked.slice(0,3).filter(s=>s.deficit>0);
+    const best = ranked.length ? ranked[ranked.length-1] : null;
+    html += card({
+      icon:'🔥', title:'Error Hotspots', confidence: segments.length?'MEDIUM':'INSUFFICIENT',
+      summary:'Segments ranked by how far below breakeven their win rate sits (worst first), and the single best-performing segment for contrast.',
+      custom: (worst.length ? worst.map(s => `<div class="mir-rank-card"><div class="top"><span class="name">${esc(s.name)}</span><span class="sev mir-sev-${s.deficit>10?'High':s.deficit>5?'Medium':'Low'}">${s.deficit>10?'High':s.deficit>5?'Medium':'Low'} concern</span></div><div class="row">Win rate <b>${s.win_rate}%</b> (n=${s.n}), ${s.deficit.toFixed(1)}pp below breakeven.${s.roi!=null?` ROI ${fmtPct(s.roi)}.`:''}</div></div>`).join('') : '<p class="mir-summary">No segment currently sits meaningfully below breakeven.</p>')
+        + (best ? `<div class="mir-rank-card"><div class="top"><span class="name">${esc(best.name)}</span><span class="sev mir-sev-Best">Best performing</span></div><div class="row">Win rate <b>${best.win_rate}%</b> (n=${best.n})${best.roi!=null?`, ROI ${fmtPct(best.roi)}`:''}.</div></div>` : ''),
+      recommendation: worst.length ? `Prioritize investigating "${worst[0].name}" — largest gap below breakeven.` : 'No hotspots currently exceed this report\'s concern threshold.',
+    });
+
+    // ── 11. Root Cause Ranking ─────────────────────────────────────────
+    const rcHtml = rootCauses.length ? rootCauses.map(c => `<div class="mir-rank-card">
+        <div class="top"><span class="name">${esc(c.name)}</span><span class="sev mir-sev-${c.severity}">${c.severity} confidence</span></div>
+        <div class="row"><b>Evidence:</b> ${esc(c.evidence)}</div>
+        <div class="row"><b>Impact:</b> ${esc(c.impact)}</div>
+        <div class="row"><b>Suggested fix:</b> ${esc(c.fix)}</div>
+        <div class="row"><b>Status:</b> ${esc(c.status)}</div>
+      </div>`).join('') : '<p class="mir-summary">No ranked issues currently identified.</p>';
+    html += card({
+      icon:'🔎', title:'Root Cause Ranking', confidence: rootCauses.some(c=>c.severity==='High')?'MEDIUM':'LOW',
+      summary:'Statistical patterns ranked by severity — these are hypotheses derived from observed data, not confirmed mechanistic causes.',
+      custom: rcHtml,
+      recommendation: rootCauses.length && rootCauses[0].severity==='High' ? `Address "${rootCauses[0].name}" first.` : 'No high-severity issue currently identified.',
+    });
+
+    // ── 12. Should The Model Change? ─────────────────────────────────────
+    html += card({
+      icon:'⚖️', title:'Should The Model Change?', confidence: n>=100?'HIGH':n>=50?'MEDIUM':'LOW', hero:true,
+      custom: `<div class="mir-verdict-hero"><div class="label">Deterministic Verdict</div><div class="value">${esc(verdict.verdict)}</div></div>`,
+      summary: verdict.why,
+      recommendation: verdict.verdict,
+    });
+
+    // ── 13. Training Roadmap ─────────────────────────────────────────────
+    const immediate = actionQueue.filter(a=>a.priority==='HIGH');
+    const next = actionQueue.filter(a=>a.priority==='MEDIUM');
+    const future = actionQueue.filter(a=>a.priority==='LOW');
+    function roadmapCol(title, items){
+      return `<div class="mir-roadmap-col"><h4>${title}</h4>${items.length ? items.map(i=>`<div class="mir-roadmap-item">${esc(i.title)}</div>`).join('') : '<div class="mir-roadmap-item" style="color:var(--text-muted)">Nothing queued</div>'}</div>`;
+    }
+    html += card({
+      icon:'🗺️', title:'Training Roadmap', confidence:'MEDIUM',
+      summary:'Reuses the same Priority Action Queue above, grouped into a time horizon: HIGH → Immediate, MEDIUM → Next, LOW → Future.',
+      custom: `<div class="mir-roadmap">${roadmapCol('Immediate', immediate)}${roadmapCol('Next', next)}${roadmapCol('Future', future)}</div>`,
+      recommendation: immediate.length ? `${immediate.length} immediate item(s) — start there.` : 'Nothing urgent queued right now.',
+    });
+
+    // ── 14. Historical Context ────────────────────────────────────────────
+    html += card({
+      icon:'🕰️', title:'Historical Context', confidence: trend.available?'MEDIUM':'INSUFFICIENT',
+      summary: trend.available
+        ? `Comparing the earliest ${Math.floor(n/2)} resolved picks to the most recent ${Math.ceil(n/2)}.`
+        : `Needs at least 20 resolved picks to compute a trend (currently ${n}).`,
+      metrics: trend.available ? [
+        {v: trend.early.win_rate+'%', l:'Earlier Win Rate'},
+        {v: trend.recent.win_rate+'%', l:'Recent Win Rate', cls: cls(trend.wrDelta)},
+        {v: fmtPct(trend.early.roi), l:'Earlier ROI'},
+        {v: fmtPct(trend.recent.roi), l:'Recent ROI', cls: cls(trend.roiDelta)},
+      ] : [],
+      findings: trend.available ? [
+        `Win rate trend: ${trendArrow(trend.wrDelta)} ${trend.wrDelta>=0?'+':''}${trend.wrDelta}pp.`,
+        `ROI trend: ${trendArrow(trend.roiDelta)} ${fmtPct(trend.roiDelta)}pp.`,
+        (trend.clvEarly!=null && trend.clvRecent!=null) ? `CLV trend: ${trendArrow(round2(trend.clvRecent-trend.clvEarly))} ${fmtPct(round2(trend.clvRecent-trend.clvEarly),2)}pp.` : null,
+      ].filter(Boolean) : [],
+      recommendation: !trend.available ? 'Not enough history yet — check back after more picks resolve.' :
+        trend.roiDelta > 2 ? 'Recent performance is improving — no action needed on this basis.' :
+        trend.roiDelta < -2 ? 'Recent performance is declining relative to earlier picks — cross-reference with the Priority Action Queue above.' :
+        'Performance is stable across the two halves of the sample.',
+    });
+
+    // ── 15. Final Executive Verdict ────────────────────────────────────
+    const status = !trend.available ? 'Insufficient Data' : trend.roiDelta > 2 ? 'Improving' : trend.roiDelta < -2 ? 'Declining' : 'Stable';
+    const confLevel = n>=150 ? 'High' : n>=50 ? 'Medium' : 'Low';
+    const nextMilestone = Math.ceil((n+1)/50)*50;
+    html += `<div class="mir-card mir-hero">
+      <div class="mir-card-head" style="cursor:default">
+        <span class="mir-icon">🏁</span><span class="mir-title">Final Executive Verdict</span>
+        <span class="mir-conf-pill mir-conf-${confLevel.toUpperCase()}">${confLevel.toUpperCase()}</span>
+      </div>
+      <div class="mir-card-body">
+        <div class="mir-final-grid">
+          <div class="mir-final-item"><div class="l">Current Status</div><div class="v">${esc(status)}</div></div>
+          <div class="mir-final-item"><div class="l">Confidence Level</div><div class="v">${esc(confLevel)}</div></div>
+          <div class="mir-final-item"><div class="l">Deployment Recommendation</div><div class="v">${esc(verdict.verdict)}</div></div>
+          <div class="mir-final-item"><div class="l">Highest Priority</div><div class="v">${topPriority?esc(topPriority.title):'None'}</div></div>
+          <div class="mir-final-item"><div class="l">Next Review Milestone</div><div class="v">After ${nextMilestone} resolved picks (${nextMilestone-n} more)</div></div>
+        </div>
+      </div>
+    </div>`;
+
+    document.getElementById('mir-body').innerHTML = html;
+  }
+
+  mirLoad();
+  setInterval(mirLoad, 60000);
+})();
+</script>
+{% endblock %}

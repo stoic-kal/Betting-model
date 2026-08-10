@@ -1,0 +1,55 @@
+.wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.tip {
+  position: absolute;
+  z-index: var(--z-dropdown);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  padding: 6px 10px;
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--text-2);
+  line-height: 1.4;
+  white-space: nowrap;
+  max-width: 240px;
+  white-space: normal;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.40);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+/* Placement */
+.top .tip {
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%) translateY(4px);
+}
+.bottom .tip {
+  top: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%) translateY(-4px);
+}
+.left .tip {
+  right: calc(100% + 8px);
+  top: 50%;
+  transform: translateY(-50%) translateX(4px);
+}
+.right .tip {
+  left: calc(100% + 8px);
+  top: 50%;
+  transform: translateY(-50%) translateX(-4px);
+}
+
+.wrap:hover .tip, .wrap:focus-within .tip {
+  opacity: 1;
+}
+.top:hover .tip    { transform: translateX(-50%) translateY(0); }
+.bottom:hover .tip { transform: translateX(-50%) translateY(0); }
+.left:hover .tip   { transform: translateY(-50%) translateX(0); }
+.right:hover .tip  { transform: translateY(-50%) translateX(0); }

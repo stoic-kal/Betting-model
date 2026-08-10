@@ -1,0 +1,6 @@
+import SwiftUI
+enum AppTheme { static let background=Color(red:0.035,green:0.045,blue:0.075),panel=Color(red:0.075,green:0.09,blue:0.14),raised=Color(red:0.105,green:0.12,blue:0.18),gold=Color(red:1,green:0.78,blue:0.12),green=Color(red:0.20,green:0.82,blue:0.52),red=Color(red:0.96,green:0.32,blue:0.36),muted=Color.white.opacity(0.58) }
+struct PanelModifier:ViewModifier{func body(content:Content)->some View{content.padding(16).background(AppTheme.panel,in:RoundedRectangle(cornerRadius:18,style:.continuous)).overlay(RoundedRectangle(cornerRadius:18).stroke(Color.white.opacity(0.08)))}}
+extension View{func panel()->some View{modifier(PanelModifier())}}
+struct MetricView:View{let label,value:String;var tint:Color = .white;var body:some View{VStack(alignment:.leading,spacing:4){Text(value).font(.system(.headline,design:.rounded).weight(.bold)).foregroundStyle(tint);Text(label.uppercased()).font(.caption2.weight(.semibold)).foregroundStyle(AppTheme.muted)}.frame(maxWidth:.infinity,alignment:.leading)}}
+struct EmptyState:View{let icon,title,message:String;var body:some View{VStack(spacing:12){Image(systemName:icon).font(.system(size:34)).foregroundStyle(AppTheme.gold);Text(title).font(.headline);Text(message).font(.subheadline).foregroundStyle(AppTheme.muted).multilineTextAlignment(.center)}.frame(maxWidth:.infinity).padding(30).panel()}}

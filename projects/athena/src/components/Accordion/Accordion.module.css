@@ -1,0 +1,76 @@
+.accordion { display: flex; flex-direction: column; gap: 4px; }
+
+.item {
+  background:    var(--bg-card);
+  border:        1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition: border-color 0.15s;
+}
+.item.expanded { border-color: rgba(139,92,246,0.25); }
+
+.trigger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+  gap: 8px;
+  transition: background 0.1s;
+}
+.trigger:hover { background: rgba(255,255,255,0.025); }
+
+.triggerLeft { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; }
+
+.icon { font-size: 14px; flex-shrink: 0; }
+
+.triggerTitle {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.triggerBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 6px;
+  border-radius: 99px;
+  background: rgba(139,92,246,0.15);
+  color: #A78BFA;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  flex-shrink: 0;
+}
+
+.chevron {
+  color: var(--text-muted);
+  font-size: 16px;
+  transition: transform 0.2s ease;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+.chevronOpen { transform: rotate(90deg); }
+
+.panel {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.25s cubic-bezier(0.4,0,0.2,1);
+}
+.panelOpen { max-height: 2000px; }
+
+.panelInner {
+  padding: 0 14px 14px;
+  font-size: 13px;
+  color: var(--text-2);
+  line-height: 1.6;
+}

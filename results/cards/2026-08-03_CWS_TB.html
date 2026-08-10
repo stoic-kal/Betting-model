@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CWS @ TB — Sharp Movement Card</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #060e1a; color: #e2e8f0; font-family: 'Segoe UI', Arial, sans-serif; padding: 16px; }
+  .card { background: #0a1628; border: 2px solid #d4af37; border-radius: 12px; max-width: 1200px; margin: 0 auto; overflow: hidden; box-shadow: 0 0 40px rgba(212,175,55,0.15); }
+
+  /* ── Header ── */
+  .header { background: linear-gradient(135deg, #060e1a 0%, #0f2040 50%, #060e1a 100%); padding: 24px 32px 16px; text-align: center; border-bottom: 2px solid #d4af3733; position: relative; }
+  .header-logos { display: flex; align-items: center; justify-content: center; gap: 24px; }
+  .team-logo { width: 72px; height: 72px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 900; letter-spacing: 1px; }
+  .team-logo.away { background: #1a1a2e; border: 2px solid #6b7280; color: #e2e8f0; }
+  .team-logo.home { background: #1a3a5c; border: 2px solid #d4af37; color: #d4af37; }
+  .header-title { flex: 1; }
+  .matchup-line { font-size: 13px; color: #94a3b8; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 4px; }
+  .team-names { font-size: 28px; font-weight: 900; letter-spacing: 2px; line-height: 1.1; }
+  .team-names .away-name { color: #cbd5e1; }
+  .team-names .vs { color: #d4af37; font-size: 18px; margin: 0 8px; }
+  .team-names .home-name { color: #ffd700; }
+  .subtitle { color: #d4af37; font-size: 14px; letter-spacing: 4px; margin-top: 6px; }
+  .header-tags { display: flex; gap: 8px; justify-content: center; margin-top: 10px; }
+  .tag { background: #1e3a5f; border: 1px solid #3b82f666; color: #93c5fd; font-size: 11px; padding: 3px 10px; border-radius: 12px; letter-spacing: 1px; }
+
+  /* ── Game info bar ── */
+  .game-info { display: flex; gap: 0; background: #0d1f38; border-bottom: 1px solid #d4af3722; }
+  .game-info-item { flex: 1; padding: 10px 16px; text-align: center; border-right: 1px solid #1e3a5f; }
+  .game-info-item:last-child { border-right: none; }
+  .gi-label { font-size: 9px; color: #64748b; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 2px; }
+  .gi-value { font-size: 13px; font-weight: 700; color: #e2e8f0; }
+
+  /* ── Main grid ── */
+  .main-grid { display: grid; grid-template-columns: 1fr 1.4fr 1fr; gap: 0; border-bottom: 1px solid #1e3a5f; }
+  .section { padding: 16px; border-right: 1px solid #1e3a5f; }
+  .section:last-child { border-right: none; }
+  .section-title { font-size: 11px; letter-spacing: 2px; color: #d4af37; text-transform: uppercase; border-bottom: 1px solid #d4af3733; padding-bottom: 6px; margin-bottom: 10px; font-weight: 700; }
+
+  /* Executive summary */
+  .bullet { font-size: 12.5px; color: #cbd5e1; margin-bottom: 8px; line-height: 1.4; display: flex; gap: 6px; }
+  .check { color: #d4af37; flex-shrink: 0; }
+
+  /* Line movement */
+  .mov-table { width: 100%; border-collapse: collapse; font-size: 11.5px; }
+  .mov-table th { color: #64748b; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; padding: 4px 6px; text-align: center; }
+  .mov-table td { padding: 5px 6px; text-align: center; color: #cbd5e1; border-top: 1px solid #1e3a5f; }
+  .mov-time { color: #94a3b8; font-size: 10.5px; text-align: left !important; }
+
+  /* Pitching matchup */
+  .pitch-header { display: flex; justify-content: space-between; margin-bottom: 8px; }
+  .pitch-sp { font-size: 11px; font-weight: 700; color: #d4af37; text-align: center; }
+  .pitch-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .pitch-table td { padding: 5px 8px; border-top: 1px solid #1e3a5f15; text-align: center; }
+  .stat-label { color: #64748b; font-size: 10px; letter-spacing: 1px; }
+  .overall-edge { text-align: center; margin-top: 10px; padding: 8px; background: #0f2040; border-radius: 6px; border: 1px solid #d4af3744; }
+  .edge-label { font-size: 10px; color: #64748b; letter-spacing: 1px; }
+  .edge-team { font-size: 20px; font-weight: 900; color: #ffd700; }
+
+  /* ── Picks section ── */
+  .picks-section { padding: 20px; }
+  .picks-title { text-align: center; font-size: 15px; font-weight: 900; color: #d4af37; letter-spacing: 3px; margin-bottom: 16px; }
+  .picks-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  .picks-table th { background: #0d1f38; color: #64748b; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; padding: 8px 10px; text-align: left; border-bottom: 1px solid #1e3a5f; }
+  .picks-table th.num { text-align: center; }
+  .picks-table td { padding: 10px 10px; border-bottom: 1px solid #1e3a5f33; vertical-align: middle; }
+  .picks-table tr:hover td { background: #0f2040; }
+  .medal { font-size: 20px; text-align: center; width: 36px; }
+  .pick-desc { font-weight: 700; color: #e2e8f0; margin-bottom: 2px; }
+  .pick-odds { font-size: 11px; color: #94a3b8; }
+  .badge { padding: 3px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; letter-spacing: 0.5px; white-space: nowrap; }
+  .num { text-align: center; }
+  .ev-cell { font-size: 13px; }
+  .note-cell { font-size: 11px; color: #94a3b8; max-width: 200px; }
+
+  /* ── Bottom row ── */
+  .bottom-row { display: grid; grid-template-columns: 1fr auto; border-top: 1px solid #1e3a5f; }
+  .sharp-action { padding: 16px 24px; display: flex; align-items: center; gap: 16px; }
+  .sharp-icons { display: flex; gap: 12px; }
+  .sharp-icon { text-align: center; }
+  .sharp-icon div { font-size: 9px; color: #64748b; letter-spacing: 1px; margin-top: 2px; }
+  .sharp-action-text { font-size: 14px; font-weight: 900; color: #d4af37; letter-spacing: 2px; text-transform: uppercase; }
+  .sharp-action-text span { color: white; }
+
+  /* SGP Panel */
+  .sgp-panel { background: #0d1f38; border-left: 1px solid #d4af3733; padding: 16px 20px; min-width: 280px; }
+  .sgp-header { font-size: 11px; font-weight: 900; color: #d4af37; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 12px; text-align: center; }
+  .sgp-legs { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+  .sgp-leg { flex: 1; background: #1a3a5c; border-radius: 6px; padding: 10px; text-align: center; border: 1px solid #3b82f655; }
+  .leg-label { font-size: 9px; color: #64748b; letter-spacing: 2px; margin-bottom: 4px; }
+  .leg-pick { font-size: 13px; font-weight: 900; color: #ffd700; }
+  .leg-line { font-size: 11px; color: #94a3b8; margin-top: 2px; }
+  .sgp-plus { font-size: 20px; color: #d4af37; font-weight: 900; }
+  .sgp-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .sgp-stat { background: #060e1a; border-radius: 4px; padding: 6px 8px; text-align: center; }
+  .sgp-stat-label { display: block; font-size: 9px; color: #64748b; letter-spacing: 1px; margin-bottom: 2px; }
+  .sgp-stat-val { font-size: 14px; font-weight: 900; color: #e2e8f0; }
+  .gold { color: #ffd700 !important; }
+
+  @media (max-width: 900px) {
+    .main-grid { grid-template-columns: 1fr; }
+    .section { border-right: none; border-bottom: 1px solid #1e3a5f; }
+    .bottom-row { grid-template-columns: 1fr; }
+    .game-info { flex-wrap: wrap; }
+  }
+</style>
+</head>
+<body>
+<div class="card">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-logos">
+      <div class="team-logo away">CWS</div>
+      <div class="header-title">
+        <div class="matchup-line">Sharp Movement & Best Bets</div>
+        <div class="team-names">
+          <span class="away-name">CHICAGO WHITE SOX</span>
+          <span class="vs">AT</span>
+          <span class="home-name">TAMPA BAY RAYS</span>
+        </div>
+        <div class="subtitle">★ SHARP MOVEMENT &amp; BEST BETS ★</div>
+        <div class="header-tags">
+          <span class="tag">AL MONDAY MATCHUP</span>
+          <span class="tag">📊 DATA-DRIVEN CARD</span>
+        </div>
+      </div>
+      <div class="team-logo home">TB</div>
+    </div>
+  </div>
+
+  <!-- Game info bar -->
+  <div class="game-info">
+    <div class="game-info-item">
+      <div class="gi-label">Date</div>
+      <div class="gi-value">📅 August 3, 2026</div>
+    </div>
+    <div class="game-info-item">
+      <div class="gi-label">First Pitch</div>
+      <div class="gi-value">⏰ 7:10 PM ET</div>
+    </div>
+    <div class="game-info-item">
+      <div class="gi-label">Venue</div>
+      <div class="gi-value">📍 Tropicana Field</div>
+    </div>
+    <div class="game-info-item">
+      <div class="gi-label">Records</div>
+      <div class="gi-value">CWS (23-80) @ TB (58-45)</div>
+    </div>
+  </div>
+
+  <!-- Main 3-column grid -->
+  <div class="main-grid">
+
+    <!-- Executive Summary -->
+    <div class="section">
+      <div class="section-title">📋 Executive Summary</div>
+      <div class="bullet"><span class="check">☑</span> Sharp total steam hit the <strong>Under 7.5</strong>, moving from 8.5 down two half-points since open.</div><div class="bullet"><span class="check">☑</span> <strong>Griffin Jax</strong> brings elite swing-and-miss stuff (10.2 K/9) against a league-worst White Sox contact lineup.</div><div class="bullet"><span class="check">☑</span> CWS lineup hits .204 vs RHP with a 27.8% K rate over the last 30 days -- worst in AL.</div><div class="bullet"><span class="check">☑</span> Bullpen rest favors TB: White Sox used 4 relievers yesterday. Rays pen is fresh.</div>
+    </div>
+
+    <!-- Line Movement -->
+    <div class="section">
+      <div class="section-title">📈 Historical Line Movement</div>
+      <table class="mov-table">
+        <thead>
+          <tr>
+            <th style="text-align:left">TIME</th>
+            <th>CWS ML</th>
+            <th>TB ML</th>
+            <th>TOTAL</th>
+            <th>SPREAD</th>
+            <th>SIGNAL</th>
+          </tr>
+        </thead>
+        <tbody>
+            <tr>
+              <td class="mov-time">10:02 AM</td>
+              <td>+188</td>
+              <td>-224</td>
+              <td>8.5</td>
+              <td></td>
+              <td><span style="color:#94a3b8;font-weight:700;font-size:11px">MARKET OPEN</span></td>
+            </tr>
+            <tr>
+              <td class="mov-time">11:30 AM</td>
+              <td>+180</td>
+              <td>-214</td>
+              <td>8.5</td>
+              <td></td>
+              <td><span style="color:#f59e0b;font-weight:700;font-size:11px">STEADY</span></td>
+            </tr>
+            <tr>
+              <td class="mov-time">01:15 PM</td>
+              <td>+172</td>
+              <td>-206</td>
+              <td>8.0</td>
+              <td></td>
+              <td><span style="color:#22c55e;font-weight:700;font-size:11px">SHARP TOTAL UNDER STEAM</span></td>
+            </tr>
+            <tr>
+              <td class="mov-time">03:00 PM</td>
+              <td>+168</td>
+              <td>-198</td>
+              <td>7.5</td>
+              <td></td>
+              <td><span style="color:#22c55e;font-weight:700;font-size:11px">SHARP TOTAL UNDER STEAM</span></td>
+            </tr>
+            <tr>
+              <td class="mov-time">05:45 PM</td>
+              <td>+166</td>
+              <td>-194</td>
+              <td>7.5</td>
+              <td></td>
+              <td><span style="color:#f59e0b;font-weight:700;font-size:11px">STEADY AWAY STEAM</span></td>
+            </tr></tbody>
+      </table>
+    </div>
+
+    <!-- Pitching Matchup -->
+    <div class="section">
+      <div class="section-title">⚾ Pitching Matchup</div>
+      <div class="pitch-header">
+        <div class="pitch-sp" style="flex:1">Griffin Jax · RHP - TB</div>
+        <div class="pitch-sp" style="flex:1;color:#cbd5e1">Anthony Kay · LHP - CWS</div>
+      </div>
+      <table class="pitch-table">
+        <thead><tr>
+          <th style="color:#d4af37">TB</th>
+          <th class="stat-label">METRIC</th>
+          <th style="color:#94a3b8">CWS</th>
+        </tr></thead>
+        <tbody><tr><td style="color:#22c55e;font-weight:700">2.91</td><td class="stat-label">SEASON ERA</td><td >5.14</td></tr><tr><td style="color:#22c55e;font-weight:700">0.99</td><td class="stat-label">WHIP</td><td >1.41</td></tr><tr><td style="color:#22c55e;font-weight:700">3.62</td><td class="stat-label">xERA</td><td >5.82</td></tr><tr><td style="color:#22c55e;font-weight:700">10.20</td><td class="stat-label">K/9</td><td >7.80</td></tr><tr><td style="color:#22c55e;font-weight:700">3.12</td><td class="stat-label">FIP</td><td >5.32</td></tr></tbody>
+      </table>
+      <div class="overall-edge">
+        <div class="edge-label">OVERALL EDGE</div>
+        <div class="edge-team">Jax</div>
+        <div style="font-size:10px;color:#94a3b8;margin-top:2px">Jax OVER 6.5 STRIKEOUTS</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Picks section -->
+  <div class="picks-section">
+    <div class="picks-title">★ TOP RECOMMENDED PLAYS ★</div>
+    <table class="picks-table">
+      <thead>
+        <tr>
+          <th></th>
+          <th>PICK</th>
+          <th>CONFIDENCE</th>
+          <th class="num">TRUE PROB</th>
+          <th class="num">MKT IMPLIED</th>
+          <th class="num">EV</th>
+          <th class="num">FAIR LINE</th>
+          <th class="num">SIZE</th>
+          <th>NOTES</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+    <tr>
+      <td class="medal">🥇</td>
+      <td class="pick-name">
+        <div class="pick-desc">Jax OVER 6.5 STRIKEOUTS</div>
+        <div class="pick-odds">Best: <strong>+104</strong></div>
+      </td>
+      <td><span class="badge" style="background:#22c55e22;color:#22c55e;border:1px solid #22c55e44">STRONG EDGE</span></td>
+      <td class="num"><strong>61.3%</strong></td>
+      <td class="num">51.2%</td>
+      <td class="num ev-cell" style="color:#22c55e"><strong>+19.7%</strong></td>
+      <td class="num">-158</td>
+      <td class="num"><strong>1.0u</strong></td>
+      <td class="note-cell">10.2 K/9 vs league-worst CWS K rate. Model projects 7.1 Ks.</td>
+    </tr>
+    <tr>
+      <td class="medal">🥈</td>
+      <td class="pick-name">
+        <div class="pick-desc">UNDER 7.5 TOTAL RUNS</div>
+        <div class="pick-odds">Best: <strong>+105</strong></div>
+      </td>
+      <td><span class="badge" style="background:#22c55e22;color:#22c55e;border:1px solid #22c55e44">STRONG EDGE</span></td>
+      <td class="num"><strong>58.1%</strong></td>
+      <td class="num">50.0%</td>
+      <td class="num ev-cell" style="color:#f59e0b"><strong>+14.2%</strong></td>
+      <td class="num">-138</td>
+      <td class="num"><strong>0.75u</strong></td>
+      <td class="note-cell">Sharp steam moved total from 8.5 to 7.5. Elite FIP matchup confirms under.</td>
+    </tr>
+    <tr>
+      <td class="medal">🥉</td>
+      <td class="pick-name">
+        <div class="pick-desc">Caminero OVER 1.5 TOTAL BASES</div>
+        <div class="pick-odds">Best: <strong>-115</strong></div>
+      </td>
+      <td><span class="badge" style="background:#f59e0b22;color:#f59e0b;border:1px solid #f59e0b44">MODERATE EDGE</span></td>
+      <td class="num"><strong>55.4%</strong></td>
+      <td class="num">48.8%</td>
+      <td class="num ev-cell" style="color:#f59e0b"><strong>+9.6%</strong></td>
+      <td class="num">-123</td>
+      <td class="num"><strong>0.5u</strong></td>
+      <td class="note-cell">.412 avg vs LHP over last 15 days. Favorable matchup vs Kay.</td>
+    </tr>
+    <tr>
+      <td class="medal">4️⃣</td>
+      <td class="pick-name">
+        <div class="pick-desc">TB MONEYLINE</div>
+        <div class="pick-odds">Best: <strong>-146</strong></div>
+      </td>
+      <td><span class="badge" style="background:#f59e0b22;color:#f59e0b;border:1px solid #f59e0b44">MODERATE EDGE</span></td>
+      <td class="num"><strong>57.2%</strong></td>
+      <td class="num">52.4%</td>
+      <td class="num ev-cell" style="color:#f59e0b"><strong>+8.3%</strong></td>
+      <td class="num">-135</td>
+      <td class="num"><strong>0.5u</strong></td>
+      <td class="note-cell">Home field + elite SP advantage. Sharp money on TB ML post-open.</td>
+    </tr>
+    <tr>
+      <td class="medal">5️⃣</td>
+      <td class="pick-name">
+        <div class="pick-desc">Kay UNDER 4.5 STRIKEOUTS</div>
+        <div class="pick-odds">Best: <strong>-108</strong></div>
+      </td>
+      <td><span class="badge" style="background:#f59e0b22;color:#f59e0b;border:1px solid #f59e0b44">MODERATE EDGE</span></td>
+      <td class="num"><strong>53.7%</strong></td>
+      <td class="num">49.1%</td>
+      <td class="num ev-cell" style="color:#ef4444"><strong>+6.9%</strong></td>
+      <td class="num">-116</td>
+      <td class="num"><strong>0.25u</strong></td>
+      <td class="note-cell">Only 7.8 K/9 this season. TB lineup ranks top-5 in contact rate.</td>
+    </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Bottom row -->
+  <div class="bottom-row">
+    <div class="sharp-action">
+      <div class="sharp-icons">
+        <div class="sharp-icon">📊<div>ADVANCED<br>METRICS</div></div>
+        <div class="sharp-icon">📉<div>SHARP<br>MOVEMENT</div></div>
+        <div class="sharp-icon">💰<div>VALUE<br>FOCUSED</div></div>
+      </div>
+      <div class="sharp-action-text">Sharp action focused on <strong>Jax OVER 6.5 STRIKEOUTS</strong> and <strong>UNDER 7.5 TOTAL RUNS</strong>.</div>
+    </div>
+    
+        <div class="sgp-panel">
+          <div class="sgp-header">🚀 FEATURED 2-LEG SAME GAME PARLAY (SGP)</div>
+          <div class="sgp-legs">
+            <div class="sgp-leg">
+              <div class="leg-label">LEG 1</div>
+              <div class="leg-pick">TB</div>
+              <div class="leg-line">-146</div>
+            </div>
+            <div class="sgp-plus">+</div>
+            <div class="sgp-leg">
+              <div class="leg-label">LEG 2</div>
+              <div class="leg-pick">Jax K</div>
+              <div class="leg-line">+104</div>
+            </div>
+          </div>
+          <div class="sgp-stats">
+            <div class="sgp-stat"><span class="sgp-stat-label">COMBINED PARLAY ODDS</span><span class="sgp-stat-val gold">+175</span></div>
+            <div class="sgp-stat"><span class="sgp-stat-label">FAIR WIN PROBABILITY</span><span class="sgp-stat-val">38.2%</span></div>
+            <div class="sgp-stat"><span class="sgp-stat-label">FAIR LINE</span><span class="sgp-stat-val">+162</span></div>
+            <div class="sgp-stat"><span class="sgp-stat-label">COMBINED PARLAY EV</span><span class="sgp-stat-val" style="color:#22c55e">+12.4%</span></div>
+          </div>
+        </div>
+  </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,150 @@
+/* ── Table card ───────────────────────────────────────────────────────────── */
+
+.tableCard {
+  background:    var(--bg-card);
+  border:        1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+}
+
+.tableHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px 12px;
+  border-bottom: 1px solid var(--border-subtle);
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tableTitle {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.tableNote {
+  font-size: 10px;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.tableWrap {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.table thead tr {
+  background: rgba(0, 0, 0, 0.20);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.table th {
+  padding: 7px 16px;
+  text-align: left;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-disabled);
+  white-space: nowrap;
+}
+
+.tableRow {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  transition: background 0.1s;
+}
+
+.tableRow:last-child { border-bottom: none; }
+.tableRow:hover { background: rgba(255, 255, 255, 0.025); }
+
+/* ── Cells ────────────────────────────────────────────────────────────────── */
+
+.tdLabel {
+  padding: 9px 16px;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: var(--font-mono);
+  color: var(--text-2);
+  white-space: nowrap;
+}
+
+.tdMono {
+  padding: 9px 16px;
+  font-size: 11px;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+}
+
+.tdWr {
+  padding: 9px 16px;
+  font-size: 12px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+}
+
+.tdWr[data-good="true"]  { color: #10B981; }
+.tdWr[data-good="false"] { color: #EF4444; }
+
+.tdRoi {
+  padding: 9px 16px;
+  font-size: 11px;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+}
+
+.tdRoi[data-positive="true"]  { color: #10B981; }
+.tdRoi[data-positive="false"] { color: #EF4444; }
+
+/* ── Edge bar ─────────────────────────────────────────────────────────────── */
+
+.edgeBar {
+  margin: 9px 16px;
+  height: 5px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 3px;
+  overflow: hidden;
+  width: 80px;
+}
+
+.edgeFill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ── Verdict badge ────────────────────────────────────────────────────────── */
+
+.verdict {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 99px;
+  font-size: 10px;
+  font-weight: 600;
+  margin: 6px 16px;
+  white-space: nowrap;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-muted);
+}
+
+.verdict[data-good="true"] {
+  background: rgba(16, 185, 129, 0.12);
+  color: #10B981;
+}
+
+.verdict[data-warn="true"] {
+  background: rgba(245, 158, 11, 0.12);
+  color: #F59E0B;
+}
+
+.verdict[data-bad="true"] {
+  background: rgba(239, 68, 68, 0.12);
+  color: #EF4444;
+}

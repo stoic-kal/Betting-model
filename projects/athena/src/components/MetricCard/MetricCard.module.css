@@ -1,0 +1,174 @@
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 18px 20px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-card);
+  cursor: default;
+  transition:
+    transform    0.18s cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 0.18s ease,
+    box-shadow   0.18s ease;
+  overflow: hidden;
+  min-width: 0;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+.card[data-clickable="true"] { cursor: pointer; }
+
+/* Accent glow strip at top */
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: var(--card-accent, transparent);
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+  transition: opacity 0.2s;
+  opacity: 0.6;
+}
+
+.card:hover::before { opacity: 1; }
+
+/* Variants */
+.card[data-variant="purple"] { --card-accent: linear-gradient(90deg, transparent, #8B5CF6, transparent); }
+.card[data-variant="blue"]   { --card-accent: linear-gradient(90deg, transparent, #3B82F6, transparent); }
+.card[data-variant="green"]  { --card-accent: linear-gradient(90deg, transparent, #10B981, transparent); }
+.card[data-variant="red"]    { --card-accent: linear-gradient(90deg, transparent, #EF4444, transparent); }
+.card[data-variant="amber"]  { --card-accent: linear-gradient(90deg, transparent, #F59E0B, transparent); }
+
+/* Header row */
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.labelGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: var(--text-disabled);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sublabel {
+  font-size: 10px;
+  color: var(--text-disabled);
+  white-space: nowrap;
+}
+
+/* Icon badge */
+.icon {
+  font-size: 16px;
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+
+/* Value row */
+.valueRow {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.value {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  font-family: var(--font-sans);
+  transition: color 0.2s;
+}
+
+.value[data-color="green"]  { color: #10B981; }
+.value[data-color="red"]    { color: #EF4444; }
+.value[data-color="amber"]  { color: #F59E0B; }
+.value[data-color="purple"] { color: #8B5CF6; }
+.value[data-color="blue"]   { color: #3B82F6; }
+.value[data-color="muted"]  { color: var(--text-muted); }
+.value[data-color="default"]{ color: var(--text); }
+
+.suffix {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-muted);
+  line-height: 1;
+}
+
+/* Trend badge */
+.trend {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 7px;
+  border-radius: var(--radius-full);
+  font-size: 10px;
+  font-weight: 600;
+  font-family: var(--font-mono);
+  white-space: nowrap;
+  align-self: flex-end;
+  margin-bottom: 2px;
+}
+
+.trend[data-dir="up"]      { background: var(--success-subtle); color: #10B981; }
+.trend[data-dir="down"]    { background: var(--danger-subtle);  color: #EF4444; }
+.trend[data-dir="neutral"] { background: rgba(255,255,255,0.05); color: var(--text-muted); }
+
+/* Footer context line */
+.context {
+  font-size: 11px;
+  color: var(--text-disabled);
+  border-top: 1px solid var(--border-subtle);
+  padding-top: 8px;
+  margin-top: 2px;
+}
+
+/* ── Skeleton ────────────────────────────────────────────────────────────────*/
+
+.skeleton {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.skeletonLine {
+  border-radius: 4px;
+  background: linear-gradient(
+    90deg,
+    rgba(255,255,255,0.04) 0%,
+    rgba(255,255,255,0.08) 50%,
+    rgba(255,255,255,0.04) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0%   { background-position:  200% 0; }
+  100% { background-position: -200% 0; }
+}

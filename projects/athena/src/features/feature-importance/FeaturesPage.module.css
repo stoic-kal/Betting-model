@@ -1,0 +1,166 @@
+/* ── Feature health card ──────────────────────────────────────────────────── */
+
+.healthCard {
+  background:    var(--bg-card);
+  border:        1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+}
+
+.healthHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px 12px;
+  border-bottom: 1px solid var(--border-subtle);
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.healthTitle {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.healthBadges {
+  display: flex;
+  gap: 6px;
+}
+
+.hBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 9px;
+  border-radius: 99px;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.hBadge[data-type="good"] {
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.22);
+  color: #10B981;
+}
+
+.hBadge[data-type="warn"] {
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.22);
+  color: #F59E0B;
+}
+
+/* ── Health table ─────────────────────────────────────────────────────────── */
+
+.healthTableWrap {
+  overflow-x: auto;
+}
+
+.healthTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.healthTable thead tr {
+  background: rgba(0, 0, 0, 0.20);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.healthTable th {
+  padding: 7px 14px;
+  text-align: left;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-disabled);
+  white-space: nowrap;
+}
+
+.hRow {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  transition: background 0.1s;
+}
+
+.hRow:last-child { border-bottom: none; }
+.hRow:hover { background: rgba(255, 255, 255, 0.025); }
+
+.hRow[data-issue="true"] {
+  background: rgba(245, 158, 11, 0.03);
+}
+
+.hName {
+  padding: 8px 14px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-2);
+  white-space: nowrap;
+}
+
+/* Coverage cell */
+.covCell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+}
+
+.covBar {
+  width: 60px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 2px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.covFill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.5s ease;
+}
+
+.covPct {
+  font-size: 10px;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.hMono {
+  padding: 8px 14px;
+  font-size: 11px;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+}
+
+.constOk  { font-size: 11px; color: var(--text-disabled); padding: 8px 14px; display: block; }
+.constBad { font-size: 11px; color: #F59E0B; font-weight: 600; padding: 8px 14px; display: block; }
+
+/* Status badge */
+.hStatus {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 7px;
+  border-radius: 99px;
+  font-size: 10px;
+  font-weight: 600;
+  margin: 6px 14px;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-muted);
+}
+
+.hStatus[data-ok="true"] {
+  background: rgba(16, 185, 129, 0.10);
+  color: #10B981;
+}
+
+.hStatus[data-warn="true"] {
+  background: rgba(245, 158, 11, 0.10);
+  color: #F59E0B;
+}
+
+.hStatus[data-bad="true"] {
+  background: rgba(239, 68, 68, 0.10);
+  color: #EF4444;
+}

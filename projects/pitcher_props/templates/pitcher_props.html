@@ -1,0 +1,725 @@
+{% extends "base.html" %}
+{% block title %}⚾ Pitcher Props{% endblock %}
+{% block content %}
+<style>
+/* ── Pitcher Props — futuristic dark ── */
+.pp-header { display:flex; align-items:center; gap:1rem; margin-bottom:1.5rem; flex-wrap:wrap; }
+.pp-header h1 { margin:0; font-size:22px; font-weight:800; color:var(--text); letter-spacing:-0.02em; }
+.pp-controls { display:flex; gap:.75rem; align-items:center; flex-wrap:wrap; }
+.pp-controls input, .pp-controls select {
+  font-family:inherit; font-size:12px; padding:7px 10px;
+  border:1px solid var(--border); background:var(--bg-input); color:var(--text);
+  border-radius:var(--radius-sm); outline:none;
+}
+.pp-controls input:focus, .pp-controls select:focus { border-color:var(--border-active); }
+.pp-controls button {
+  font-family:inherit; font-size:12px; font-weight:600; padding:8px 14px;
+  border:1px solid rgba(255,255,255,0.1); background:var(--violet);
+  color:#fff; cursor:pointer; border-radius:var(--radius-sm);
+  transition:all 0.15s;
+}
+.pp-controls button:hover { background:#8b47f5; box-shadow:var(--glow-violet); }
+
+/* ── Game cards ── */
+.game-cards { display:grid; gap:1.25rem; }
+.game-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); }
+.game-card-header {
+  background:rgba(124,58,237,0.12); padding:10px 14px;
+  display:flex; align-items:center; gap:.75rem;
+  font-size:13px; color:var(--text); border-bottom:1px solid var(--border);
+  border-radius:var(--radius) var(--radius) 0 0;
+}
+.game-time { font-size:11px; margin-left:auto; color:var(--text-muted); }
+
+/* ── Pitcher row ── */
+.pitcher-row { border-top:1px solid var(--border); }
+.pitcher-summary {
+  padding:10px 14px; display:flex; align-items:center;
+  gap:1rem; cursor:pointer; user-select:none; flex-wrap:wrap;
+}
+.pitcher-summary:hover { background:rgba(255,255,255,0.03); }
+.pitcher-name { font-size:13px; font-weight:700; min-width:160px; color:var(--text); }
+
+.badge {
+  padding:3px 9px; font-size:10px; font-weight:700;
+  white-space:nowrap; border-radius:20px;
+}
+.badge-strong    { background:rgba(16,185,129,0.15); color:#10b981; }
+.badge-qualified { background:rgba(245,158,11,0.15); color:#f59e0b; }
+.badge-forecast  { background:var(--violet-dim); color:#a78bfa; }
+.badge-research  { background:rgba(255,255,255,0.08); color:var(--text-dim); }
+.badge-noout     { background:rgba(239,68,68,0.12); color:var(--red); }
+
+.pick-summary { display:flex; align-items:center; gap:.5rem; font-size:12px; flex-wrap:wrap; }
+.pick-dir { font-size:13px; font-weight:700; }
+.pick-dir.over  { color:var(--green); }
+.pick-dir.under { color:var(--red); }
+.stat-pill {
+  background:var(--bg-input); border:1px solid var(--border);
+  padding:2px 7px; font-size:10px; border-radius:4px;
+  font-family:'SF Mono','Fira Code',ui-monospace,monospace;
+}
+
+/* ── Expandable detail ── */
+.pitcher-detail { display:none; padding:0 14px 14px; }
+.pitcher-detail.open { display:block; }
+.detail-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:1rem; margin-bottom:1rem; }
+@media (max-width:700px) { .detail-grid { grid-template-columns:1fr; } }
+
+.detail-box { background:rgba(255,255,255,0.03); border:1px solid var(--border); padding:12px; border-radius:var(--radius-sm); }
+.detail-box h4 {
+  margin:0 0 .5rem; font-size:10px; text-transform:uppercase;
+  letter-spacing:.06em; color:var(--text-dim); border-bottom:1px solid var(--border); padding-bottom:6px;
+}
+.detail-row {
+  display:flex; justify-content:space-between; font-size:11px;
+  padding:5px 0; border-bottom:1px solid rgba(255,255,255,0.05);
+}
+.detail-row:last-child { border-bottom:none; }
+.detail-val { font-weight:700; font-family:'SF Mono','Fira Code',ui-monospace,monospace; color:var(--text); }
+
+/* ── Lines table ── */
+.lines-table { width:100%; border-collapse:collapse; font-size:11px; margin-top:.5rem; }
+.lines-table th { padding:7px 10px; text-align:right; background:rgba(124,58,237,0.12); color:var(--text-dim); font-size:9px; text-transform:uppercase; letter-spacing:.06em; border-bottom:1px solid var(--border); }
+.lines-table td { padding:7px 10px; text-align:right; border-bottom:1px solid var(--border); color:var(--text); }
+.lines-table td:first-child, .lines-table th:first-child { text-align:left; }
+.highlight-line { background:rgba(124,58,237,0.12); font-weight:700; }
+
+/* ── Research section ── */
+.research-section { margin-top:1rem; }
+.research-section summary {
+  cursor:pointer; font-size:12px; color:var(--text-dim);
+  padding:5px 0; user-select:none;
+}
+.research-section summary:hover { color:var(--text); }
+.research-content { margin-top:.5rem; }
+
+/* ── Checklist ── */
+.checklist { list-style:none; padding:0; margin:.5rem 0 0; font-size:11px; }
+.checklist li { padding:3px 0; color:var(--text-dim); }
+.chk-ok   { color:var(--green); }
+.chk-fail { color:var(--red); }
+
+/* ── Multi-book prices ── */
+.market-row { display:flex; flex-wrap:wrap; gap:.4rem; margin-top:.4rem; }
+.book-chip {
+  background:var(--bg-input); border:1px solid var(--border);
+  padding:2px 7px; font-size:10px; border-radius:4px;
+  font-family:'SF Mono','Fira Code',ui-monospace,monospace;
+}
+
+/* ── Live odds section ── */
+.live-odds-section { margin-top:.75rem; border-top:1px solid var(--border); padding-top:.75rem; }
+.live-odds-header { display:flex; align-items:center; gap:.5rem; margin-bottom:.5rem; }
+.live-odds-header h4 { margin:0; font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:var(--text-dim); }
+.odds-source-chip { font-size:10px; padding:2px 7px; font-weight:700; border-radius:20px; }
+.odds-source-chip.dk     { background:rgba(16,185,129,0.15); color:#10b981; }
+.odds-source-chip.parlay { background:var(--violet-dim); color:#a78bfa; }
+.odds-source-chip.mixed  { background:rgba(245,158,11,0.15); color:#f59e0b; }
+.odds-na-msg { font-size:11px; opacity:.6; font-style:italic; color:var(--text-dim); }
+.odds-fetch-btn {
+  font-family:inherit; font-size:11px; padding:4px 10px;
+  border:1px solid var(--border); background:var(--bg-input);
+  cursor:pointer; color:var(--text); border-radius:var(--radius-sm);
+}
+.odds-fetch-btn:hover { background:var(--violet-dim); border-color:var(--border-active); }
+
+/* ── Analytics tab ── */
+.analytics-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1rem; margin-bottom:1.5rem; }
+@media (max-width:700px) { .analytics-grid { grid-template-columns:1fr 1fr; } }
+.metric-card { background:var(--bg-card); border:1px solid var(--border); padding:14px; text-align:center; border-radius:var(--radius); }
+.metric-card .val { font-size:22px; font-weight:800; color:var(--text); font-family:'SF Mono','Fira Code',ui-monospace,monospace; }
+.metric-card .lbl { font-size:10px; color:var(--text-muted); margin-top:4px; }
+
+/* ── Loading ── */
+#pp-loading { text-align:center; padding:3rem; font-size:13px; color:var(--text-dim); }
+#pp-empty   { text-align:center; padding:3rem; font-size:13px; color:var(--text-muted); }
+
+/* ── Tabs ── */
+.pp-tabs { display:flex; gap:.5rem; margin-bottom:1.25rem; flex-wrap:wrap; }
+.pp-tab {
+  font-family:inherit; font-size:12px; font-weight:600;
+  padding:7px 14px; cursor:pointer; border:1px solid var(--border);
+  background:var(--bg-card); color:var(--text-dim); border-radius:var(--radius-sm);
+  transition:all 0.15s;
+}
+.pp-tab:hover { color:var(--text); background:var(--bg-card-hover); }
+.pp-tab.active { background:var(--violet-dim); color:#a78bfa; border-color:var(--border-active); }
+</style>
+
+<div class="pp-header">
+  <h1>⚾ Pitcher Props</h1>
+  <div class="pp-controls">
+    <input type="date" id="pp-date" />
+    <button onclick="loadPrimaryPicks()">Load Picks</button>
+    <button onclick="triggerGrade()" style="background:rgba(255,255,255,0.08)!important">Grade Pending</button>
+    <button onclick="refreshOdds()" id="odds-refresh-btn" style="background:var(--green)!important;display:none">↻ Refresh Odds</button>
+    <span id="odds-cache-info" style="font-size:11px;color:var(--text-dim)"></span>
+  </div>
+</div>
+
+<div class="pp-tabs">
+  <button class="pp-tab active" onclick="switchPpTab('picks',this)">Today's Picks</button>
+  <button class="pp-tab" onclick="switchPpTab('analytics',this)">Analytics</button>
+</div>
+
+<!-- ── PICKS TAB ─────────────────────────────────────────── -->
+<div id="tab-picks">
+  <div id="pp-loading" style="display:none">Loading projections…</div>
+  <div id="pp-empty">Select a date and click <strong>Load Picks</strong> to see projections.</div>
+  <div id="game-cards" class="game-cards"></div>
+</div>
+
+<!-- ── ANALYTICS TAB ─────────────────────────────────────── -->
+<div id="tab-analytics" style="display:none">
+  <div style="display:flex;gap:.75rem;margin-bottom:1rem;flex-wrap:wrap;">
+    <select id="an-prop" onchange="loadAnalytics()">
+      <option value="">All Props</option>
+      <option value="outs_recorded">Outs Recorded</option>
+      <option value="strikeouts">Strikeouts</option>
+      <option value="hits_allowed">Hits Allowed</option>
+      <option value="walks_allowed">Walks Allowed</option>
+    </select>
+    <select id="an-cls" onchange="loadAnalytics()">
+      <option value="">All Classifications</option>
+      <option value="Strong Lock">Strong Lock</option>
+      <option value="Qualified Pick">Qualified Pick</option>
+      <option value="Daily Forecast">Daily Forecast</option>
+    </select>
+    <input type="date" id="an-since" onchange="loadAnalytics()" placeholder="Since date" />
+    <a id="csv-link" href="/api/pitcher-props/analytics/csv" download
+       style="display:inline-block;padding:7px 14px;font-size:12px;font-weight:600;background:var(--bg-card);border:1px solid var(--border);color:var(--text);text-decoration:none;border-radius:5px;">
+      ⬇ CSV
+    </a>
+  </div>
+  <div id="an-metrics" class="analytics-grid"></div>
+  <div id="an-cal" style="margin-top:1rem;"></div>
+  <div id="an-table" style="margin-top:1rem;"></div>
+</div>
+
+<script>
+// ── State ────────────────────────────────────────────────
+let _ppTab = 'picks';
+let _ppData = [];
+// Single bulk fetch: pitcher_name (lowercase) → {prop_type: {line: quote_dict}}
+// Populated once per date load, never per-pitcher.
+const _liveOddsCache = {};
+let   _oddsFetchedForDate = null;   // the date we already fetched odds for
+let   _oddsFetchPromise   = null;   // in-flight promise so concurrent rows share one request
+
+// ── Init ─────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  const today = new Date();
+  const ymd = today.toISOString().split('T')[0];
+  document.getElementById('pp-date').value = ymd;
+  document.getElementById('an-since').value = new Date(Date.now() - 30*24*60*60*1000)
+    .toISOString().split('T')[0];
+});
+
+function switchPpTab(tab, el) {
+  _ppTab = tab;
+  document.querySelectorAll('.pp-tab').forEach(b => b.classList.remove('active'));
+  if (el) el.classList.add('active');
+  document.getElementById('tab-picks').style.display     = tab === 'picks'     ? '' : 'none';
+  document.getElementById('tab-analytics').style.display = tab === 'analytics' ? '' : 'none';
+  if (tab === 'analytics') loadAnalytics();
+}
+
+// ── Daily picks ───────────────────────────────────────────
+async function loadPrimaryPicks() {
+  const target_date = document.getElementById('pp-date').value;
+  document.getElementById('pp-loading').style.display = '';
+  document.getElementById('pp-empty').style.display   = 'none';
+  document.getElementById('game-cards').innerHTML     = '';
+
+  try {
+    // Fetch via our backend proxy (MLB API blocks direct browser calls)
+    const schedResp = await fetch(`/api/pitcher-props/schedule?date=${target_date}`);
+    const sched = await schedResp.json();
+    if (sched.status !== 'success') throw new Error(sched.message || 'Schedule fetch failed');
+    const games = sched.games || [];
+
+    if (!games.length) {
+      document.getElementById('pp-loading').style.display = 'none';
+      document.getElementById('pp-empty').style.display   = '';
+      document.getElementById('pp-empty').textContent     = `No games scheduled for ${target_date}`;
+      return;
+    }
+
+    const cardContainer = document.getElementById('game-cards');
+    let rendered = 0;
+
+    for (const game of games) {
+      const homePitcher = game.homePitcher;
+      const awayPitcher = game.awayPitcher;
+      const homeTeam    = game.homeTeam || '';
+      const awayTeam    = game.awayTeam || '';
+      const gameTime    = new Date(game.gameDate).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+      const gamePk      = game.gamePk;
+
+      const card = document.createElement('div');
+      card.className = 'game-card';
+      card.innerHTML = `
+        <div class="game-card-header">
+          <span>⚾ ${awayTeam} @ ${homeTeam}</span>
+          <span class="game-time">${gameTime} ET</span>
+        </div>
+        <div id="pitchers-${gamePk}">
+          ${!homePitcher && !awayPitcher
+            ? '<div style="padding:1rem;font-size:8px;color:#888">No probable pitchers listed</div>'
+            : ''}
+        </div>
+      `;
+      cardContainer.appendChild(card);
+
+      for (const [pitcher, pitcherTeam, opp] of [
+        [awayPitcher, awayTeam, homeTeam],
+        [homePitcher, homeTeam, awayTeam],
+      ]) {
+        if (!pitcher) continue;
+        const container = document.getElementById(`pitchers-${gamePk}`);
+        container.insertAdjacentHTML('beforeend', `
+          <div class="pitcher-row" id="pitcher-${pitcher.id}">
+            <div class="pitcher-summary" onclick="toggleDetail(${pitcher.id})">
+              <span class="pitcher-name">${pitcher.name}</span>
+              <span class="badge badge-forecast" id="badge-${pitcher.id}">Loading…</span>
+              <div class="pick-summary" id="pick-${pitcher.id}"></div>
+            </div>
+            <div class="pitcher-detail" id="detail-${pitcher.id}">
+              <div style="font-size:12px;color:var(--text-muted);padding:8px">Loading projection…</div>
+            </div>
+          </div>
+        `);
+        fetchPitcherProps(pitcher.id, pitcher.name, pitcherTeam, opp, gamePk, target_date);
+        rendered++;
+      }
+    }
+
+    document.getElementById('pp-loading').style.display = 'none';
+    if (!rendered) {
+      document.getElementById('pp-empty').style.display = '';
+      document.getElementById('pp-empty').textContent   = 'No probable pitchers found for selected date';
+    }
+  } catch (err) {
+    document.getElementById('pp-loading').style.display = 'none';
+    document.getElementById('pp-empty').style.display   = '';
+    document.getElementById('pp-empty').textContent     = `Error: ${err.message}`;
+  }
+}
+
+async function fetchPitcherProps(pid, name, team, opp, gamePk, targetDate) {
+  try {
+    const params = new URLSearchParams({
+      player_id: pid, player_name: name,
+      team, opp, game_pk: gamePk,
+    });
+    const resp = await fetch(`/api/pitcher-props?${params}`);
+    const data = await resp.json();
+    if (data.status !== 'success') throw new Error(data.message || 'Unknown error');
+    renderPitcherRow(pid, data);
+    // Fetch live odds now that the detail DOM is rendered
+    fetchLiveOdds(pid, name, targetDate);
+  } catch (err) {
+    const badge = document.getElementById(`badge-${pid}`);
+    if (badge) { badge.textContent = 'Error'; badge.className = 'badge badge-noout'; }
+    const detail = document.getElementById(`detail-${pid}`);
+    if (detail) detail.innerHTML = `<div style="color:var(--red);font-size:12px;padding:8px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:6px">✗ ${err.message}</div>`;
+  }
+}
+
+function renderPitcherRow(pid, data) {
+  const outs  = data.primary?.outs_recorded || {};
+  const res   = data.research || {};
+  const cls   = outs.classification || 'No Output';
+  const pick  = outs.best_pick;
+  const work  = outs.workload || {};
+
+  // Update badge
+  const badge = document.getElementById(`badge-${pid}`);
+  if (badge) {
+    badge.textContent = cls;
+    badge.className   = 'badge ' + classificationBadge(cls);
+  }
+
+  // Update pick summary
+  const pickEl = document.getElementById(`pick-${pid}`);
+  if (pickEl && pick) {
+    const dir = pick.direction === 'Over' ? 'over' : 'under';
+    pickEl.innerHTML = `
+      <span class="pick-dir ${dir}">${pick.direction}</span>
+      <span class="stat-pill">${pick.line} outs</span>
+      ${pick.model_prob ? `<span class="stat-pill">M${(pick.model_prob*100).toFixed(1)}%</span>` : ''}
+      ${pick.edge_pp    ? `<span class="stat-pill">+${pick.edge_pp.toFixed(1)}pp</span>` : ''}
+      ${pick.ev_pct     ? `<span class="stat-pill">EV${pick.ev_pct.toFixed(1)}%</span>` : ''}
+    `;
+  } else if (pickEl) {
+    pickEl.innerHTML = `<span style="font-size:11px;color:var(--text-muted)">Projection only — no actionable pick</span>`;
+  }
+
+  // Build expanded detail
+  const detail = document.getElementById(`detail-${pid}`);
+  if (!detail) return;
+  detail.innerHTML = buildDetailHTML(outs, res, data).replace('__PID__', pid);
+}
+
+function buildDetailHTML(outs, res, data) {
+  const work  = outs.workload || {};
+  const dq    = work.data_quality || {};
+  const pick  = outs.best_pick;
+  const lines = outs.lines || {};
+  const mkt   = outs.market || {};
+  const check = outs.data_checklist || [];
+
+  const role  = work.starter_label || work.starter_role || '—';
+  const exp   = work.expected_outs != null ? `${work.expected_outs} outs (${work.expected_ip} IP)` : '—';
+  const rem   = work.early_removal_prob != null ? `${(work.early_removal_prob*100).toFixed(0)}%` : '—';
+  const pitch = work.expected_pitches != null ? work.expected_pitches : '—';
+
+  // Lines table rows
+  const lineRows = Object.entries(lines).map(([ln, lp]) => {
+    const mktLn = mkt[ln] || {};
+    const isBest = pick && parseFloat(ln) === pick.line;
+    return `
+      <tr class="${isBest ? 'highlight-line' : ''}">
+        <td>${parseFloat(ln).toFixed(1)}</td>
+        <td>${pct(lp.over ?? lp.prob_over)}</td>
+        <td>${pct(lp.under ?? lp.prob_under)}</td>
+        <td>${pct(lp.push ?? lp.prob_push)}</td>
+        <td>${mktLn.over_odds_dec ? mktLn.over_odds_dec.toFixed(2) : '—'}</td>
+        <td>${mktLn.under_odds_dec ? mktLn.under_odds_dec.toFixed(2) : '—'}</td>
+        <td>${mktLn.market_prob_over ? pct(mktLn.market_prob_over) : '—'}</td>
+      </tr>`;
+  }).join('');
+
+  // Research section
+  const kLines  = res.strikeouts?.lines  || {};
+  const hLines  = res.hits_allowed?.lines || {};
+  const bbLines = res.walks_allowed?.lines || {};
+
+  const researchHtml = `
+    <details class="research-section">
+      <summary>📊 Research Data (Shadow Models — Not Recommendations)</summary>
+      <div class="research-content">
+        <div class="detail-grid" style="grid-template-columns:1fr 1fr 1fr">
+          ${researchBox('K Strikeouts', res.strikeouts, kLines)}
+          ${researchBox('Hits Allowed', res.hits_allowed, hLines)}
+          ${researchBox('Walks Allowed', res.walks_allowed, bbLines)}
+        </div>
+      </div>
+    </details>`;
+
+  // Checklist
+  const checkHtml = check.map(c => `
+    <li>
+      <span class="${c.ok ? 'chk-ok' : 'chk-fail'}">${c.ok ? '✓' : '✗'}</span>
+      ${c.item}${c.note ? ` <span style="color:#888">(${c.note})</span>` : ''}
+    </li>`).join('');
+
+  return `
+    <div class="detail-grid">
+      <div class="detail-box">
+        <h4>Workload Projection</h4>
+        <div class="detail-row"><span>Role</span><span class="detail-val">${role}</span></div>
+        <div class="detail-row"><span>Expected</span><span class="detail-val">${exp}</span></div>
+        <div class="detail-row"><span>Pitch Count</span><span class="detail-val">${pitch}</span></div>
+        <div class="detail-row"><span>Early Removal</span><span class="detail-val">${rem}</span></div>
+        <div class="detail-row"><span>Data Quality</span><span class="detail-val">${dq.label || '—'} (${(dq.score||0).toFixed(2)})</span></div>
+      </div>
+      <div class="detail-box">
+        <h4>Best Pick</h4>
+        ${pick ? `
+          <div class="detail-row"><span>Line</span><span class="detail-val">${pick.line} outs</span></div>
+          <div class="detail-row"><span>Direction</span><span class="detail-val ${pick.direction.toLowerCase()}">${pick.direction}</span></div>
+          <div class="detail-row"><span>Model Prob</span><span class="detail-val">${pct(pick.model_prob)}</span></div>
+          <div class="detail-row"><span>Market Prob</span><span class="detail-val">${pick.market_prob ? pct(pick.market_prob) : 'No market'}</span></div>
+          <div class="detail-row"><span>Edge</span><span class="detail-val">${pick.edge_pp != null ? pick.edge_pp.toFixed(1)+'pp' : '—'}</span></div>
+          <div class="detail-row"><span>EV</span><span class="detail-val">${pick.ev_pct != null ? pick.ev_pct.toFixed(1)+'%' : '—'}</span></div>
+          <div class="detail-row"><span>Best Odds</span><span class="detail-val">${pick.odds_dec ? pick.odds_dec.toFixed(2)+' ('+pick.sportsbook+')' : '—'}</span></div>
+        ` : '<div style="font-size:11px;color:var(--text-muted);padding:6px 0">No actionable pick</div>'}
+      </div>
+      <div class="detail-box">
+        <h4>Data Checklist</h4>
+        <ul class="checklist">${checkHtml}</ul>
+      </div>
+    </div>
+
+    ${lineRows ? `
+    <table class="lines-table">
+      <thead>
+        <tr>
+          <th>Line</th><th>P(Over)</th><th>P(Under)</th><th>P(Push)</th>
+          <th>Mkt Over</th><th>Mkt Under</th><th>Mkt Prob</th>
+        </tr>
+      </thead>
+      <tbody>${lineRows}</tbody>
+    </table>` : ''}
+
+    ${researchHtml}
+
+    ${outs.errors?.length ? `<div style="color:var(--red);font-size:11px;margin-top:.5rem;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);padding:6px;border-radius:5px">
+      ⚠ ${outs.errors.join(' | ')}</div>` : ''}
+
+    <div class="live-odds-section" id="live-odds-__PID__">
+      <div class="live-odds-loading">Fetching live odds…</div>
+    </div>
+  `;
+}
+
+function researchBox(title, model, lines) {
+  if (!model) return `<div class="detail-box"><h4>${title}</h4><div style="font-size:11px;color:var(--text-muted)">No data</div></div>`;
+  const avg = model.avg_k_adjusted || model.avg_h_adjusted || model.avg_bb || '—';
+  const topLines = Object.entries(lines).slice(0, 4).map(([ln, lp]) =>
+    `<div class="detail-row"><span>${parseFloat(ln).toFixed(1)}</span>
+     <span class="detail-val">${pct(lp.over ?? lp.prob_over)} / ${pct(lp.under ?? lp.prob_under)}</span></div>`
+  ).join('');
+  return `
+    <div class="detail-box">
+      <h4>${title} <span class="badge badge-research" style="font-size:6px">Research</span></h4>
+      <div class="detail-row"><span>Avg (adj)</span><span class="detail-val">${typeof avg === 'number' ? avg.toFixed(1) : avg}</span></div>
+      ${topLines}
+      ${model.warnings?.length ? `<div style="font-size:10px;color:#a78bfa;margin-top:.3rem;border-left:3px solid var(--violet);padding-left:5px">⚠ ${model.warnings[0]}</div>` : ''}
+    </div>`;
+}
+
+// ── Live market odds — ONE bulk fetch for the whole page ──
+async function _ensureOddsFetched(targetDate, forceRefresh = false) {
+  // Already have data for this date and not forcing refresh — done
+  if (_oddsFetchedForDate === targetDate && !forceRefresh) return;
+  // Already fetching — share the in-flight promise
+  if (_oddsFetchPromise) return _oddsFetchPromise;
+
+  _oddsFetchPromise = (async () => {
+    try {
+      const params = new URLSearchParams();
+      if (targetDate) params.set('date', targetDate);
+      if (forceRefresh) params.set('refresh', 'true');
+      // Bulk call — no pitcher_name → 1 API call, DB-cached for 2h
+      const r    = await fetch(`/api/player-props/odds?${params}`);
+      const data = await r.json();
+      if (data.status === 'success' && data.odds) {
+        // Clear old cache entries for this date
+        for (const k of Object.keys(_liveOddsCache)) delete _liveOddsCache[k];
+        for (const [name, props] of Object.entries(data.odds)) {
+          _liveOddsCache[name.toLowerCase()] = props;
+        }
+        // Show cache status in header
+        const infoEl = document.getElementById('odds-cache-info');
+        const btnEl  = document.getElementById('odds-refresh-btn');
+        if (infoEl) {
+          const age  = data.cache_age_min;
+          const src  = data.from_cache ? `cached ${Math.round(age)} min ago` : 'live';
+          const n    = data.count || 0;
+          infoEl.textContent = n ? `⚡ Odds: ${n} pitchers (${src})` : '⚡ No odds data';
+        }
+        if (btnEl) btnEl.style.display = '';
+      }
+    } catch (_) { /* silent — odds are optional */ }
+    _oddsFetchedForDate = forceRefresh ? null : targetDate;
+    _oddsFetchPromise   = null;
+  })();
+
+  return _oddsFetchPromise;
+}
+
+async function refreshOdds() {
+  const targetDate = document.getElementById('pp-date').value;
+  _oddsFetchedForDate = null;   // force re-fetch
+  // Re-render all visible pitcher rows after refresh
+  document.getElementById('odds-cache-info').textContent = '↻ Refreshing odds…';
+  await _ensureOddsFetched(targetDate, true);
+  // Re-render any expanded details
+  document.querySelectorAll('.pitcher-detail.open [id^="live-odds-"]').forEach(el => {
+    const pid  = el.id.replace('live-odds-', '');
+    const name = document.getElementById(`pitcher-${pid}`)
+                         ?.querySelector('.pitcher-name')?.textContent?.trim() || '';
+    if (name) renderLiveOdds(pid, name, _lookupOdds(name));
+  });
+}
+
+function _lookupOdds(name) {
+  const nl = name.toLowerCase();
+  for (const [cached, props] of Object.entries(_liveOddsCache)) {
+    if (cached.includes(nl) || nl.includes(cached)) return props;
+  }
+  return null;
+}
+
+async function fetchLiveOdds(pid, name, targetDate) {
+  const liveEl = document.getElementById(`live-odds-${pid}`);
+  if (!liveEl) return;
+  await _ensureOddsFetched(targetDate);
+  renderLiveOdds(pid, name, _lookupOdds(name));
+}
+
+function renderLiveOdds(pid, name, odds) {
+  const liveEl = document.getElementById(`live-odds-${pid}`);
+  if (!liveEl) return;
+
+  if (!odds) {
+    liveEl.innerHTML = `<div class="odds-na-msg">No live odds available (DK / ParlayAPI)</div>`;
+    return;
+  }
+
+  // Detect which sources contributed
+  const sources = new Set();
+  for (const lines of Object.values(odds)) {
+    for (const q of Object.values(lines)) {
+      if (q.source) sources.add(q.source.replace('_scraper','').replace('api','API'));
+    }
+  }
+  const sourceChips = [...sources].map(s => {
+    const cls = s.includes('dk') ? 'dk' : s.includes('arlay') ? 'parlay' : 'mixed';
+    return `<span class="odds-source-chip ${cls}">${s}</span>`;
+  }).join('');
+
+  // Build a compact odds table: prop_type × line rows
+  const PROP_LABELS = {
+    outs_recorded: 'Outs Rec.',
+    strikeouts:    'Strikeouts',
+    hits_allowed:  'Hits Allow.',
+    walks_allowed: 'Walks Allow.',
+    earned_runs:   'Earned Runs',
+  };
+
+  let rows = '';
+  for (const [prop, lines] of Object.entries(odds)) {
+    const lbl = PROP_LABELS[prop] || prop;
+    for (const [line, q] of Object.entries(lines)) {
+      const ovAm  = q.over_american  != null ? fmt_am(q.over_american)  : (q.over_dec  ? dec2am(q.over_dec)  : '—');
+      const unAm  = q.under_american != null ? fmt_am(q.under_american) : (q.under_dec ? dec2am(q.under_dec) : '—');
+      const mpOver = q.market_prob_over  != null ? `${(q.market_prob_over*100).toFixed(1)}%`  : '—';
+      rows += `
+        <tr>
+          <td>${lbl}</td>
+          <td>${parseFloat(line).toFixed(1)}</td>
+          <td style="color:var(--green);font-weight:700">${ovAm}</td>
+          <td style="color:var(--red);font-weight:700">${unAm}</td>
+          <td>${mpOver}</td>
+        </tr>`;
+    }
+  }
+
+  liveEl.innerHTML = `
+    <div class="live-odds-header">
+      <h4>Live Market Odds</h4>
+      ${sourceChips}
+      <span style="font-size:10px;color:var(--text-muted);margin-left:auto">DK / ParlayAPI</span>
+    </div>
+    ${rows ? `
+    <table class="lines-table">
+      <thead>
+        <tr><th>Prop</th><th>Line</th><th>Over</th><th>Under</th><th>Mkt P(Over)</th></tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>` : '<div class="odds-na-msg">Odds returned but no parseable lines</div>'}
+  `;
+}
+
+function fmt_am(v) {
+  if (v == null) return '—';
+  const n = parseFloat(v);
+  return n >= 0 ? '+' + Math.round(n) : String(Math.round(n));
+}
+
+function dec2am(dec) {
+  if (!dec || dec <= 1) return '—';
+  const n = dec >= 2 ? Math.round((dec - 1) * 100) : Math.round(-100 / (dec - 1));
+  return n >= 0 ? '+' + n : String(n);
+}
+
+function toggleDetail(pid) {
+  const el = document.getElementById(`detail-${pid}`);
+  if (el) el.classList.toggle('open');
+}
+
+function classificationBadge(cls) {
+  const map = {
+    'Strong Lock':    'badge-strong',
+    'Qualified Pick': 'badge-qualified',
+    'Daily Forecast': 'badge-forecast',
+    'Research Only':  'badge-research',
+    'No Output':      'badge-noout',
+  };
+  return map[cls] || 'badge-research';
+}
+
+function pct(v) {
+  return v != null ? (v * 100).toFixed(1) + '%' : '—';
+}
+
+// ── Grade trigger ─────────────────────────────────────────
+async function triggerGrade() {
+  try {
+    const r = await fetch('/api/pitcher-props/grade', { method: 'POST', headers: {'Content-Type':'application/json'}, body: '{}' });
+    const d = await r.json();
+    const total = Array.isArray(d.result) ? d.result.reduce((a,b) => a + (b.count||0), 0) : (d.result?.count||0);
+    alert(`Grading complete. ${total} lock(s) graded.`);
+  } catch (e) {
+    alert('Grade error: ' + e.message);
+  }
+}
+
+// ── Analytics ─────────────────────────────────────────────
+async function loadAnalytics() {
+  const prop  = document.getElementById('an-prop')?.value || '';
+  const cls   = document.getElementById('an-cls')?.value || '';
+  const since = document.getElementById('an-since')?.value || '';
+  const params = new URLSearchParams();
+  if (prop)  params.set('prop_type', prop);
+  if (cls)   params.set('classification', cls);
+  if (since) params.set('since_date', since);
+
+  document.getElementById('an-metrics').innerHTML = '<div style="font-size:12px;color:var(--text-dim)">Loading…</div>';
+
+  try {
+    const r = await fetch(`/api/pitcher-props/analytics?${params}`);
+    const d = await r.json();
+    if (d.status !== 'success') throw new Error(d.message);
+
+    const wr = d.win_rate != null ? (d.win_rate*100).toFixed(1)+'%' : '—';
+    document.getElementById('an-metrics').innerHTML = `
+      ${metricCard(d.graded, 'Graded Picks')}
+      ${metricCard(wr, 'Win Rate')}
+      ${metricCard(d.brier_score != null ? d.brier_score.toFixed(4) : '—', 'Brier Score')}
+      ${metricCard(d.mae != null ? d.mae.toFixed(2) : '—', 'MAE (outs)')}
+      ${metricCard(d.ece != null ? d.ece.toFixed(4) : '—', 'ECE')}
+      ${metricCard(d.avg_clv_pp != null ? d.avg_clv_pp.toFixed(2)+'pp' : '—', 'Avg CLV')}
+      ${metricCard(d.push_rate != null ? (d.push_rate*100).toFixed(1)+'%' : '—', 'Push Rate')}
+      ${metricCard(d.void, 'Voided')}
+    `;
+
+    // Classification breakdown table
+    let clsHtml = '<h3>By Classification</h3><table class="lines-table"><thead><tr><th>Classification</th><th>N</th><th>Won</th><th>Lost</th><th>Push</th><th>WR</th></tr></thead><tbody>';
+    for (const [c, s] of Object.entries(d.by_classification || {})) {
+      const wr2 = (s.won + s.lost) > 0 ? ((s.won/(s.won+s.lost))*100).toFixed(1)+'%' : '—';
+      clsHtml += `<tr><td>${c}</td><td>${s.n}</td><td>${s.won}</td><td>${s.lost}</td><td>${s.push}</td><td>${wr2}</td></tr>`;
+    }
+    clsHtml += '</tbody></table>';
+    document.getElementById('an-table').innerHTML = clsHtml;
+
+    // Calibration
+    if (d.calibration?.length) {
+      let calHtml = '<h3>Calibration Curve</h3><table class="lines-table"><thead><tr><th>Bin</th><th>Avg Predicted</th><th>Avg Actual</th><th>N</th></tr></thead><tbody>';
+      for (const row of d.calibration) {
+        calHtml += `<tr><td>${row.bin}</td><td>${pct(row.avg_predicted)}</td><td>${pct(row.avg_actual)}</td><td>${row.n}</td></tr>`;
+      }
+      calHtml += '</tbody></table>';
+      document.getElementById('an-cal').innerHTML = calHtml;
+    } else {
+      document.getElementById('an-cal').innerHTML = '<div style="font-size:7px;color:#888">No calibration data yet</div>';
+    }
+
+    // Update CSV link
+    const csvLink = document.getElementById('csv-link');
+    if (csvLink && prop) csvLink.href = `/api/pitcher-props/analytics/csv?prop_type=${prop}`;
+
+  } catch (err) {
+    document.getElementById('an-metrics').innerHTML = `<div style="font-size:7px;color:#DC143C;border:2px solid #DC143C;padding:5px;background:#FFB6C6">✗ ${err.message}</div>`;
+  }
+}
+
+function metricCard(val, lbl) {
+  return `<div class="metric-card"><div class="val">${val}</div><div class="lbl">${lbl}</div></div>`;
+}
+</script>
+{% endblock %}

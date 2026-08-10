@@ -1,0 +1,59 @@
+{
+  "updated_at": "2026-08-06T03:23:03.775251",
+  "corrections": {
+    "0.00-0.45": {
+      "predicted": 0.225,
+      "actual": 0.5,
+      "correction": 2.2222,
+      "n": 12
+    },
+    "0.50-0.53": {
+      "predicted": 0.512,
+      "actual": 0.615,
+      "correction": 1.2012,
+      "n": 13
+    },
+    "0.53-0.55": {
+      "predicted": 0.5379999999999999,
+      "actual": 0.5,
+      "correction": 0.9294,
+      "n": 16
+    },
+    "0.55-0.57": {
+      "predicted": 0.562,
+      "actual": 0.5710000000000001,
+      "correction": 1.016,
+      "n": 14
+    },
+    "0.57-0.60": {
+      "predicted": 0.5870000000000001,
+      "actual": 0.452,
+      "correction": 0.77,
+      "n": 31
+    },
+    "0.60-0.65": {
+      "predicted": 0.625,
+      "actual": 0.625,
+      "correction": 1.0,
+      "n": 32
+    },
+    "0.65-0.70": {
+      "predicted": 0.675,
+      "actual": 0.667,
+      "correction": 0.9881,
+      "n": 9
+    },
+    "0.70-0.75": {
+      "predicted": 0.725,
+      "actual": 0.4,
+      "correction": 0.5517,
+      "n": 10
+    },
+    "0.75-1.00": {
+      "predicted": 0.875,
+      "actual": 0.6,
+      "correction": 0.6857,
+      "n": 15
+    }
+  }
+}

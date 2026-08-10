@@ -1,0 +1,192 @@
+{
+  "source": "/Users/kalyaan/betting-model/ios/JingleezMobile/JingleezMobile/AccountView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Account",
+        "location": {
+          "startingColumn": 88,
+          "startingLine": 10
+        }
+      },
+      {
+        "comment": "",
+        "key": "Research preferences",
+        "location": {
+          "startingColumn": 98,
+          "startingLine": 5
+        }
+      },
+      {
+        "comment": "",
+        "key": "Data connection",
+        "location": {
+          "startingColumn": 17,
+          "startingLine": 6
+        }
+      },
+      {
+        "comment": "",
+        "key": "Subscription",
+        "location": {
+          "startingColumn": 17,
+          "startingLine": 7
+        }
+      },
+      {
+        "comment": "",
+        "key": "Responsible use",
+        "location": {
+          "startingColumn": 17,
+          "startingLine": 8
+        }
+      },
+      {
+        "comment": "",
+        "key": "Product promises",
+        "location": {
+          "startingColumn": 17,
+          "startingLine": 9
+        }
+      },
+      {
+        "comment": "",
+        "key": "Used only to illustrate historical tracking. It does not place or recommend a wager.",
+        "location": {
+          "startingColumn": 300,
+          "startingLine": 5
+        }
+      },
+      {
+        "comment": "",
+        "key": "Unit reference",
+        "location": {
+          "startingColumn": 134,
+          "startingLine": 5
+        }
+      },
+      {
+        "comment": "",
+        "key": "20",
+        "location": {
+          "startingColumn": 171,
+          "startingLine": 5
+        }
+      },
+      {
+        "comment": "",
+        "key": "Simulator default: http://127.0.0.1:3000\nA physical iPhone requires your Mac’s network address or a hosted HTTPS API.",
+        "location": {
+          "startingColumn": 277,
+          "startingLine": 6
+        }
+      },
+      {
+        "comment": "",
+        "key": "Backend URL",
+        "location": {
+          "startingColumn": 46,
+          "startingLine": 6
+        }
+      },
+      {
+        "comment": "",
+        "key": "Saved",
+        "location": {
+          "startingColumn": 152,
+          "startingLine": 6
+        }
+      },
+      {
+        "comment": "",
+        "key": "Save backend address",
+        "location": {
+          "startingColumn": 160,
+          "startingLine": 6
+        }
+      },
+      {
+        "comment": "",
+        "key": "COMING LATER",
+        "location": {
+          "startingColumn": 279,
+          "startingLine": 7
+        }
+      },
+      {
+        "comment": "",
+        "key": "Private research access",
+        "location": {
+          "startingColumn": 72,
+          "startingLine": 7
+        }
+      },
+      {
+        "comment": "",
+        "key": "StoreKit subscriptions will be added after the public track record and TestFlight validation.",
+        "location": {
+          "startingColumn": 120,
+          "startingLine": 7
+        }
+      },
+      {
+        "comment": "",
+        "key": "Jingleez Picks provides sports analytics and model-generated predictions for informational and entertainment purposes only. We do not accept, facilitate or place wagers. Nothing presented guarantees results or constitutes financial advice.",
+        "location": {
+          "startingColumn": 41,
+          "startingLine": 8
+        }
+      },
+      {
+        "comment": "",
+        "key": "This service is intended for adults who meet the legal age requirements in their jurisdiction.",
+        "location": {
+          "startingColumn": 289,
+          "startingLine": 8
+        }
+      },
+      {
+        "comment": "",
+        "key": "Call 1-800-GAMBLER",
+        "location": {
+          "startingColumn": 392,
+          "startingLine": 8
+        }
+      },
+      {
+        "comment": "",
+        "key": "No wagers or deposits",
+        "location": {
+          "startingColumn": 43,
+          "startingLine": 9
+        }
+      },
+      {
+        "comment": "",
+        "key": "No sportsbook credentials",
+        "location": {
+          "startingColumn": 110,
+          "startingLine": 9
+        }
+      },
+      {
+        "comment": "",
+        "key": "Immutable pregame predictions",
+        "location": {
+          "startingColumn": 181,
+          "startingLine": 9
+        }
+      },
+      {
+        "comment": "",
+        "key": "Wins and losses remain visible",
+        "location": {
+          "startingColumn": 256,
+          "startingLine": 9
+        }
+      }
+    ]
+  },
+  "version": 1
+}

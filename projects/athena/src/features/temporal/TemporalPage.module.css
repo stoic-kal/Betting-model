@@ -1,0 +1,13 @@
+.driftRow {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  padding: 16px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-2xl);
+}
+
+@media (max-width: 640px) {
+  .driftRow { grid-template-columns: 1fr; }
+}

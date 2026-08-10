@@ -1,0 +1,317 @@
+/* ── Outer container ──────────────────────────────────────────────────────── */
+
+.container {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background:    var(--bg-card);
+  border:        1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+
+.container:hover {
+  border-color: var(--border-default);
+}
+
+/* Loading dims the card slightly */
+.container[data-loading="true"] {
+  pointer-events: none;
+}
+
+/* ── Fullscreen ───────────────────────────────────────────────────────────── */
+
+.backdrop {
+  display: none;
+}
+
+.fullscreen {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
+  border-radius: 0;
+  border: none;
+  background: var(--bg-app);
+}
+
+.fullscreen .body {
+  flex: 1;
+  min-height: unset !important;
+}
+
+/* Click-outside backdrop for fullscreen */
+.fullscreen + .backdrop,
+.backdrop {
+  display: none;
+}
+.fullscreen .backdrop {
+  display: block;
+}
+
+/* ── Header ───────────────────────────────────────────────────────────────── */
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px 12px;
+  border-bottom: 1px solid var(--border-subtle);
+  flex-shrink: 0;
+}
+
+.titleGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 7px;
+  border-radius: 99px;
+  background: rgba(139, 92, 246, 0.12);
+  border: 1px solid rgba(139, 92, 246, 0.22);
+  color: #A78BFA;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.subtitle {
+  margin: 0;
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+/* ── Action buttons ───────────────────────────────────────────────────────── */
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+/* "Ask Athena" pill */
+.actionBtn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  border-radius: var(--radius-lg);
+  background: rgba(139, 92, 246, 0.10);
+  border: 1px solid rgba(139, 92, 246, 0.22);
+  color: #A78BFA;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.actionBtn:hover {
+  background: rgba(139, 92, 246, 0.20);
+  border-color: rgba(139, 92, 246, 0.40);
+  color: #C4B5FD;
+}
+
+.actionIcon {
+  font-size: 11px;
+  line-height: 1;
+}
+
+.actionLabel {
+  /* hide label on very small containers */
+}
+
+/* Icon-only square buttons */
+.iconBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px; height: 28px;
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-muted);
+  font-size: 14px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  flex-shrink: 0;
+}
+
+.iconBtn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--border-default);
+  color: var(--text);
+}
+
+/* ── Export dropdown menu ─────────────────────────────────────────────────── */
+
+.menuWrap {
+  position: relative;
+}
+
+.menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: var(--z-dropdown);
+  min-width: 130px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.40);
+  animation: menuIn 0.12s ease;
+}
+
+@keyframes menuIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.menuItem {
+  display: block;
+  width: 100%;
+  padding: 8px 14px;
+  text-align: left;
+  background: transparent;
+  border: none;
+  color: var(--text-2);
+  font-size: 12px;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.1s, color 0.1s;
+}
+
+.menuItem:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text);
+}
+
+/* ── Chart body ───────────────────────────────────────────────────────────── */
+
+.body {
+  flex: 1;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  /* Children (Plot) fill this area */
+}
+
+/* Plotly fills its parent */
+.body :global(.js-plotly-plot),
+.body :global(.plot-container),
+.body :global(.svg-container) {
+  flex: 1;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* ── Loading skeleton ─────────────────────────────────────────────────────── */
+
+.skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 20px;
+  height: 100%;
+}
+
+.skeletonBar {
+  border-radius: 6px;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.04) 0%,
+    rgba(255, 255, 255, 0.09) 50%,
+    rgba(255, 255, 255, 0.04) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+.skeletonRow {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  justify-content: space-around;
+  padding: 0 8px;
+}
+
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ── Empty state ──────────────────────────────────────────────────────────── */
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  height: 100%;
+  padding: 40px 24px;
+}
+
+.emptyIcon {
+  font-size: 28px;
+  opacity: 0.35;
+}
+
+.emptyMessage {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-muted);
+  text-align: center;
+  max-width: 240px;
+  line-height: 1.5;
+}
+
+/* ── Footer ───────────────────────────────────────────────────────────────── */
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 6px 16px 8px;
+  border-top: 1px solid var(--border-subtle);
+  flex-shrink: 0;
+}
+
+.updated {
+  font-size: 10px;
+  color: var(--text-disabled);
+  font-variant-numeric: tabular-nums;
+}

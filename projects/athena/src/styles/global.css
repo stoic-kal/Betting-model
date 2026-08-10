@@ -1,0 +1,126 @@
+/* ── Athena Global Styles ─────────────────────────────────────────────────────
+   CSS custom properties are injected by <Providers> via tokens.ts.
+   This file handles resets, typography baseline, and scroll behaviour only.
+   Never put component styles here — use CSS Modules per component.
+   ──────────────────────────────────────────────────────────────────────────── */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* ── Reset ───────────────────────────────────────────────────────────────────*/
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* ── Root ────────────────────────────────────────────────────────────────────*/
+
+html {
+  height: 100%;
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  height: 100%;
+  background-color: var(--bg-app);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  line-height: 1.5;
+  overflow: hidden;   /* App shell owns scroll per-panel */
+}
+
+#root {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Typography ──────────────────────────────────────────────────────────────*/
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+
+code, pre, kbd, samp {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+}
+
+/* ── Scrollbars ──────────────────────────────────────────────────────────────*/
+
+::-webkit-scrollbar        { width: 6px; height: 6px; }
+::-webkit-scrollbar-track  { background: transparent; }
+::-webkit-scrollbar-thumb  {
+  background: rgba(255, 255, 255, 0.10);
+  border-radius: 3px;
+  transition: background 0.15s;
+}
+::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.20); }
+* { scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.10) transparent; }
+
+/* ── Focus ───────────────────────────────────────────────────────────────────*/
+
+:focus-visible {
+  outline: 2px solid var(--purple);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ── Selection ───────────────────────────────────────────────────────────────*/
+
+::selection {
+  background: rgba(139, 92, 246, 0.30);
+  color: var(--text);
+}
+
+/* ── Transitions — applied globally so components inherit ────────────────────*/
+
+a, button {
+  cursor: pointer;
+  text-decoration: none;
+  color: inherit;
+  transition: color 0.15s, opacity 0.15s, background-color 0.15s;
+}
+
+button { border: none; background: none; font: inherit; }
+
+img, svg { display: block; max-width: 100%; }
+
+/* ── Plotly overrides — force transparent backgrounds ────────────────────────*/
+
+.js-plotly-plot .plotly,
+.js-plotly-plot .plotly .main-svg {
+  background: transparent !important;
+}
+
+.modebar {
+  background: transparent !important;
+}
+
+.modebar-btn svg {
+  fill: rgba(255, 255, 255, 0.3) !important;
+}
+
+.modebar-btn:hover svg {
+  fill: rgba(255, 255, 255, 0.8) !important;
+}
+
+/* ── Utility ─────────────────────────────────────────────────────────────────*/
+
+.sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}

@@ -1,0 +1,94 @@
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Header */
+.header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.headerIcon { font-size: 14px; }
+
+.headerLabel {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-disabled);
+}
+
+/* Insight list */
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.item {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  padding: 8px 10px;
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid transparent;
+  transition: background 0.12s, border-color 0.12s;
+  animation: slideIn 0.25s ease-out both;
+}
+
+.item:nth-child(1) { animation-delay: 0.05s; }
+.item:nth-child(2) { animation-delay: 0.10s; }
+.item:nth-child(3) { animation-delay: 0.15s; }
+.item:nth-child(4) { animation-delay: 0.20s; }
+.item:nth-child(5) { animation-delay: 0.25s; }
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-6px); }
+  to   { opacity: 1; transform: translateX(0);    }
+}
+
+.item:hover {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: var(--border-subtle);
+}
+
+/* Severity-tinted left border */
+.item[data-sev="critical"] { border-left: 2px solid #EF4444; }
+.item[data-sev="high"]     { border-left: 2px solid #F97316; }
+.item[data-sev="medium"]   { border-left: 2px solid #3B82F6; }
+.item[data-sev="positive"] { border-left: 2px solid #10B981; }
+.item[data-sev="info"]     { border-left: 2px solid #6B7280; }
+
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 5px;
+}
+
+.dot[data-sev="critical"] { background: #EF4444; }
+.dot[data-sev="high"]     { background: #F97316; }
+.dot[data-sev="medium"]   { background: #3B82F6; }
+.dot[data-sev="positive"] { background: #10B981; }
+.dot[data-sev="info"]     { background: #6B7280; }
+
+.itemText {
+  font-size: 12px;
+  color: var(--text-2);
+  line-height: 1.55;
+  flex: 1;
+}
+
+.itemText strong {
+  color: var(--text);
+  font-weight: 600;
+}

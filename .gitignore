@@ -1,0 +1,65 @@
+# -----------------------------
+# Python
+# -----------------------------
+__pycache__/
+*.py[cod]
+*.pyo
+
+venv/
+.env
+
+# -----------------------------
+# macOS
+# -----------------------------
+.DS_Store
+
+# -----------------------------
+# Claude
+# -----------------------------
+.claude/
+
+# -----------------------------
+# Databases
+# -----------------------------
+database/
+*.db
+*.db-shm
+*.db-wal
+
+# -----------------------------
+# Runtime
+# -----------------------------
+logs/
+*.log
+
+# -----------------------------
+# Training Data
+# -----------------------------
+data/raw/
+data/processed/
+
+data/statcast_raw.csv
+data/X_train.csv
+data/X_test.csv
+data/X_totals.csv
+data/y_train.csv
+data/y_test.csv
+data/y_home_runs.csv
+data/y_away_runs.csv
+data/y_total_runs.csv
+data/report_history.json
+
+# Optional generated datasets
+data/games_engineered_features.csv
+data/games_with_all_features.csv
+data/games_with_results.csv
+data/games_with_team_features.csv
+
+# IDE
+.idea/
+.vscode/
+
+# -----------------------------
+# Formatting tool artifacts
+# -----------------------------
+*.isorted

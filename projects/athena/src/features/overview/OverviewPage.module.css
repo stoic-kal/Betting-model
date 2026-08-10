@@ -1,0 +1,299 @@
+/* ── Over / Under split row ───────────────────────────────────────────────── */
+
+.dirRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+@media (max-width: 580px) {
+  .dirRow { grid-template-columns: 1fr; }
+}
+
+.dirCard {
+  position: relative;
+  background:    var(--bg-card);
+  border:        1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+  padding:       18px 20px;
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+
+.dirCard:hover {
+  border-color: var(--border-default);
+}
+
+.dirCard[data-dir="OVER"]::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #EF4444, transparent);
+}
+
+.dirCard[data-dir="UNDER"]::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #10B981, transparent);
+}
+
+.dirHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.dirLabel {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.10em;
+}
+
+.dirLabel[data-dir="OVER"]  { color: #EF4444; }
+.dirLabel[data-dir="UNDER"] { color: #10B981; }
+
+.dirRecord {
+  font-size: 12px;
+  font-weight: 600;
+  font-family: var(--font-mono);
+  color: var(--text-2);
+}
+
+.dirMetrics {
+  display: flex;
+  gap: 28px;
+}
+
+.dirMetric {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.dirMetricLabel {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: var(--text-disabled);
+}
+
+.dirMetricValue {
+  font-size: 22px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+}
+
+.dirMetricValue[data-good="true"]  { color: #10B981; }
+.dirMetricValue[data-good="false"] { color: #EF4444; }
+
+.dirBadge {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  padding: 2px 8px;
+  border-radius: 99px;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  color: #10B981;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+/* ── Picks card ───────────────────────────────────────────────────────────── */
+
+.picksCard {
+  background:    var(--bg-card);
+  border:        1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.picksHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px 12px;
+  border-bottom: 1px solid var(--border-subtle);
+  flex-shrink: 0;
+}
+
+.picksTitle {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.picksCount {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+.picksTableHead {
+  display: grid;
+  grid-template-columns: 44px 1fr 90px 46px 52px 52px 38px;
+  padding: 6px 14px;
+  background: rgba(0, 0, 0, 0.20);
+  border-bottom: 1px solid var(--border-subtle);
+  gap: 4px;
+}
+
+.picksTableHead > span {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-disabled);
+}
+
+.picksList {
+  overflow-y: auto;
+  flex: 1;
+  max-height: 380px;
+}
+
+.picksList::-webkit-scrollbar       { width: 4px; }
+.picksList::-webkit-scrollbar-track { background: transparent; }
+.picksList::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 4px; }
+
+.picksEmpty {
+  padding: 32px 16px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 12px;
+  margin: 0;
+}
+
+/* ── Pick row ─────────────────────────────────────────────────────────────── */
+
+.pickRow {
+  display: grid;
+  grid-template-columns: 44px 1fr 90px 46px 52px 52px 38px;
+  align-items: center;
+  padding: 7px 14px;
+  gap: 4px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  transition: background 0.1s;
+}
+
+.pickRow:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.pickRow:last-child {
+  border-bottom: none;
+}
+
+.pickDate {
+  font-size: 10px;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.pickMatchup {
+  font-size: 11px;
+  color: var(--text-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pickPick {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pickDir {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  padding: 2px 5px;
+  border-radius: 4px;
+  text-align: center;
+}
+
+.pickDir[data-dir="OVER"] {
+  background: rgba(239, 68, 68, 0.12);
+  color: #F87171;
+}
+
+.pickDir[data-dir="UNDER"] {
+  background: rgba(16, 185, 129, 0.12);
+  color: #34D399;
+}
+
+.pickEv,
+.pickOdds {
+  font-size: 10px;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+  text-align: right;
+}
+
+.pickEv[data-empty],
+.pickOdds[data-empty] {
+  color: var(--text-disabled);
+}
+
+.pickStatus {
+  font-size: 10px;
+  font-weight: 700;
+  text-align: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.pickStatus[data-status="won"] {
+  background: rgba(16, 185, 129, 0.15);
+  color: #10B981;
+}
+
+.pickStatus[data-status="lost"] {
+  background: rgba(239, 68, 68, 0.15);
+  color: #EF4444;
+}
+
+.pickStatus[data-status="pending"] {
+  background: rgba(245, 158, 11, 0.15);
+  color: #F59E0B;
+}
+
+/* ── Skeleton pick rows ───────────────────────────────────────────────────── */
+
+.pickRowSkeleton {
+  height: 34px;
+  margin: 2px 14px;
+  border-radius: 6px;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.03) 0%,
+    rgba(255, 255, 255, 0.07) 50%,
+    rgba(255, 255, 255, 0.03) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}

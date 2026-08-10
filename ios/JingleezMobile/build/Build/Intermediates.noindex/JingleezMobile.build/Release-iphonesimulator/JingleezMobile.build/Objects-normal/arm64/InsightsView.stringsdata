@@ -1,0 +1,72 @@
+{
+  "source": "/Users/kalyaan/betting-model/ios/JingleezMobile/JingleezMobile/InsightsView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Model Insights",
+        "location": {
+          "startingColumn": 990,
+          "startingLine": 7
+        }
+      },
+      {
+        "comment": "",
+        "key": "Detailed loss analysis, calibration diagnostics, raw features and CSV exports remain available on the research website.",
+        "location": {
+          "startingColumn": 662,
+          "startingLine": 7
+        }
+      },
+      {
+        "comment": "",
+        "key": "No threshold-based warnings right now.",
+        "location": {
+          "startingColumn": 231,
+          "startingLine": 8
+        }
+      },
+      {
+        "comment": "",
+        "key": "Learning flags",
+        "location": {
+          "startingColumn": 108,
+          "startingLine": 8
+        }
+      },
+      {
+        "comment": "",
+        "key": "Group",
+        "location": {
+          "startingColumn": 188,
+          "startingLine": 9
+        }
+      },
+      {
+        "comment": "",
+        "key": "Win rate",
+        "location": {
+          "startingColumn": 217,
+          "startingLine": 9
+        }
+      },
+      {
+        "comment": "",
+        "key": "Reference",
+        "location": {
+          "startingColumn": 322,
+          "startingLine": 9
+        }
+      },
+      {
+        "comment": "",
+        "key": "%@: n=%lld",
+        "location": {
+          "startingColumn": 498,
+          "startingLine": 9
+        }
+      }
+    ]
+  },
+  "version": 1
+}

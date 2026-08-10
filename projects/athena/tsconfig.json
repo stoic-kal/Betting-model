@@ -1,0 +1,33 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "useDefineForClassFields": true,
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "skipLibCheck": true,
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "paths": {
+      "@/*":               ["./src/*"],
+      "@components/*":     ["./src/components/*"],
+      "@features/*":       ["./src/features/*"],
+      "@design-system":    ["./src/design-system/index.ts"],
+      "@design-system/*":  ["./src/design-system/*"],
+      "@hooks/*":          ["./src/hooks/*"],
+      "@services/*":       ["./src/services/*"],
+      "@store/*":          ["./src/store/*"],
+      "@types-athena":     ["./src/types/athena.ts"],
+      "@utils/*":          ["./src/utils/*"]
+    }
+  },
+  "include": ["src"],
+  "references": [{ "path": "./tsconfig.node.json" }]
+}

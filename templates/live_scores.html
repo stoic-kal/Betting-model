@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+  .live-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  .live-title { color:var(--amber); font-size: clamp(20px, 2.2vw, 32px); margin: 0 0 8px; }
+  .live-note { color:var(--text); font-size: 11px; line-height: 1.7; margin: 0; }
+  .open-button {
+    display: inline-block;
+    flex: 0 0 auto;
+    background:rgba(124,58,237,0.12);
+    color:var(--amber);
+    border:1px solid var(--border-active);
+    padding: 10px 14px;
+    text-decoration: none;
+    font-size: 10px;
+  }
+  .scoreboard-shell {
+    background:var(--bg-card);
+    border:1px solid var(--border);
+    min-height: 70vh;
+    overflow: hidden;
+  }
+  #scoreboard-frame { display: block; width: 100%; height: 78vh; border: 0; background:var(--bg-card); }
+  .live-workspace { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(380px, .85fr); gap: 16px; align-items: start; }
+  .monitor { background:rgba(124,58,237,0.12); border:1px solid var(--border-active); padding: 14px; max-height: 78vh; overflow-y: auto; }
+  .monitor-head { display: flex; justify-content: space-between; gap: 10px; align-items: center; margin-bottom: 12px; }
+  .monitor-title { color:var(--amber); font-size: 13px; }
+  .monitor-date { max-width: 155px; padding: 7px; border:1px solid var(--border-active); font: inherit; font-size: 9px; }
+  .game-monitor { background:var(--bg-card); border: 2px solid #000; margin-bottom: 12px; padding: 11px; }
+  .monitor-matchup { font-size: 11px; color:var(--text); padding-bottom: 8px; border-bottom: 2px solid #eee; }
+  .monitor-pick { padding: 9px 0; border-bottom: 1px solid #ddd; }
+  .pick-top { display: flex; justify-content: space-between; gap: 8px; align-items: flex-start; }
+  .pick-label { font-size: 11px; color:var(--text); line-height: 1.5; }
+  .pick-type { color:var(--text-dim); font-size: 8px; display: block; }
+  .status { font-size: 10px; padding: 3px 8px; border: 1px solid; border-radius: 20px; white-space: nowrap; font-weight: 600; }
+  .status.won { color: #08752b; background: #e7ffed; }
+  .status.lost { color: #a11212; background: #ffe8e8; }
+  .status.pending { color: var(--amber); background:rgba(245,158,11,0.10); }
+  .pick-metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 8px; }
+  .metric { background: rgba(255,255,255,0.05); padding: 6px 4px; text-align: center; }
+  .metric strong { display: block; color:var(--text); font-size: 10px; }
+  .metric span { color:var(--text-dim); font-size: 7px; }
+  .complete { margin-top: 7px; font-size: 8px; color:var(--text-dim); }
+  .complete-bar { height: 5px; background:rgba(255,255,255,0.1); margin-top: 4px; }
+  .complete-fill { height: 100%; background: #24a148; }
+  .review-button { width: 100%; margin-top: 8px; padding: 7px; background:rgba(124,58,237,0.12); color:var(--amber); border: 0; cursor: pointer; font: inherit; font-size: 8px; }
+  .review { display: none; background: #f7f2ff; border-left: 3px solid #6a5acd; padding: 8px; margin-top: 7px; color:var(--text); font-size: 8px; line-height: 1.7; }
+  .monitor-empty { color:var(--text); font-size: 10px; text-align: center; padding: 30px 10px; line-height: 1.7; }
+  @media (max-width: 760px) {
+    .live-header { flex-direction: column; }
+    .open-button { width: 100%; text-align: center; }
+    #scoreboard-frame { height: 72vh; }
+    .live-workspace { grid-template-columns: 1fr; }
+    .monitor { max-height: none; }
+    .pick-metrics { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (min-width: 761px) and (max-width: 1150px) { .live-workspace { grid-template-columns: 1fr; } .monitor { max-height: none; } }
+</style>
+
+<div class="live-header">
+  <div>
+    <h1 class="live-title">🔴 LIVE MLB SCORES</h1>
+    <p class="live-note">Official MLB live scoreboard · no Jingleez API calls · no API key · no added cost</p>
+  </div>
+  <a id="open-source" class="open-button" href="https://www.mlb.com/scores" target="_blank" rel="noopener noreferrer">OPEN FULL SCOREBOARD ↗</a>
+</div>
+
+<div class="live-workspace">
+  <div class="scoreboard-shell">
+    <iframe
+      id="scoreboard-frame"
+      title="Live MLB scoreboard"
+      src="https://www.mlb.com/scores"
+      loading="eager"
+      referrerpolicy="strict-origin-when-cross-origin">
+    </iframe>
+  </div>
+  <aside class="monitor" aria-label="Locked pregame model monitor">
+    <div class="monitor-head">
+      <div class="monitor-title">🔒 PREGAME MODEL MONITOR</div>
+      <input id="monitor-date" class="monitor-date" type="date" aria-label="Prediction date">
+    </div>
+    <div id="monitor-content"><div class="monitor-empty">Loading locked predictions…</div></div>
+  </aside>
+</div>
+
+<script>
+  const monitorContent = document.getElementById('monitor-content');
+  const monitorDate = document.getElementById('monitor-date');
+  const esc = value => String(value ?? '—').replace(/[&<>'"]/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[char]));
+  const pct = value => value == null ? '—' : `${(Number(value) * 100).toFixed(1)}%`;
+  const decimalOdds = value => value == null ? '—' : Number(value).toFixed(3);
+  const evPct = value => {
+    if (value == null) return '—';
+    const n = Number(value);
+    return `${(Math.abs(n) < 1 ? n * 100 : n).toFixed(1)}%`;
+  };
+
+  function reviewText(pick) {
+    const type = pick.pick_type === 'moneyline' ? 'Moneyline' : 'Totals';
+    const locked = `Locked ${type} selection: ${pick.pick} at ${decimalOdds(pick.odds)}, with ${pct(pick.model_prob)} model probability versus ${pct(pick.market_prob)} market probability.`;
+    const close = pick.closing_odds ? ` The closing price was ${decimalOdds(pick.closing_odds)}${pick.clv != null ? ` and recorded CLV was ${Number(pick.clv).toFixed(2)}` : ''}.` : ' No closing line has been captured yet.';
+    if (!['won', 'lost'].includes(pick.status)) return `${locked}${close} The result is ${pick.status}; this locked prediction will not change with the live score.`;
+    const quality = pick.brier_error <= 0.15 ? 'low forecast error' : pick.brier_error <= 0.30 ? 'moderate forecast error' : 'high forecast error';
+    return `${locked}${close} The pick ${pick.status}. Its Brier error was ${Number(pick.brier_error).toFixed(4)} (${quality}). Review this across a large sample; one game alone does not establish model quality.`;
+  }
+
+  function pickHtml(pick, index) {
+    const complete = pick.completeness || {present: 0, total: 0, missing: []};
+    const completePct = complete.total ? complete.present / complete.total * 100 : 0;
+    const missing = complete.missing.length ? ` · Missing: ${complete.missing.join(', ')}` : ' · All tracked inputs captured';
+    return `<div class="monitor-pick">
+      <div class="pick-top">
+        <div class="pick-label"><span class="pick-type">${esc(pick.pick_type.toUpperCase())} · ${esc(pick.model_version || 'unknown')} · ${esc(pick.kelly_units ?? 0)}u</span><strong>${esc(pick.pick)}</strong></div>
+        <span class="status ${esc(pick.status)}">${esc(pick.status.toUpperCase())}</span>
+      </div>
+      <div class="pick-metrics">
+        <div class="metric"><strong>${pct(pick.model_prob)}</strong><span>MODEL</span></div>
+        <div class="metric"><strong>${pct(pick.market_prob)}</strong><span>MARKET</span></div>
+        <div class="metric"><strong>${evPct(pick.ev)}</strong><span>EV</span></div>
+        <div class="metric"><strong>${decimalOdds(pick.opening_odds || pick.odds)}</strong><span>OPEN</span></div>
+        <div class="metric"><strong>${decimalOdds(pick.closing_odds)}</strong><span>CLOSE</span></div>
+        <div class="metric"><strong>${pick.brier_error == null ? '—' : Number(pick.brier_error).toFixed(4)}</strong><span>BRIER ERR</span></div>
+      </div>
+      <div class="complete">INPUTS ${complete.present}/${complete.total}${esc(missing)}<div class="complete-bar"><div class="complete-fill" style="width:${completePct}%"></div></div></div>
+      <button class="review-button" type="button" onclick="toggleReview('review-${index}')">VIEW ${pick.status === 'pending' ? 'PREGAME' : 'POSTGAME'} REVIEW</button>
+      <div class="review" id="review-${index}">${esc(reviewText(pick))}</div>
+    </div>`;
+  }
+
+  function toggleReview(id) {
+    const element = document.getElementById(id);
+    element.style.display = element.style.display === 'block' ? 'none' : 'block';
+  }
+
+  async function loadMonitor() {
+    monitorContent.innerHTML = '<div class="monitor-empty">Loading locked predictions…</div>';
+    try {
+      const response = await fetch(`/api/live-monitor?date=${encodeURIComponent(monitorDate.value)}`);
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Unable to load predictions');
+      if (!data.picks.length) {
+        monitorContent.innerHTML = '<div class="monitor-empty">No locked predictions for this date.<br>Generate the daily slate before first pitch.</div>';
+        return;
+      }
+      const games = Object.groupBy ? Object.groupBy(data.picks, pick => pick.matchup) : data.picks.reduce((all, pick) => ((all[pick.matchup] ||= []).push(pick), all), {});
+      let index = 0;
+      monitorContent.innerHTML = Object.entries(games).map(([matchup, picks]) => `<section class="game-monitor"><div class="monitor-matchup">${esc(matchup)}</div>${picks.map(pick => pickHtml(pick, index++)).join('')}</section>`).join('');
+    } catch (error) {
+      monitorContent.innerHTML = `<div class="monitor-empty">Could not load model monitor.<br>${esc(error.message)}</div>`;
+    }
+  }
+
+  monitorDate.value = new Intl.DateTimeFormat('en-CA', {timeZone:'America/New_York', year:'numeric', month:'2-digit', day:'2-digit'}).format(new Date());
+  monitorDate.addEventListener('change', loadMonitor);
+  loadMonitor();
+  async function automaticLiveTick() {
+    try {
+      await fetch(`/api/live-state?date=${encodeURIComponent(monitorDate.value)}`, {cache:'no-store'});
+      await loadMonitor();
+    } catch (_) { /* the embedded MLB scoreboard remains available */ }
+  }
+  setInterval(automaticLiveTick, 60000);
+</script>
+{% endblock %}

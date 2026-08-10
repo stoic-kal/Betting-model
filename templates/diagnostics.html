@@ -1,0 +1,1727 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+:root {
+  --bg:      #0d1117;
+  --surface: #161b22;
+  --border:  #30363d;
+  --text:    #c9d1d9;
+  --dim:     #8b949e;
+  --green:   #3fb950;
+  --red:     #f85149;
+  --amber:   #d29922;
+  --blue:    #58a6ff;
+  --violet:  #a371f7;
+}
+
+* { box-sizing: border-box; }
+
+.diag-wrap {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  grid-template-rows: auto 1fr;
+  gap: 0;
+  height: calc(100vh - 70px);
+  margin: -24px;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+}
+
+/* ── SIDEBAR ─────────────────────────────────────────────────────── */
+.diag-sidebar {
+  grid-row: 1 / 3;
+  background: #0d1117;
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.diag-sidebar-head {
+  padding: 20px 18px 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.diag-sidebar-head h2 {
+  font-size: 11px;
+  letter-spacing: .12em;
+  color: var(--dim);
+  margin: 0 0 14px;
+  text-transform: uppercase;
+}
+
+.diag-run-btn {
+  width: 100%;
+  background: var(--green);
+  color: #0d1117;
+  border: none;
+  border-radius: 6px;
+  padding: 10px;
+  font-size: 12px;
+  font-family: inherit;
+  font-weight: 700;
+  letter-spacing: .08em;
+  cursor: pointer;
+  transition: opacity .15s;
+}
+.diag-run-btn:hover  { opacity: .85; }
+.diag-run-btn:active { opacity: .7; }
+.diag-run-btn.running {
+  background: var(--amber);
+  cursor: not-allowed;
+}
+
+.diag-last-run {
+  margin-top: 10px;
+  font-size: 10px;
+  color: var(--dim);
+  text-align: center;
+}
+
+.diag-section-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 0;
+}
+
+.diag-section-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 18px;
+  font-size: 11px;
+  color: var(--dim);
+  cursor: pointer;
+  border-left: 3px solid transparent;
+  transition: all .12s;
+}
+.diag-section-item:hover { background: rgba(255,255,255,.04); color: var(--text); }
+.diag-section-item.active {
+  color: var(--blue);
+  border-left-color: var(--blue);
+  background: rgba(88,166,255,.06);
+}
+.diag-section-item.ok      .sec-dot { background: var(--green); }
+.diag-section-item.fail    .sec-dot { background: var(--red); }
+.diag-section-item.idle    .sec-dot { background: var(--border); }
+.diag-section-item.running .sec-dot { background: var(--blue); box-shadow: 0 0 0 3px rgba(88,166,255,.25); }
+.diag-section-item.skip    .sec-dot { background: var(--border); box-shadow: 0 0 0 3px rgba(139,148,158,.18); }
+
+.sec-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: var(--border);
+}
+
+.diag-sidebar-footer {
+  padding: 12px 18px;
+  border-top: 1px solid var(--border);
+  font-size: 10px;
+  color: var(--dim);
+}
+
+/* ── STATS BAR ───────────────────────────────────────────────────── */
+.diag-stats-bar {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  gap: 0;
+  overflow-x: auto;
+}
+
+.stat-chip {
+  padding: 12px 20px;
+  border-right: 1px solid var(--border);
+  white-space: nowrap;
+}
+.stat-chip .label {
+  font-size: 9px;
+  letter-spacing: .1em;
+  color: var(--dim);
+  text-transform: uppercase;
+}
+.stat-chip .value {
+  font-size: 16px;
+  font-weight: 700;
+  margin-top: 2px;
+}
+.stat-chip .value.green  { color: var(--green); }
+.stat-chip .value.red    { color: var(--red); }
+.stat-chip .value.amber  { color: var(--amber); }
+.stat-chip .value.blue   { color: var(--blue); }
+.stat-chip .value.violet { color: var(--violet); }
+
+/* ── MAIN PANEL ──────────────────────────────────────────────────── */
+.diag-main {
+  background: var(--bg);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── TABS ────────────────────────────────────────────────────────── */
+.diag-tabs {
+  display: flex;
+  gap: 0;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.diag-tab {
+  padding: 10px 20px;
+  font-size: 11px;
+  letter-spacing: .08em;
+  color: var(--dim);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all .12s;
+  background: none;
+  border-top: none;
+  border-left: none;
+  border-right: none;
+  font-family: inherit;
+  text-transform: uppercase;
+}
+.diag-tab:hover  { color: var(--text); }
+.diag-tab.active { color: var(--blue); border-bottom-color: var(--blue); }
+
+/* ── TERMINAL ────────────────────────────────────────────────────── */
+.diag-terminal {
+  background: #0a0e13;
+  flex: 1;
+  padding: 16px 20px;
+  overflow-y: auto;
+  font-size: 12px;
+  line-height: 1.65;
+  color: #c9d1d9;
+  display: none;
+}
+.diag-terminal.active { display: block; }
+.diag-terminal.empty-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--dim);
+  font-size: 13px;
+}
+
+.t-line { white-space: pre-wrap; word-break: break-all; }
+.t-line.header    { color: var(--blue);   font-weight: 700; }
+.t-line.section   { color: var(--violet); font-weight: 700; }
+.t-line.ok        { color: var(--green); }
+.t-line.warn      { color: var(--amber); }
+.t-line.crit      { color: var(--red); }
+.t-line.saved     { color: #58a6ff; font-style: italic; }
+.t-line.dim       { color: var(--dim); }
+.t-line.separator { color: #30363d; }
+
+/* ── FIGURES GRID ────────────────────────────────────────────────── */
+.diag-figures {
+  padding: 20px;
+  display: none;
+}
+.diag-figures.active { display: block; }
+
+.figures-filter {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+.fig-filter-btn {
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 10px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  font-family: inherit;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: none;
+  color: var(--dim);
+  transition: all .12s;
+}
+.fig-filter-btn:hover  { border-color: var(--blue); color: var(--blue); }
+.fig-filter-btn.active { background: var(--blue); border-color: var(--blue); color: #000; }
+
+.figures-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+  gap: 16px;
+}
+
+.fig-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: border-color .15s, transform .12s;
+}
+.fig-card:hover {
+  border-color: var(--blue);
+  transform: translateY(-1px);
+}
+.fig-card img {
+  width: 100%;
+  display: block;
+  background: #0d1117;
+}
+.fig-card-label {
+  padding: 8px 12px;
+  font-size: 10px;
+  letter-spacing: .06em;
+  color: var(--dim);
+  text-transform: uppercase;
+  border-top: 1px solid var(--border);
+}
+
+/* ── LIGHTBOX ────────────────────────────────────────────────────── */
+.lightbox-bg {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.88);
+  z-index: 9999;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+.lightbox-bg.open { display: flex; }
+.lightbox-img {
+  max-width: 100%;
+  max-height: 90vh;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+.lightbox-close {
+  position: absolute;
+  top: 16px; right: 20px;
+  color: var(--dim);
+  font-size: 24px;
+  cursor: pointer;
+  background: none;
+  border: none;
+  font-family: inherit;
+}
+.lightbox-close:hover { color: var(--text); }
+.lightbox-caption {
+  position: absolute;
+  bottom: 24px;
+  font-size: 11px;
+  color: var(--dim);
+  letter-spacing: .08em;
+  text-align: center;
+  font-family: 'SF Mono', monospace;
+}
+
+/* ── FINDINGS PANEL ──────────────────────────────────────────────── */
+.diag-findings {
+  padding: 20px;
+  display: none;
+}
+.diag-findings.active { display: block; }
+
+.finding-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px 18px;
+  margin-bottom: 12px;
+  border-left: 4px solid var(--border);
+}
+.finding-card.crit  { border-left-color: var(--red); }
+.finding-card.high  { border-left-color: var(--amber); }
+.finding-card.med   { border-left-color: var(--blue); }
+.finding-card.good  { border-left-color: var(--green); }
+
+.finding-badge {
+  display: inline-block;
+  font-size: 9px;
+  letter-spacing: .1em;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: 700;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.finding-badge.crit  { background: rgba(248,81,73,.15); color: var(--red); }
+.finding-badge.high  { background: rgba(210,153,34,.15); color: var(--amber); }
+.finding-badge.med   { background: rgba(88,166,255,.15); color: var(--blue); }
+.finding-badge.good  { background: rgba(63,185,80,.15);  color: var(--green); }
+
+.finding-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+.finding-body {
+  font-size: 11px;
+  color: var(--dim);
+  line-height: 1.6;
+}
+.finding-fix {
+  margin-top: 8px;
+  font-size: 10px;
+  color: var(--green);
+  padding: 6px 10px;
+  background: rgba(63,185,80,.07);
+  border-radius: 4px;
+  border: 1px solid rgba(63,185,80,.15);
+}
+
+/* ── TERMINAL: structured content (presentation only) ───────────────── */
+.term-feed { display: flex; flex-direction: column; gap: 14px; padding-bottom: 24px; }
+
+.term-hero {
+  background: linear-gradient(135deg, rgba(163,113,247,.10), rgba(88,166,255,.05));
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 18px 20px;
+  text-align: center;
+}
+.term-hero .h1 { font-size: 13px; font-weight: 700; letter-spacing: .08em; color: var(--text); text-transform: uppercase; }
+.term-hero .h2 { font-size: 11px; color: var(--dim); margin-top: 4px; letter-spacing: .04em; }
+
+.term-stage {
+  display: flex; align-items: center; gap: 10px;
+  margin: 10px 0 -2px;
+  font-size: 11px; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--violet); font-weight: 700;
+}
+.term-stage::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, rgba(163,113,247,.5), transparent); }
+
+.term-section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  scroll-margin-top: 16px;
+}
+.term-section-head {
+  display: flex; align-items: baseline; gap: 10px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(163,113,247,.05);
+}
+.term-section-badge {
+  font-size: 10px; font-weight: 700; letter-spacing: .05em;
+  color: var(--violet); background: rgba(163,113,247,.14);
+  padding: 2px 8px; border-radius: 5px; flex-shrink: 0;
+}
+.term-section-title { font-size: 12.5px; font-weight: 600; color: var(--text); letter-spacing: .02em; }
+.term-section-body { padding: 14px 16px; display: flex; flex-direction: column; gap: 12px; }
+
+.term-kicker { font-size: 10px; letter-spacing: .09em; text-transform: uppercase; color: var(--dim); }
+.term-para { font-size: 12px; line-height: 1.65; color: var(--text); margin: 0; }
+.term-arrow-list { list-style: none; margin: 4px 0 0; padding: 0; display:flex; flex-direction:column; gap:4px; }
+.term-arrow-list li { font-size: 12px; color: var(--text); padding-left: 16px; position: relative; }
+.term-arrow-list li::before { content: '→'; position: absolute; left: 0; color: var(--blue); }
+
+/* metric grid */
+.metric-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 10px; }
+.metric-box {
+  background: var(--bg); border: 1px solid var(--border); border-radius: 8px;
+  padding: 9px 12px;
+}
+.metric-box .m-label { font-size: 9.5px; letter-spacing: .07em; text-transform: uppercase; color: var(--dim); }
+.metric-box .m-value { font-size: 15px; font-weight: 700; color: var(--text); margin-top: 3px; font-variant-numeric: tabular-nums; }
+.metric-box .m-value.green { color: var(--green); }
+.metric-box .m-value.red   { color: var(--red); }
+.metric-box .m-value.amber { color: var(--amber); }
+.metric-box .m-value.blue  { color: var(--blue); }
+
+.perf-panel { border-radius: 10px; border: 1px solid var(--border); overflow: hidden; }
+.perf-panel-head {
+  display:flex; align-items:center; gap:8px;
+  padding: 9px 14px; font-size: 11px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase;
+}
+.perf-panel.over  .perf-panel-head { background: rgba(248,81,73,.12); color: var(--red); }
+.perf-panel.under .perf-panel-head { background: rgba(63,185,80,.12); color: var(--green); }
+.perf-panel-body { padding: 12px 14px; }
+
+/* status list (collapsible) */
+.status-card { border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+.status-card-head {
+  display:flex; align-items:center; justify-content:space-between; gap: 8px;
+  padding: 8px 12px; font-size: 11px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase;
+}
+.status-card.crit .status-card-head { background: rgba(248,81,73,.10); color: var(--red); }
+.status-card.warn .status-card-head { background: rgba(210,153,34,.10); color: var(--amber); }
+.status-card.ok   .status-card-head { background: rgba(63,185,80,.10); color: var(--green); }
+.status-card.info .status-card-head { background: rgba(88,166,255,.10); color: var(--blue); }
+.status-count { font-size: 10px; opacity: .8; font-weight: 400; }
+.status-rows { display:flex; flex-direction:column; }
+.status-row { display:flex; gap:8px; padding: 6px 12px; font-size: 11.5px; color: var(--text); border-top: 1px solid var(--border); }
+.status-row:first-child{ border-top: none; }
+.status-more summary {
+  cursor: pointer; padding: 8px 12px; font-size: 11px; color: var(--blue);
+  border-top: 1px solid var(--border); list-style: none;
+}
+.status-more summary::-webkit-details-marker { display: none; }
+.status-more summary:hover { background: rgba(255,255,255,.03); }
+
+/* saved figure — rendered inline in its own section, not just linked away */
+.fig-chip {
+  display: flex; flex-direction: column;
+  background: rgba(63,185,80,.04); border: 1px solid rgba(63,185,80,.22);
+  border-radius: 8px; overflow: hidden;
+}
+.fig-chip img {
+  width: 100%; max-height: 280px; object-fit: contain;
+  background: #0d1117; display: block; cursor: zoom-in;
+}
+.fig-chip-cap {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 12px; font-size: 11.5px;
+  border-top: 1px solid rgba(63,185,80,.18);
+}
+.fig-chip .fig-ok { color: var(--green); font-weight:700; flex-shrink:0; }
+.fig-chip .fig-name { color: var(--dim); flex: 1; text-transform: uppercase; letter-spacing: .03em; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.fig-chip .fig-zoom { font-size: 10px; color: var(--dim); flex-shrink: 0; }
+
+/* small tables (filter grid / situations / teams) */
+.term-table-wrap { border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+.term-table-cap { padding: 8px 12px; font-size: 10.5px; letter-spacing:.06em; text-transform:uppercase; color: var(--dim); border-bottom: 1px solid var(--border); background: rgba(255,255,255,.02); }
+table.term-table { width: 100%; border-collapse: collapse; font-size: 11.5px; }
+table.term-table th { text-align:left; padding: 7px 12px; font-size: 9.5px; letter-spacing:.06em; text-transform:uppercase; color: var(--dim); border-bottom: 1px solid var(--border); }
+table.term-table td { padding: 6px 12px; border-bottom: 1px solid var(--border); color: var(--text); font-variant-numeric: tabular-nums; }
+table.term-table tr:last-child td { border-bottom: none; }
+table.term-table tr.profitable td:first-child { box-shadow: inset 3px 0 0 var(--green); }
+.chk-yes { color: var(--green); }
+.val-pos { color: var(--green); } .val-neg { color: var(--red); }
+
+/* feature cards */
+.feature-cards { display:grid; grid-template-columns: repeat(auto-fill, minmax(190px,1fr)); gap:10px; }
+.feature-card { border:1px solid var(--border); border-radius:8px; padding:10px 12px; background: var(--bg); }
+.feature-card .f-name { font-size:11.5px; font-weight:600; color: var(--text); margin-bottom:6px; word-break:break-word; }
+.feature-card .f-row { display:flex; justify-content:space-between; font-size:10.5px; color: var(--dim); margin-top:2px; }
+.feature-card .f-row b { color: var(--text); font-variant-numeric: tabular-nums; }
+.f-badge { display:inline-block; font-size:9px; letter-spacing:.05em; padding:1px 7px; border-radius:99px; font-weight:700; margin-top:6px; text-transform:uppercase; }
+.f-badge.pos { background: rgba(63,185,80,.14); color: var(--green); }
+.f-badge.neg { background: rgba(248,81,73,.14); color: var(--red); }
+
+/* alert banner */
+.alert-banner { border-radius: 8px; padding: 12px 14px; border: 1px solid; }
+.alert-banner.crit { background: rgba(248,81,73,.08); border-color: rgba(248,81,73,.3); }
+.alert-banner.warn { background: rgba(210,153,34,.08); border-color: rgba(210,153,34,.3); }
+.alert-banner .ab-title { font-size:11px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; margin-bottom:6px; }
+.alert-banner.crit .ab-title { color: var(--red); }
+.alert-banner.warn .ab-title { color: var(--amber); }
+.alert-banner .ab-body { font-size:12px; line-height:1.6; color: var(--text); margin: 0 0 6px; }
+
+/* callouts */
+.term-callout { border-radius: 8px; padding: 12px 14px; border-left: 3px solid; background: var(--bg); }
+.term-callout.info { border-color: var(--blue); }
+.term-callout.warn { border-color: var(--amber); }
+.term-callout.good { border-color: var(--green); }
+.term-callout .tc-title { font-size:10.5px; font-weight:700; letter-spacing:.07em; text-transform:uppercase; margin-bottom:6px; }
+.term-callout.info .tc-title { color: var(--blue); }
+.term-callout.warn .tc-title { color: var(--amber); }
+.term-callout.good .tc-title { color: var(--green); }
+.term-callout ul { margin: 0; padding-left: 18px; }
+.term-callout li { font-size:12px; color: var(--text); line-height:1.6; margin-bottom:6px; }
+.term-callout p { margin:0; font-size:12px; color: var(--text); line-height:1.6; }
+
+/* roadmap */
+.roadmap-phase-head { display:flex; align-items:center; gap:10px; padding: 4px 0; }
+.phase-badge { background: rgba(163,113,247,.14); color: var(--violet); font-size:10px; font-weight:700; letter-spacing:.05em; padding:3px 9px; border-radius:6px; text-transform:uppercase; flex-shrink:0; }
+.phase-title { font-size:12px; font-weight:700; color: var(--text); }
+.phase-duration { font-size:10px; color: var(--dim); margin-left:auto; flex-shrink:0; }
+.phase-priority { font-size:10.5px; color: var(--amber); background: rgba(210,153,34,.08); border:1px solid rgba(210,153,34,.25); border-radius:6px; padding:5px 10px; }
+
+.roadmap-item { border:1px solid var(--border); border-radius:8px; padding:10px 12px; background: var(--bg); }
+.roadmap-item .ri-head { display:flex; gap:8px; align-items:baseline; flex-wrap: wrap; }
+.roadmap-item .ri-code { font-size:10px; font-weight:700; color: var(--blue); background: rgba(88,166,255,.1); padding:1px 6px; border-radius:5px; flex-shrink:0; }
+.roadmap-item .ri-title { font-size:12px; font-weight:600; color: var(--text); }
+.roadmap-item ul { margin: 6px 0 0; padding-left:18px; }
+.roadmap-item li { font-size:11px; color: var(--dim); line-height:1.55; margin-bottom:3px; }
+
+.impact-progress { display:flex; gap:16px; align-items:stretch; flex-wrap: wrap; }
+.impact-step { flex:1; min-width: 110px; border:1px solid var(--border); border-radius:8px; padding:10px 10px; background: var(--bg); text-align:center; position:relative; }
+.impact-step .ip-label { font-size:9px; letter-spacing:.06em; text-transform:uppercase; color:var(--dim); }
+.impact-step .ip-value { font-size:11px; color: var(--text); margin-top:5px; line-height:1.4; font-weight:600; }
+.impact-step:not(:last-child)::after { content:'→'; position:absolute; right:-14px; top:50%; transform:translateY(-50%); color:var(--dim); font-size:12px; z-index:1; }
+
+/* completion banner */
+.term-complete { border-radius:10px; border:1px solid rgba(63,185,80,.3); background: rgba(63,185,80,.06); padding:16px 18px; }
+.term-complete .tc-head { display:flex; align-items:center; gap:10px; font-size:13px; font-weight:700; color: var(--green); }
+.term-complete .tc-sub { font-size:11px; color: var(--dim); margin-top:2px; }
+.fig-pill-row { display:flex; flex-wrap:wrap; gap:6px; margin-top:12px; }
+.fig-pill {
+  font-size:10px; padding:4px 10px; border-radius:99px; border:1px solid var(--border);
+  color: var(--dim); background: var(--surface); cursor:pointer; font-family: inherit;
+}
+.fig-pill:hover { border-color: var(--blue); color: var(--blue); }
+
+/* scroll bar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #30363d; border-radius: 3px; }
+</style>
+
+<div class="diag-wrap">
+
+  <!-- SIDEBAR -->
+  <aside class="diag-sidebar">
+    <div class="diag-sidebar-head">
+      <h2>🔬 Model Diagnostics</h2>
+      <button class="diag-run-btn" id="runBtn" onclick="runDiagnostics()">▶ RUN FULL SUITE</button>
+      <div class="diag-last-run" id="lastRun">Loading…</div>
+    </div>
+    <div class="diag-section-list" id="sectionList">
+      <div class="diag-section-item idle" data-sec="s1"  onclick="jumpSection('s1')">
+        <span class="sec-dot"></span>§1 Data Health Audit
+      </div>
+      <div class="diag-section-item idle" data-sec="s2"  onclick="jumpSection('s2')">
+        <span class="sec-dot"></span>§2 Prediction Distribution
+      </div>
+      <div class="diag-section-item idle" data-sec="s3"  onclick="jumpSection('s3')">
+        <span class="sec-dot"></span>§3 Residual Analysis
+      </div>
+      <div class="diag-section-item idle" data-sec="s4"  onclick="jumpSection('s4')">
+        <span class="sec-dot"></span>§4 Error Heatmaps
+      </div>
+      <div class="diag-section-item idle" data-sec="s5"  onclick="jumpSection('s5')">
+        <span class="sec-dot"></span>§5 Calibration
+      </div>
+      <div class="diag-section-item idle" data-sec="s6"  onclick="jumpSection('s6')">
+        <span class="sec-dot"></span>§6 Over vs Under
+      </div>
+      <div class="diag-section-item idle" data-sec="s7"  onclick="jumpSection('s7')">
+        <span class="sec-dot"></span>§7 Feature Importance
+      </div>
+      <div class="diag-section-item idle" data-sec="s9"  onclick="jumpSection('s9')">
+        <span class="sec-dot"></span>§9 Edge Analysis
+      </div>
+      <div class="diag-section-item idle" data-sec="s11" onclick="jumpSection('s11')">
+        <span class="sec-dot"></span>§11 CLV Analysis
+      </div>
+      <div class="diag-section-item idle" data-sec="s12" onclick="jumpSection('s12')">
+        <span class="sec-dot"></span>§12 Team Analysis
+      </div>
+      <div class="diag-section-item idle" data-sec="s13" onclick="jumpSection('s13')">
+        <span class="sec-dot"></span>§13 Pitcher Quality
+      </div>
+      <div class="diag-section-item idle" data-sec="s14" onclick="jumpSection('s14')">
+        <span class="sec-dot"></span>§14 Umpire Analysis
+      </div>
+      <div class="diag-section-item idle" data-sec="s15" onclick="jumpSection('s15')">
+        <span class="sec-dot"></span>§15 Weather Analysis
+      </div>
+      <div class="diag-section-item idle" data-sec="s19" onclick="jumpSection('s19')">
+        <span class="sec-dot"></span>§19 Filter Grid Search
+      </div>
+      <div class="diag-section-item idle" data-sec="s21" onclick="jumpSection('s21')">
+        <span class="sec-dot"></span>§21 Temporal Analysis
+      </div>
+      <div class="diag-section-item idle" data-sec="s24" onclick="jumpSection('s24')">
+        <span class="sec-dot"></span>§24 Root Cause Report
+      </div>
+      <div class="diag-section-item idle" data-sec="s25" onclick="jumpSection('s25')">
+        <span class="sec-dot"></span>§25 Retraining Roadmap
+      </div>
+    </div>
+    <div class="diag-sidebar-footer" id="sidebarFooter">
+      MLB Totals · Jingleez v1
+    </div>
+  </aside>
+
+  <!-- STATS BAR -->
+  <div class="diag-stats-bar" id="statsBar">
+    <div class="stat-chip">
+      <div class="label">Resolved Picks</div>
+      <div class="value blue" id="statResolved">—</div>
+    </div>
+    <div class="stat-chip">
+      <div class="label">Overall WR</div>
+      <div class="value" id="statWR">—</div>
+    </div>
+    <div class="stat-chip">
+      <div class="label">OVER WR</div>
+      <div class="value red" id="statOverWR">—</div>
+    </div>
+    <div class="stat-chip">
+      <div class="label">UNDER WR</div>
+      <div class="value green" id="statUnderWR">—</div>
+    </div>
+    <div class="stat-chip">
+      <div class="label">Avg EV</div>
+      <div class="value amber" id="statEV">—</div>
+    </div>
+    <div class="stat-chip">
+      <div class="label">Avg CLV</div>
+      <div class="value" id="statCLV">—</div>
+    </div>
+    <div class="stat-chip">
+      <div class="label">ECE</div>
+      <div class="value" id="statECE">—</div>
+    </div>
+    <div class="stat-chip">
+      <div class="label">Figures</div>
+      <div class="value violet" id="statFigs">—</div>
+    </div>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div class="diag-main" id="diagMain">
+
+    <!-- TABS -->
+    <div class="diag-tabs">
+      <button class="diag-tab active" onclick="switchTab('terminal')">⌨ Terminal</button>
+      <button class="diag-tab"        onclick="switchTab('figures')">📊 Figures</button>
+      <button class="diag-tab"        onclick="switchTab('findings')">🔍 Findings</button>
+    </div>
+
+    <!-- TERMINAL -->
+    <div class="diag-terminal active empty-state" id="terminalPane">
+      <span>Hit ▶ RUN FULL SUITE to start the diagnostic engine</span>
+    </div>
+
+    <!-- FIGURES -->
+    <div class="diag-figures" id="figuresPane">
+      <div class="figures-filter">
+        <button class="fig-filter-btn active" onclick="filterFigs('all', this)">All</button>
+        <button class="fig-filter-btn" onclick="filterFigs('01', this)">§1 Health</button>
+        <button class="fig-filter-btn" onclick="filterFigs('02', this)">§2 Dist</button>
+        <button class="fig-filter-btn" onclick="filterFigs('03', this)">§3 Residual</button>
+        <button class="fig-filter-btn" onclick="filterFigs('04', this)">§4 Heatmap</button>
+        <button class="fig-filter-btn" onclick="filterFigs('05', this)">§5 Calibration</button>
+        <button class="fig-filter-btn" onclick="filterFigs('06', this)">§6 O/U</button>
+        <button class="fig-filter-btn" onclick="filterFigs('07', this)">§7 Features</button>
+        <button class="fig-filter-btn" onclick="filterFigs('09', this)">§9 Edge</button>
+        <button class="fig-filter-btn" onclick="filterFigs('11', this)">§11 CLV</button>
+        <button class="fig-filter-btn" onclick="filterFigs('12', this)">§12 Teams</button>
+        <button class="fig-filter-btn" onclick="filterFigs('13', this)">§13 Pitcher</button>
+        <button class="fig-filter-btn" onclick="filterFigs('19', this)">§19 Filters</button>
+        <button class="fig-filter-btn" onclick="filterFigs('21', this)">§21 Temporal</button>
+      </div>
+      <div class="figures-grid" id="figuresGrid">
+        <div style="color:var(--dim);font-size:12px;padding:20px 0">Run the diagnostic suite first to generate figures.</div>
+      </div>
+    </div>
+
+    <!-- FINDINGS -->
+    <div class="diag-findings" id="findingsPane">
+      <div id="findingsContent">
+        <div style="color:var(--dim);font-size:12px;padding:20px 0">Run the diagnostic suite to populate findings.</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- LIGHTBOX -->
+<div class="lightbox-bg" id="lightbox" onclick="closeLightbox()">
+  <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+  <img class="lightbox-img" id="lightboxImg" src="" alt="">
+  <div class="lightbox-caption" id="lightboxCaption"></div>
+</div>
+
+<script>
+// ── State ──────────────────────────────────────────────────────────────
+let _activeTab    = 'terminal';
+let _figFilter    = 'all';
+let _allFigs      = [];
+let _sectionAnchors = {};   // sec-id → DOM element in terminal
+let _running      = false;
+let _stats        = {};
+
+// Section id → display title, in sidebar order. Used to render Developer
+// Notes in a stable order regardless of what order events arrived in.
+const SECTION_TITLES = {
+  s1:'Data Health Audit', s2:'Prediction Distribution', s3:'Residual Analysis',
+  s4:'Error Heatmaps', s5:'Calibration', s6:'Over vs Under',
+  s7:'Feature Importance', s9:'Edge Analysis', s11:'CLV Analysis',
+  s12:'Team Analysis', s13:'Pitcher Quality', s14:'Umpire Analysis',
+  s15:'Weather Analysis', s19:'Filter Grid Search', s21:'Temporal Analysis',
+  s24:'Root Cause Report', s25:'Retraining Roadmap',
+};
+const SECTION_ORDER = Object.keys(SECTION_TITLES);
+
+// Live results from the run currently streaming (or the last completed run):
+// { s1: {status:'ok'|'error'|'skipped', metrics:{...}, error, reason}, ... }
+let _sectionResults = {};
+// { latest: {...}, previous: {...}, diff: [...] } from services.diag_metrics_service —
+// every number in here was computed by compute_diag_metrics(), never invented client-side.
+let RUN_HISTORY = null;
+
+// ── Terminal → structured presentation layer ─────────────────────────────
+// Pure presentation: parses the SAME raw stdout text already streamed by the
+// pipeline and renders it as cards/tables/badges instead of a scrolling log.
+// No backend call, computation, or statistic is touched — every number here
+// is read verbatim out of the text the Python pipeline already printed.
+let _rawLines = [];
+let _renderScheduled = false;
+
+const SEC_NUM_MAP = {
+  '1':'s1','2':'s2','3':'s3','4':'s4','5':'s5','6':'s6','7':'s7','9':'s9',
+  '11':'s11','12':'s12','13':'s13','14':'s14','15':'s15','19':'s19',
+  '21':'s21','24':'s24','25':'s25'
+};
+
+function esc(s) { return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function isBoxRule(l)    { return /^\s*═{5,}\s*$/.test(l); }
+function isBannerRule(l) { return /^\s*█{5,}\s*$/.test(l); }
+function isDashRule(l)   { return /^\s*-{5,}\s*$/.test(l); }
+
+function matchBoxTitle(line) {
+  let m = line.match(/^\s*SECTION\s+(\d+)\s*[—–-]\s*(.+?)\s*$/i);
+  if (m) return { num: m[1], title: m[2] };
+  m = line.match(/^\s*(\d+)[A-Z]?\s*[—–-]\s*(.+?)\s*$/);
+  if (m) return { num: m[1], title: m[2] };
+  return null;
+}
+function matchStage(line) {
+  const m = line.match(/^▶▶▶\s*(SECTIONS?\s+[\d\-]+)\s*[—–-]\s*(.+?)\s*$/i);
+  return m ? { label: m[1], title: m[2] } : null;
+}
+function matchStatus(line) {
+  const m = line.match(/^\s*(✅|⚠|🔴|ℹ)\s*\[(OK|WARN|CRIT|INFO)\]\s*(.+?)\s*$/);
+  return m ? { icon: m[1], tag: m[2], text: m[3] } : null;
+}
+function matchSaved(line) {
+  const m = line.match(/^\s*→\s*Saved:\s*(.+?)\s*$/);
+  return m ? { filename: m[1] } : null;
+}
+function matchLabelValue(line) {
+  const m = line.match(/^\s{1,4}([A-Za-z][A-Za-z0-9 /&().+_<>=≥≤%-]*?):\s{1,}(.+?)\s*$/);
+  if (m && !/^\[P\d/.test(line.trim())) return { label: m[1].trim(), value: m[2].trim() };
+  return null;
+}
+function matchBlockLabel(line) {
+  const m = line.match(/^\s{2}([A-Z][A-Z ]*):\s*$/);
+  return m ? m[1].trim() : null;
+}
+function matchBullet(line) {
+  const m = line.match(/^\s*•\s*(.+?)\s*$/);
+  return m ? m[1] : null;
+}
+function matchFeatureRow(line) {
+  const m = line.match(/^\s*([A-Za-z_][\w]*)\s{2,}(-?\d+\.\d+)\s{2,}(\d+\.\d+)\s{2,}(\d+)\s*$/);
+  return m ? { feature: m[1], corr: parseFloat(m[2]), pval: parseFloat(m[3]), n: parseInt(m[4]) } : null;
+}
+function matchFilterRow(line) {
+  const m = line.match(/^\s*(.+?)\s{2,}(\d+)\s{1,}(-?\d+\.\d+)%\s{1,}(-?\d+\.\d+)%\s{1,}(-?\d+\.\d+)%\s*(✅)?\s*$/);
+  return m ? { name: m[1].trim(), n: parseInt(m[2]), wr: parseFloat(m[3]), roi: parseFloat(m[4]), avgEv: parseFloat(m[5]), profitable: !!m[6] } : null;
+}
+function matchSituationRow(line) {
+  const m = line.match(/^\s*([\w]+=[\w]+)\s{2,}WR=(\d+)%\s{1,}n=(\d+)\s*$/);
+  return m ? { label: m[1], wr: parseInt(m[2]), n: parseInt(m[3]) } : null;
+}
+function matchRootCauseRank(line) {
+  const m = line.match(/^\s*(🔴|🟠|🟡)\s*RANK\s*(\d+)\s*[—–-]\s*(CRITICAL|HIGH|MEDIUM)\s*:\s*(.+?)\s*$/i);
+  return m ? { icon: m[1], rank: m[2], severity: m[3].toUpperCase(), title: m[4] } : null;
+}
+function matchRoadmapPhase(line) {
+  const m = line.match(/^──\s*PHASE\s*(\d+):\s*(.+?)\s*\(([^)]+)\)\s*─*\s*$/);
+  return m ? { num: m[1], title: m[2], duration: m[3] } : null;
+}
+function matchRoadmapItem(line) {
+  const m = line.match(/^\s*\[(P\d+\.\d+)\]\s*(.+?)\s*$/);
+  return m ? { code: m[1], title: m[2] } : null;
+}
+function matchRoadmapSub(line) {
+  const m = line.match(/^\s{4,}-\s*(.+?)\s*$/);
+  return m ? m[1] : null;
+}
+
+function parseTermLines(lines) {
+  const blocks = [];
+  let i = 0, heroCaptured = false, currentSection = null, pending = null;
+
+  function pushSection(s) { if (currentSection) blocks.push(currentSection); currentSection = s; pending = null; }
+  function closePending() { if (pending && currentSection) currentSection.groups.push(pending); pending = null; }
+  function openGroup(g) { closePending(); pending = g; }
+  function ensureFallbackText() { if (!pending || pending.type !== 'text') openGroup({ type: 'text', lines: [] }); return pending; }
+
+  while (i < lines.length) {
+    const raw = lines[i];
+    const line = raw.replace(/\s+$/, '');
+    const trimmed = line.trim();
+
+    if (isBannerRule(line) && !heroCaptured) {
+      const titleLines = [];
+      let j = i + 1;
+      while (j < lines.length && !isBannerRule(lines[j])) { if (lines[j].trim()) titleLines.push(lines[j].trim()); j++; }
+      blocks.push({ type: 'hero', lines: titleLines });
+      heroCaptured = true; i = j + 1; continue;
+    }
+    if (isBannerRule(line) && heroCaptured) {
+      const bodyLines = [];
+      let j = i + 1;
+      while (j < lines.length && !isBannerRule(lines[j])) { bodyLines.push(lines[j]); j++; }
+      const secMatch = bodyLines.join('\n').match(/DIAGNOSTIC COMPLETE in ([\d.]+)s/);
+      const figs = [];
+      bodyLines.forEach(l => { const m = l.match(/^\s{2,}(\S+\.png)\s*$/); if (m) figs.push(m[1]); });
+      closePending();
+      if (currentSection) { blocks.push(currentSection); currentSection = null; }
+      blocks.push({ type: 'complete', seconds: secMatch ? secMatch[1] : null, figures: figs });
+      i = j + 1; continue;
+    }
+
+    const stage = matchStage(trimmed);
+    if (stage) {
+      closePending();
+      if (currentSection) { blocks.push(currentSection); currentSection = null; }
+      blocks.push({ type: 'stage', label: stage.label, title: stage.title });
+      i++; continue;
+    }
+
+    if (isBoxRule(line)) {
+      const titleLine = lines[i+1], closeRule = lines[i+2];
+      if (titleLine !== undefined && matchBoxTitle(titleLine.trim()) && closeRule !== undefined && isBoxRule(closeRule)) {
+        const bt = matchBoxTitle(titleLine.trim());
+        pushSection({ type: 'section', num: bt.num, secId: SEC_NUM_MAP[bt.num] || null, title: bt.title, groups: [] });
+        i += 3; continue;
+      }
+    }
+
+    if (!currentSection) pushSection({ type: 'section', num: null, secId: null, title: null, groups: [] });
+    if (trimmed === '') { closePending(); i++; continue; }
+    if (/^\s*[┌└│]/.test(line)) { i++; continue; }
+
+    const rcRank = matchRootCauseRank(trimmed);
+    if (rcRank) {
+      closePending();
+      const fields = {};
+      let j = i + 1;
+      while (j < lines.length) {
+        const l = lines[j];
+        if (l.trim() === '') break;
+        const m = l.match(/^\s*(Evidence|Root Cause|Fix|Expected Impact|Eng Difficulty|Priority)\s*:\s*(.+?)\s*$/);
+        if (m) { fields[m[1]] = m[2]; j++; }
+        else if (Object.keys(fields).length) { const lk = Object.keys(fields)[Object.keys(fields).length-1]; fields[lk] += ' ' + l.trim(); j++; }
+        else break;
+      }
+      currentSection.groups.push({ type: 'issueCard', icon: rcRank.icon, rank: rcRank.rank, severity: rcRank.severity, title: rcRank.title, fields });
+      i = j; continue;
+    }
+
+    if (/^\s*⚠\s*CRITICAL FINDING:\s*$/.test(line)) {
+      closePending();
+      const bodyLines = []; let j = i + 1;
+      while (j < lines.length && lines[j].trim() !== '') { bodyLines.push(lines[j].trim()); j++; }
+      currentSection.groups.push({ type: 'alertBanner', tone: 'crit', title: 'Critical Finding', lines: bodyLines });
+      i = j; continue;
+    }
+
+    if (/^\s*INTERPRETATION:\s*$/i.test(trimmed)) {
+      closePending();
+      const bodyLines = []; let j = i + 1;
+      while (j < lines.length && lines[j].trim() !== '' && !isBoxRule(lines[j]) && !matchStage(lines[j].trim())) { bodyLines.push(lines[j].trim()); j++; }
+      currentSection.groups.push({ type: 'callout', tone: 'info', title: 'Interpretation', lines: bodyLines });
+      i = j; continue;
+    }
+
+    if (/^\s*FINDINGS:\s*$/i.test(trimmed) || /^\s*NEXT STEP:\s*$/i.test(trimmed)) {
+      closePending();
+      const isNext = /NEXT STEP/i.test(trimmed);
+      const bodyLines = []; let j = i + 1;
+      while (j < lines.length && !/^\s*(FINDINGS|NEXT STEP):\s*$/i.test(lines[j].trim()) && !isBoxRule(lines[j]) && !matchStage(lines[j].trim())) {
+        if (lines[j].trim() !== '') bodyLines.push(lines[j]); j++;
+      }
+      currentSection.groups.push({ type: 'callout', tone: isNext ? 'good' : 'warn', title: isNext ? 'Next Step' : 'Findings', raw: bodyLines });
+      i = j; continue;
+    }
+
+    const phase = matchRoadmapPhase(trimmed);
+    if (phase) {
+      closePending();
+      let j = i + 1, priorityNote = null;
+      if (lines[j] && /^\s*Priority:/i.test(lines[j])) { priorityNote = lines[j].trim(); j++; }
+      currentSection.groups.push({ type: 'roadmapPhase', num: phase.num, title: phase.title, duration: phase.duration, priorityNote });
+      i = j; continue;
+    }
+
+    const ritem = matchRoadmapItem(trimmed);
+    if (ritem) {
+      closePending();
+      const bullets = []; let j = i + 1;
+      while (j < lines.length) {
+        if (lines[j].trim() === '') break;
+        const sub = matchRoadmapSub(lines[j]);
+        if (sub) { bullets.push(sub); j++; continue; }
+        // deeper-indented detail line (no leading "-") — a continuation of the
+        // previous bullet (e.g. an enumerated sub-case), not a break in the list
+        if (/^\s{6,}\S/.test(lines[j]) && bullets.length) {
+          bullets[bullets.length - 1] += '; ' + lines[j].trim();
+          j++; continue;
+        }
+        break;
+      }
+      currentSection.groups.push({ type: 'roadmapItem', code: ritem.code, title: ritem.title, bullets });
+      i = j; continue;
+    }
+
+    if (/^EXPECTED IMPACT AFTER ALL PHASES:/i.test(trimmed)) {
+      closePending();
+      const rows = []; let j = i + 1;
+      while (j < lines.length && !isBoxRule(lines[j])) {
+        const m = lines[j].match(/^\s*(Current|Phase\s*\d\+?)\s*:\s*(.+?)\s*$/i);
+        if (m) rows.push({ label: m[1], value: m[2] });
+        j++;
+      }
+      currentSection.groups.push({ type: 'impactProgress', rows });
+      i = j + 1; continue;
+    }
+
+    if (/^(TOP 5|WORST 5).*TEAMS:\s*$/i.test(trimmed)) {
+      closePending();
+      const heading = trimmed; let j = i + 1;
+      const colLine = lines[j] ? lines[j].trim().replace(/\s+/g,' ') : '';
+      if (/^picks wr roi avg_ev$/.test(colLine) && lines[j+1] && lines[j+1].trim() === 'team') {
+        j += 2;
+        const rows = [];
+        while (j < lines.length) {
+          const m = lines[j].match(/^(.+?)\s{2,}(\d+)\s+(-?[\d.]+)\s+(-?[\d.]+)\s+(-?[\d.]+)\s*$/);
+          if (!m) break;
+          rows.push({ team: m[1].trim(), picks: parseInt(m[2]), wr: parseFloat(m[3]), roi: parseFloat(m[4]), avgEv: parseFloat(m[5]) });
+          j++;
+        }
+        currentSection.groups.push({ type: 'teamTable', heading, rows });
+        i = j; continue;
+      }
+      currentSection.groups.push({ type: 'tableHeading', text: trimmed });
+      i++; continue;
+    }
+    if (/^Filter\s+n\s+WR\s+ROI\s+AvgEV\s*$/.test(trimmed) || /^Feature\s+Corr\s+p-val\s+n\s*$/.test(trimmed)) {
+      // raw column-header line — the filterTable/featureTable card renders its own caption, so skip
+      i++; continue;
+    }
+
+    if (isDashRule(trimmed)) { i++; continue; }
+    const frow = matchFilterRow(line);
+    if (frow) { if (!pending || pending.type !== 'filterTable') openGroup({ type: 'filterTable', rows: [] }); pending.rows.push(frow); i++; continue; }
+
+    const feat = matchFeatureRow(line);
+    if (feat) { if (!pending || pending.type !== 'featureTable') openGroup({ type: 'featureTable', rows: [] }); pending.rows.push(feat); i++; continue; }
+
+    const sit = matchSituationRow(line);
+    if (sit) { if (!pending || pending.type !== 'situationTable') openGroup({ type: 'situationTable', rows: [] }); pending.rows.push(sit); i++; continue; }
+
+    const blockLabel = matchBlockLabel(line);
+    if (blockLabel) {
+      closePending();
+      const metrics = []; let j = i + 1;
+      while (j < lines.length) { const lv = matchLabelValue(lines[j]); if (lv) { metrics.push(lv); j++; } else break; }
+      currentSection.groups.push({ type: 'metricPanel', label: blockLabel, metrics });
+      i = j; continue;
+    }
+
+    const status = matchStatus(trimmed);
+    if (status) {
+      if (!pending || pending.type !== 'statusList' || pending.tag !== status.tag) openGroup({ type: 'statusList', tag: status.tag, items: [] });
+      pending.items.push({ icon: status.icon, text: status.text });
+      i++; continue;
+    }
+
+    const saved = matchSaved(trimmed);
+    if (saved) { closePending(); currentSection.groups.push({ type: 'savedFigure', filename: saved.filename }); i++; continue; }
+
+    const bullet = matchBullet(line);
+    if (bullet) { if (!pending || pending.type !== 'bulletList') openGroup({ type: 'bulletList', items: [] }); pending.items.push(bullet); i++; continue; }
+    if (pending && pending.type === 'bulletList' && /^\s{4,}\S/.test(line) && !matchLabelValue(line)) {
+      pending.items[pending.items.length - 1] += ' ' + trimmed; i++; continue;
+    }
+
+    const lv = matchLabelValue(line);
+    if (lv) {
+      if (!(pending && pending.type === 'metricPanel' && pending.label === null)) openGroup({ type: 'metricPanel', label: null, metrics: [] });
+      pending.metrics.push(lv);
+      i++; continue;
+    }
+
+    ensureFallbackText().lines.push(line);
+    i++;
+  }
+  closePending();
+  if (currentSection) blocks.push(currentSection);
+  return blocks;
+}
+
+// ── Rendering ──────────────────────────────────────────────────────────
+function wrClass(v) { return v >= 52 ? 'green' : v >= 48 ? 'amber' : 'red'; }
+function pnlClass(v) { const n = parseFloat(String(v).replace(/[^0-9.-]/g,'')); return n > 0 ? 'green' : n < 0 ? 'red' : ''; }
+
+function renderTermBlocks(blocks) {
+  let html = '';
+  blocks.forEach(b => {
+    if (b.type === 'hero') html += `<div class="term-hero"><div class="h1">${b.lines[0]?esc(b.lines[0]):''}</div>${b.lines[1]?`<div class="h2">${esc(b.lines[1])}</div>`:''}</div>`;
+    else if (b.type === 'stage') html += `<div class="term-stage">${esc(b.label)} — ${esc(b.title)}</div>`;
+    else if (b.type === 'section') { if (b.num || b.groups.length) html += renderSectionCard(b); }
+    else if (b.type === 'complete') html += renderComplete(b);
+  });
+  return html;
+}
+
+function renderSectionCard(b) {
+  const secAttr = b.secId ? ` data-secid="${b.secId}"` : '';
+  const badge = b.num ? '§' + b.num : '';
+  let body = '';
+  b.groups.forEach(g => { body += renderGroup(g); });
+  return `<div class="term-section"${secAttr}>
+    <div class="term-section-head">${badge?`<span class="term-section-badge">${badge}</span>`:''}<span class="term-section-title">${esc(b.title||'')}</span></div>
+    <div class="term-section-body">${body}</div>
+  </div>`;
+}
+
+function renderGroup(g) {
+  switch (g.type) {
+    case 'text': return renderText(g);
+    case 'metricPanel': return renderMetricPanel(g);
+    case 'statusList': return renderStatusList(g);
+    case 'savedFigure': return renderSavedFigure(g);
+    case 'featureTable': return renderFeatureTable(g);
+    case 'filterTable': return renderFilterTable(g);
+    case 'situationTable': return renderSituationTable(g);
+    case 'teamTable': return renderTeamTable(g);
+    case 'tableHeading': return `<div class="term-kicker">${esc(g.text)}</div>`;
+    case 'alertBanner': return renderAlertBanner(g);
+    case 'callout': return renderCallout(g);
+    case 'issueCard': return renderIssueCard(g);
+    case 'roadmapPhase': return renderRoadmapPhase(g);
+    case 'roadmapItem': return renderRoadmapItem(g);
+    case 'impactProgress': return renderImpactProgress(g);
+    case 'bulletList': return `<ul class="term-callout" style="border:none;padding:0;background:none">${g.items.map(it=>`<li style="color:var(--text);font-size:12px;margin-bottom:6px">${esc(it)}</li>`).join('')}</ul>`;
+    default: return '';
+  }
+}
+
+function renderText(g) {
+  if (g.lines.length === 1) {
+    const t = g.lines[0].trim();
+    if (t.length < 70) return `<div class="term-kicker">${esc(t.replace(/:$/,''))}</div>`;
+  }
+  let out = '', para = [], arrows = [];
+  const flushPara = () => { if (para.length) { out += `<p class="term-para">${esc(para.join(' '))}</p>`; para = []; } };
+  const flushArrows = () => { if (arrows.length) { out += `<ul class="term-arrow-list">${arrows.map(a=>`<li>${esc(a)}</li>`).join('')}</ul>`; arrows = []; } };
+  g.lines.forEach(l => {
+    const t = l.trim();
+    if (!t) return;
+    if (t.startsWith('→')) { flushPara(); arrows.push(t.replace(/^→\s*/,'')); }
+    else { flushArrows(); para.push(t); }
+  });
+  flushPara(); flushArrows();
+  return out;
+}
+
+function renderMetricPanel(g) {
+  if (g.label === 'OVER' || g.label === 'UNDER') return renderPerfPanel(g);
+  const boxes = g.metrics.map(m => `<div class="metric-box"><div class="m-label">${esc(m.label)}</div><div class="m-value">${esc(m.value)}</div></div>`).join('');
+  return `<div class="metric-grid">${boxes}</div>`;
+}
+
+function renderPerfPanel(g) {
+  const map = {}; g.metrics.forEach(m => map[m.label] = m.value);
+  const boxes = [];
+  if (map['Record']) {
+    const rm = map['Record'].match(/^(.+?)\s*\(([\d.]+)%\s*WR\)/);
+    boxes.push(['Record', rm ? rm[1].trim() : map['Record']]);
+    if (rm) boxes.push(['Win Rate', rm[2] + '%', wrClass(parseFloat(rm[2]))]);
+  }
+  if (map['P&L']) {
+    const pm = map['P&L'].match(/^(\$[\-\d.]+)\s*ROI=([\-\d.]+)%/);
+    boxes.push(['P&L', pm ? pm[1] : map['P&L'], pm ? pnlClass(pm[1]) : null]);
+    if (pm) boxes.push(['ROI', pm[2] + '%', pnlClass(pm[2])]);
+  }
+  if (map['Avg EV']) boxes.push(['Avg EV', map['Avg EV'], 'amber']);
+  if (map['Avg Prob']) boxes.push(['Avg Prob', map['Avg Prob']]);
+  if (map['Avg CLV']) {
+    const cm = map['Avg CLV'].match(/^([\d.]+pp)\s*Beat close:\s*(\d+%)/);
+    boxes.push(['Avg CLV', cm ? cm[1] : map['Avg CLV'], 'blue']);
+    if (cm) boxes.push(['Beat Close', cm[2], 'blue']);
+  }
+  const icon = g.label === 'OVER' ? '🟥' : '🟩';
+  const cls = g.label === 'OVER' ? 'over' : 'under';
+  const boxHtml = boxes.map(([label,value,tone]) => `<div class="metric-box"><div class="m-label">${esc(label)}</div><div class="m-value${tone?(' '+tone):''}">${esc(value)}</div></div>`).join('');
+  return `<div class="perf-panel ${cls}"><div class="perf-panel-head">${icon} ${esc(g.label)} PERFORMANCE</div><div class="perf-panel-body"><div class="metric-grid">${boxHtml}</div></div></div>`;
+}
+
+function renderStatusList(g) {
+  const toneMap = { CRIT:'crit', WARN:'warn', OK:'ok', INFO:'info' };
+  const labelMap = { CRIT:'Critical', WARN:'Warning', OK:'Passing', INFO:'Info' };
+  const tone = toneMap[g.tag] || 'info';
+  const visible = g.items.slice(0, 6), rest = g.items.slice(6);
+  const row = it => `<div class="status-row"><span class="ic">${it.icon}</span><span>${esc(it.text)}</span></div>`;
+  let more = '';
+  if (rest.length) more = `<details class="status-more"><summary>Show ${rest.length} more →</summary>${rest.map(row).join('')}</details>`;
+  return `<div class="status-card ${tone}">
+    <div class="status-card-head"><span>${labelMap[g.tag]||g.tag}</span><span class="status-count">${g.items.length}</span></div>
+    <div class="status-rows">${visible.map(row).join('')}</div>${more}
+  </div>`;
+}
+
+function renderSavedFigure(g) {
+  const label = g.filename.replace(/_/g,' ').replace('.png','').replace(/^\d+[a-z]?\s*/i,'').trim() || g.filename;
+  const src = '/api/diagnostics/figures/' + g.filename;
+  const jsSrc = src.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+  const jsLabel = label.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+  return `<div class="fig-chip">
+    <img src="${esc(src)}" alt="${esc(label)}" loading="lazy" onclick="openLightbox('${jsSrc}','${jsLabel}')">
+    <div class="fig-chip-cap"><span class="fig-ok">✅ Figure generated</span><span class="fig-name">${esc(label)}</span><span class="fig-zoom">🔍 click to enlarge</span></div>
+  </div>`;
+}
+
+function renderFeatureTable(g) {
+  const card = r => `<div class="feature-card">
+    <div class="f-name">${esc(r.feature)}</div>
+    <div class="f-row"><span>Correlation</span><b>${r.corr.toFixed(3)}</b></div>
+    <div class="f-row"><span>p-value</span><b>${r.pval.toFixed(3)}</b></div>
+    <div class="f-row"><span>Sample size</span><b>${r.n}</b></div>
+    <span class="f-badge ${r.corr>=0?'pos':'neg'}">${r.corr>=0?'Positive':'Negative'}</span>
+  </div>`;
+  const visible = g.rows.slice(0,6).map(card).join('');
+  const rest = g.rows.slice(6);
+  let more = '';
+  if (rest.length) more = `<details class="status-more"><summary>Show ${rest.length} more features →</summary><div class="feature-cards" style="margin-top:10px">${rest.map(card).join('')}</div></details>`;
+  return `<div class="feature-cards">${visible}</div>${more}`;
+}
+
+function renderFilterTable(g) {
+  const rows = g.rows.map(r => `<tr class="${r.profitable?'profitable':''}">
+    <td>${esc(r.name)}</td><td>${r.n}</td><td>${r.wr.toFixed(1)}%</td>
+    <td class="${r.roi>0?'val-pos':r.roi<0?'val-neg':''}">${r.roi>0?'+':''}${r.roi.toFixed(1)}%</td>
+    <td>${r.avgEv.toFixed(1)}%</td><td>${r.profitable?'<span class="chk-yes">✓</span>':''}</td>
+  </tr>`).join('');
+  return `<div class="term-table-wrap"><div class="term-table-cap">Filter grid search — ${g.rows.length} combinations tested</div>
+    <table class="term-table"><thead><tr><th>Filter</th><th>N</th><th>WR</th><th>ROI</th><th>Avg EV</th><th>Profitable</th></tr></thead>
+    <tbody>${rows}</tbody></table></div>`;
+}
+
+function renderSituationTable(g) {
+  const rows = g.rows.map(r => `<tr><td>${esc(r.label)}</td><td class="${r.wr>=55?'val-pos':r.wr<45?'val-neg':''}">${r.wr}%</td><td>${r.n}</td></tr>`).join('');
+  return `<div class="term-table-wrap"><div class="term-table-cap">Weakest situations (min n=3)</div>
+    <table class="term-table"><thead><tr><th>Situation</th><th>Win Rate</th><th>N</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+}
+
+function renderTeamTable(g) {
+  const icon = /TOP/i.test(g.heading) ? '🏆' : '📉';
+  const rows = g.rows.map(r => `<tr><td>${esc(r.team)}</td><td>${r.picks}</td><td>${r.wr.toFixed(1)}%</td>
+    <td class="${r.roi>0?'val-pos':r.roi<0?'val-neg':''}">${r.roi>0?'+':''}${r.roi.toFixed(1)}%</td><td>${r.avgEv.toFixed(1)}%</td></tr>`).join('');
+  return `<div class="term-table-wrap"><div class="term-table-cap">${icon} ${esc(g.heading.replace(':',''))}</div>
+    <table class="term-table"><thead><tr><th>Team</th><th>Picks</th><th>WR</th><th>ROI</th><th>Avg EV</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+}
+
+function renderAlertBanner(g) {
+  let bodyHtml = '', para = [];
+  const flush = () => { if (para.length) { bodyHtml += `<p class="ab-body">${esc(para.join(' '))}</p>`; para = []; } };
+  g.lines.forEach(l => { if (l.startsWith('→')) { flush(); bodyHtml += `<div class="ab-body">→ ${esc(l.replace(/^→\s*/,''))}</div>`; } else para.push(l); });
+  flush();
+  return `<div class="alert-banner ${g.tone}"><div class="ab-title">⚠ ${esc(g.title)}</div>${bodyHtml}</div>`;
+}
+
+function renderCallout(g) {
+  if (g.raw) {
+    if (g.title === 'Findings') {
+      const items = [];
+      g.raw.forEach(l => { const t = l.trim(); if (t.startsWith('•')) items.push(t.replace(/^•\s*/,'')); else if (items.length) items[items.length-1] += ' ' + t; });
+      return `<div class="term-callout ${g.tone}"><div class="tc-title">${esc(g.title)}</div><ul>${items.map(i=>`<li>${esc(i)}</li>`).join('')}</ul></div>`;
+    }
+    return `<div class="term-callout ${g.tone}"><div class="tc-title">${esc(g.title)}</div><p>${esc(g.raw.map(l=>l.trim()).join(' '))}</p></div>`;
+  }
+  return `<div class="term-callout ${g.tone}"><div class="tc-title">${esc(g.title)}</div><p>${esc(g.lines.join(' '))}</p></div>`;
+}
+
+function renderIssueCard(g) {
+  const sevMap = { CRITICAL:'crit', HIGH:'high', MEDIUM:'med' };
+  const sc = sevMap[g.severity] || 'med';
+  const meta = [];
+  if (g.fields['Expected Impact']) meta.push(['Impact', g.fields['Expected Impact']]);
+  if (g.fields['Eng Difficulty']) meta.push(['Difficulty', g.fields['Eng Difficulty']]);
+  if (g.fields['Priority']) meta.push(['Priority', '#'+g.fields['Priority']]);
+  const metaHtml = meta.map(([k,v])=>`<span style="font-size:10px;color:var(--dim);margin-right:14px;display:inline-block;margin-top:4px">${k}: <b style="color:var(--text)">${esc(v)}</b></span>`).join('');
+  let body = '';
+  if (g.fields['Evidence']) body += `<div class="finding-body"><b style="color:var(--text)">Evidence — </b>${esc(g.fields['Evidence'])}</div>`;
+  if (g.fields['Root Cause']) body += `<div class="finding-body" style="margin-top:6px"><b style="color:var(--text)">Root cause — </b>${esc(g.fields['Root Cause'])}</div>`;
+  return `<div class="finding-card ${sc}">
+    <div class="finding-badge ${sc}">${g.icon} RANK ${esc(g.rank)} — ${esc(g.severity)}</div>
+    <div class="finding-title">${esc(g.title)}</div>
+    ${body}
+    ${g.fields['Fix']?`<div class="finding-fix">⚡ FIX: ${esc(g.fields['Fix'])}</div>`:''}
+    <div>${metaHtml}</div>
+  </div>`;
+}
+
+function renderRoadmapPhase(g) {
+  return `<div class="roadmap-phase-head"><span class="phase-badge">Phase ${esc(g.num)}</span><span class="phase-title">${esc(g.title)}</span><span class="phase-duration">${esc(g.duration)}</span></div>${g.priorityNote?`<div class="phase-priority" style="margin-top:6px">${esc(g.priorityNote)}</div>`:''}`;
+}
+function renderRoadmapItem(g) {
+  return `<div class="roadmap-item"><div class="ri-head"><span class="ri-code">${esc(g.code)}</span><span class="ri-title">${esc(g.title)}</span></div>${g.bullets.length?`<ul>${g.bullets.map(b=>`<li>${esc(b)}</li>`).join('')}</ul>`:''}</div>`;
+}
+function renderImpactProgress(g) {
+  return `<div class="impact-progress">${g.rows.map(r=>`<div class="impact-step"><div class="ip-label">${esc(r.label)}</div><div class="ip-value">${esc(r.value)}</div></div>`).join('')}</div>`;
+}
+function renderComplete(b) {
+  const chips = b.figures.map(f => `<button class="fig-pill" onclick="switchTab('figures')">${esc(f.replace('.png',''))}</button>`).join('');
+  return `<div class="term-complete">
+    <div class="tc-head">✅ Diagnostic Complete${b.seconds?` — ${esc(b.seconds)}s`:''}</div>
+    <div class="tc-sub">${b.figures.length} figures generated</div>
+    <div class="fig-pill-row">${chips}</div>
+  </div>`;
+}
+
+function doStructuredRender() {
+  const feed = document.getElementById('termFeed');
+  if (!feed) return;
+  feed.innerHTML = renderTermBlocks(parseTermLines(_rawLines));
+  const pane = document.getElementById('terminalPane');
+  pane.scrollTop = pane.scrollHeight;
+}
+function scheduleStructuredRender() {
+  if (_renderScheduled) return;
+  _renderScheduled = true;
+  setTimeout(() => { _renderScheduled = false; doStructuredRender(); }, 120);
+}
+
+// ── Init ───────────────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  loadFigures();
+  fetchLastRunTime();
+  restoreLastRun();
+});
+
+// Restore sidebar dot statuses + Developer Notes / Overall Summary from the
+// last saved run snapshot, so a page refresh doesn't lose them and force a
+// re-run just to see the report again.
+async function restoreLastRun() {
+  try {
+    const r = await fetch('/api/diagnostics/history');
+    const history = await r.json();
+    if (!history || !history.latest) {
+      renderRunReport();
+      return;
+    }
+    RUN_HISTORY = history;
+    _sectionResults = history.latest.sections || {};
+    Object.keys(_sectionResults).forEach(secId => {
+      const st = _sectionResults[secId].status;
+      if (st === 'ok') markSection(secId, 'ok');
+      else if (st === 'error') markSection(secId, 'fail', _sectionResults[secId].error);
+      else if (st === 'skipped') markSection(secId, 'skip', _sectionResults[secId].reason);
+    });
+    renderRunReport();
+  } catch (e) {
+    renderRunReport();
+  }
+}
+
+async function fetchLastRunTime() {
+  try {
+    const r = await fetch('/api/diagnostics/figures');
+    const d = await r.json();
+    const el = document.getElementById('lastRun');
+    if (d.last_run && d.last_run > 0) {
+      const dt = new Date(d.last_run * 1000);
+      el.textContent = 'Last run: ' + dt.toLocaleString('en-US', {month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+    } else {
+      el.textContent = 'Never run';
+    }
+    document.getElementById('statFigs').textContent = d.figures.length;
+    _allFigs = d.figures;
+    renderFigures();
+  } catch(e) {}
+}
+
+// ── Tab switching ──────────────────────────────────────────────────────
+function switchTab(tab) {
+  _activeTab = tab;
+  document.querySelectorAll('.diag-tab').forEach((t,i) => {
+    t.classList.toggle('active', ['terminal','figures','findings'][i] === tab);
+  });
+  document.getElementById('terminalPane').classList.toggle('active',  tab === 'terminal');
+  document.getElementById('figuresPane').classList.toggle('active',   tab === 'figures');
+  document.getElementById('findingsPane').classList.toggle('active',  tab === 'findings');
+}
+
+// ── Run diagnostics ────────────────────────────────────────────────────
+function runDiagnostics() {
+  if (_running) return;
+  _running = true;
+  const btn = document.getElementById('runBtn');
+  btn.textContent = '⏳ RUNNING…';
+  btn.classList.add('running');
+
+  // Reset sidebar dots — every section goes back to gray "not started"
+  // until its own ##DIAG_EVENT## start/result marker updates it for real.
+  document.querySelectorAll('.diag-section-item').forEach(el => {
+    el.classList.remove('ok','fail','running','skip');
+    el.classList.add('idle');
+    el.removeAttribute('title');
+    el.querySelector('.sec-dot').style.background = 'var(--border)';
+  });
+  _sectionResults = {};
+  RUN_HISTORY = null;
+
+  const term = document.getElementById('terminalPane');
+  term.className = 'diag-terminal active';
+  term.innerHTML = '<div class="term-feed" id="termFeed"></div>';
+  switchTab('terminal');
+  _sectionAnchors = {};
+  _rawLines = [];
+
+  const SEC_MAP = {
+    '1A': 's1', '1B': 's1', '1C': 's1', '1D': 's1', '1E': 's1', '1F': 's1', '1G': 's1',
+    'SECTION 1': 's1', 'SECTION 2': 's2', 'SECTION 3': 's3', 'SECTION 4': 's4',
+    'SECTION 5': 's5', 'SECTION 6': 's6', 'SECTION 7': 's7',
+    'SECTION 9': 's9', 'SECTION 11': 's11', 'SECTION 12': 's12',
+    'SECTION 13': 's13', 'SECTION 14': 's14', 'SECTION 15': 's15',
+    'SECTION 19': 's19', 'SECTION 21': 's21', 'SECTION 24': 's24',
+    'SECTION 25': 's25',
+  };
+
+  let currentSec = null;
+  const es = new EventSource('/api/diagnostics/run');
+  let resolvedCount = 0, overW = 0, overL = 0, underW = 0, underL = 0,
+      ece = null, clv = null, ev = null;
+
+  es.onmessage = (e) => {
+    const msg = JSON.parse(e.data);
+
+    // Final structured payload emitted right before 'done' — real numbers
+    // computed server-side by services.diag_metrics_service, not parsed out
+    // of terminal text. Drives Developer Notes + Overall Summary.
+    if (msg.summary) {
+      const sr = msg.summary.section_results || {};
+      Object.keys(sr).forEach(secId => { _sectionResults[secId] = sr[secId]; });
+      RUN_HISTORY = msg.summary.history || null;
+      if (msg.summary.error) {
+        appendTermLine('Run-history snapshot could not be saved: ' + msg.summary.error, 'warn');
+      }
+      return;
+    }
+
+    if (msg.done) {
+      doStructuredRender();
+      es.close();
+      _running = false;
+      btn.textContent = '▶ RUN FULL SUITE';
+      btn.classList.remove('running');
+      document.getElementById('lastRun').textContent = 'Last run: just now';
+      loadFigures();
+      updateStats({ resolvedCount, overW, overL, underW, underL, ece, clv, ev });
+      renderRunReport();
+      switchTab('findings');
+      return;
+    }
+
+    const raw = msg.line;
+
+    // Machine-readable section status marker — the authoritative source for
+    // sidebar dot color. Handled here and NOT rendered as a visible line.
+    if (raw.startsWith('##DIAG_EVENT##')) {
+      try {
+        const evt = JSON.parse(raw.slice('##DIAG_EVENT##'.length));
+        if (evt.type === 'start') {
+          currentSec = evt.section;
+          markSection(evt.section, 'running');
+          highlightSectionItem(evt.section);
+        } else if (evt.type === 'result') {
+          _sectionResults[evt.section] = {
+            title: evt.title, status: evt.status,
+            metrics: evt.metrics || {}, error: evt.error, reason: evt.reason,
+          };
+          if (evt.status === 'ok') markSection(evt.section, 'ok');
+          else if (evt.status === 'error') {
+            markSection(evt.section, 'fail', evt.error);
+            appendTermLine(`${SECTION_TITLES[evt.section] || evt.section} failed: ${evt.error}`, 'crit');
+          } else if (evt.status === 'skipped') {
+            markSection(evt.section, 'skip', evt.reason);
+          }
+        }
+      } catch (err) { /* malformed marker — ignore, don't break the stream */ }
+      _rawLines.push(raw);
+      return;
+    }
+
+    const line = document.createElement('div');
+    line.className = 't-line';
+    line.textContent = raw;
+
+    // Classify + colorize (presentation only — status no longer derived here)
+    if (raw.includes('█') || raw.includes('DIAGNOSTIC COMPLETE')) {
+      line.className += ' header';
+    } else if (raw.match(/^▶▶▶/)) {
+      line.className += ' section';
+      const m = raw.match(/SECTION[S]?\s+(\d+)/i);
+      if (m) {
+        const k = 'SECTION ' + m[1];
+        if (SEC_MAP[k]) {
+          _sectionAnchors[SEC_MAP[k]] = line;
+        }
+      }
+    } else if (raw.match(/^═+$/)) {
+      line.className += ' separator';
+    } else if (raw.match(/^\s*═+\s+\d/)) {
+      line.className += ' section';
+      // sub-section anchor
+      const m = raw.match(/(\d+[A-Z]?)\s*[—–]/);
+      if (m) {
+        const k = 'SECTION ' + m[1].replace(/[A-Z]$/,'');
+        if (SEC_MAP[k] && !_sectionAnchors[SEC_MAP[k]]) _sectionAnchors[SEC_MAP[k]] = line;
+      }
+    } else if (raw.includes('✅') || raw.includes('[OK]')) {
+      line.className += ' ok';
+    } else if (raw.includes('🔴') || raw.includes('[CRIT]') || raw.includes('❌')) {
+      line.className += ' crit';
+    } else if (raw.includes('⚠') || raw.includes('[WARN]')) {
+      line.className += ' warn';
+    } else if (raw.includes('→ Saved:')) {
+      line.className += ' saved';
+    } else if (raw.trim() === '' || raw.match(/^\s+$/)) {
+      line.className += ' dim';
+    }
+
+    // Parse key stats from output (display-only stat chips; not used for status)
+    const rM = raw.match(/Resolved \(won \+ lost\):\s+([\d]+)/);
+    if (rM) { resolvedCount = parseInt(rM[1]); document.getElementById('statResolved').textContent = resolvedCount; }
+    const oM = raw.match(/OVER:\s+([\d]+)W-([\d]+)L\s+\(([\d.]+)%/);
+    if (oM) { overW=parseInt(oM[1]); overL=parseInt(oM[2]); const wr=parseFloat(oM[3]); document.getElementById('statOverWR').textContent = wr.toFixed(1)+'%'; document.getElementById('statOverWR').className = 'value ' + (wr>=50?'green':'red'); }
+    const uM = raw.match(/UNDER:\s+([\d]+)W-([\d]+)L\s+\(([\d.]+)%/);
+    if (uM) { underW=parseInt(uM[1]); underL=parseInt(uM[2]); const wr=parseFloat(uM[3]); document.getElementById('statUnderWR').textContent = wr.toFixed(1)+'%'; document.getElementById('statUnderWR').className = 'value ' + (wr>=52?'green':'amber'); }
+    const eceM = raw.match(/ECE:\s+([\d.]+)/);
+    if (eceM) { ece = parseFloat(eceM[1]); const el = document.getElementById('statECE'); el.textContent = ece.toFixed(3); el.className = 'value ' + (ece<0.05?'green':ece<0.10?'amber':'red'); }
+    const clvM = raw.match(/Avg CLV:\s+([\d.-]+)pp/);
+    if (clvM) { clv = parseFloat(clvM[1]); const el = document.getElementById('statCLV'); el.textContent = (clv>0?'+':'')+clv.toFixed(2)+'pp'; el.className = 'value ' + (clv>0?'green':'red'); }
+    const evM = raw.match(/EV:\s+mean=([\d.]+)%/);
+    if (evM) { ev = parseFloat(evM[1]); document.getElementById('statEV').textContent = ev.toFixed(1)+'%'; }
+
+    _rawLines.push(raw);
+    scheduleStructuredRender();
+  };
+
+  es.onerror = () => {
+    es.close();
+    _running = false;
+    btn.textContent = '▶ RUN FULL SUITE';
+    btn.classList.remove('running');
+    appendTermLine('⚠  Stream disconnected — check if Flask is running.', 'warn');
+  };
+}
+
+function updateStats({ resolvedCount, overW, overL, underW, underL }) {
+  const total = overW + overL + underW + underL;
+  const wins  = overW + underW;
+  if (total > 0) {
+    const wr = wins / total * 100;
+    const el = document.getElementById('statWR');
+    el.textContent = wr.toFixed(1) + '%';
+    el.className = 'value ' + (wr >= 52.4 ? 'green' : wr >= 50 ? 'amber' : 'red');
+  }
+}
+
+function appendTermLine(text, cls) {
+  const pane = document.getElementById('terminalPane');
+  const feed = document.getElementById('termFeed') || pane;
+  const tone = cls === 'crit' ? 'crit' : 'warn';
+  const div = document.createElement('div');
+  div.className = 'alert-banner ' + tone;
+  div.innerHTML = `<div class="ab-title">⚠ Notice</div><div class="ab-body">${esc(text)}</div>`;
+  feed.appendChild(div);
+  pane.scrollTop = pane.scrollHeight;
+}
+
+// ── Section sidebar ────────────────────────────────────────────────────
+function highlightSectionItem(secId) {
+  document.querySelectorAll('.diag-section-item').forEach(el => el.classList.remove('active'));
+  const el = document.querySelector(`[data-sec="${secId}"]`);
+  if (el) { el.classList.add('active'); el.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); }
+}
+
+// status: 'idle' (gray, not started) | 'running' (blue) | 'ok' (green) |
+// 'fail' (red) | 'skip' (gray, with a title tooltip explaining why).
+function markSection(secId, status, reason) {
+  const el = document.querySelector(`[data-sec="${secId}"]`);
+  if (!el) return;
+  el.classList.remove('ok','fail','idle','running','skip');
+  el.classList.add(status);
+  const colors = { ok:'var(--green)', fail:'var(--red)', running:'var(--blue)',
+                    skip:'var(--border)', idle:'var(--border)' };
+  el.querySelector('.sec-dot').style.background = colors[status] || 'var(--border)';
+  if (reason) { el.title = reason; } else if (status !== 'skip') { el.removeAttribute('title'); }
+}
+
+function jumpSection(secId) {
+  switchTab('terminal');
+  const anchor = document.querySelector('.term-section[data-secid="' + secId + '"]');
+  if (anchor) {
+    anchor.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    highlightSectionItem(secId);
+  }
+}
+
+// ── Figures ────────────────────────────────────────────────────────────
+async function loadFigures() {
+  try {
+    const r = await fetch('/api/diagnostics/figures');
+    const d = await r.json();
+    _allFigs = d.figures;
+    document.getElementById('statFigs').textContent = _allFigs.length;
+    renderFigures();
+  } catch(e) {}
+}
+
+function renderFigures() {
+  const grid = document.getElementById('figuresGrid');
+  const figs = _figFilter === 'all' ? _allFigs : _allFigs.filter(f => f.startsWith(_figFilter));
+  if (!figs.length) {
+    grid.innerHTML = '<div style="color:var(--dim);font-size:12px;padding:20px 0">No figures yet — run the diagnostic suite first.</div>';
+    return;
+  }
+  grid.innerHTML = figs.map(f => {
+    const label = f.replace(/_/g,' ').replace('.png','').toUpperCase();
+    return `<div class="fig-card" onclick="openLightbox('/api/diagnostics/figures/${f}','${label}')">
+      <img src="/api/diagnostics/figures/${f}" alt="${label}" loading="lazy">
+      <div class="fig-card-label">${label}</div>
+    </div>`;
+  }).join('');
+}
+
+function filterFigs(prefix, btn) {
+  _figFilter = prefix;
+  document.querySelectorAll('.fig-filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderFigures();
+}
+
+// ── Lightbox ───────────────────────────────────────────────────────────
+function openLightbox(src, caption) {
+  document.getElementById('lightboxImg').src = src;
+  document.getElementById('lightboxCaption').textContent = caption;
+  document.getElementById('lightbox').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('open');
+  document.body.style.overflow = '';
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
+
+// ── Findings panel: Overall Summary + per-section Developer Notes ───────
+// Everything rendered here comes straight from RUN_HISTORY (saved by
+// services.diag_metrics_service off the exact same computation /api/diag/data
+// serves) and _sectionResults (the ##DIAG_EVENT## metrics each diagnostics
+// section already computed). Nothing here is a hardcoded/fabricated finding.
+function fmtDelta(d) {
+  if (d.delta === 0 || d.delta === null || d.delta === undefined) return 'unchanged';
+  const sign = d.delta > 0 ? '+' : '';
+  return `${sign}${d.delta}${d.unit || ''}`;
+}
+
+function computeOverallSummary() {
+  if (!RUN_HISTORY || !RUN_HISTORY.latest) return null;
+  const diff = RUN_HISTORY.diff;
+  const latest = RUN_HISTORY.latest;
+
+  const improved = (diff || []).filter(d => d.improved === true).sort((a,b)=>Math.abs(b.delta)-Math.abs(a.delta));
+  const worsened = (diff || []).filter(d => d.improved === false).sort((a,b)=>Math.abs(b.delta)-Math.abs(a.delta));
+
+  // "Biggest bottleneck" = the real metric currently furthest below its
+  // breakeven/target threshold. No new metric is computed — just a max()
+  // over gaps against numbers already in latest.summary/calibration.
+  const s = latest.summary || {}, c = latest.calibration || {};
+  const candidates = [
+    { label: 'OVER win rate',      value: s.over_wr,  breakeven: 52.4, gap: s.over_wr  != null ? 52.4 - s.over_wr  : null },
+    { label: 'UNDER win rate',     value: s.under_wr, breakeven: 52.4, gap: s.under_wr != null ? 52.4 - s.under_wr : null },
+    { label: 'Calibration (ECE)',  value: c.ece,       breakeven: 0.05, gap: c.ece != null ? c.ece - 0.05 : null },
+  ].filter(x => x.gap !== null && x.gap > 0).sort((a,b) => b.gap - a.gap);
+  const bottleneck = candidates[0] || null;
+
+  const rc = (_sectionResults.s24 && _sectionResults.s24.metrics) || {};
+  let nextStep;
+  if (rc.critical_issues) {
+    nextStep = `${rc.critical_issues} CRITICAL issue(s) flagged in the Root Cause Report (§24) — resolve those first.`;
+  } else if (bottleneck) {
+    const gapStr = bottleneck.label.includes('ECE') ? bottleneck.gap.toFixed(3) : bottleneck.gap.toFixed(1);
+    nextStep = `${bottleneck.label} is furthest from breakeven/target (gap ${gapStr}) — investigate that segment next.`;
+  } else {
+    nextStep = 'No clear bottleneck detected in this run — keep monitoring rolling win rate and CLV.';
+  }
+
+  return { improved, worsened, bottleneck, nextStep, hasPrevious: !!diff };
+}
+
+function renderRunReport() {
+  const container = document.getElementById('findingsContent');
+  if (!RUN_HISTORY || !RUN_HISTORY.latest) {
+    container.innerHTML = '<div style="color:var(--dim);font-size:12px;padding:20px 0">Run the diagnostic suite to populate findings.</div>';
+    return;
+  }
+  const os = computeOverallSummary();
+  let html = `<h3 style="font-size:11px;letter-spacing:.1em;color:var(--dim);text-transform:uppercase;margin:0 0 16px">OVERALL SUMMARY</h3>`;
+
+  if (!os.hasPrevious) {
+    html += `<div class="finding-card med"><div class="finding-badge med">ℹ FIRST SNAPSHOT</div>
+      <div class="finding-body">No previous run saved yet to compare against. This run's metrics are now stored — the next "Run Full Suite" will diff against it.</div></div>`;
+  } else {
+    const impList = os.improved.length
+      ? os.improved.map(d => `${esc(d.label)}: ${d.previous}${d.unit} → ${d.latest}${d.unit} (${fmtDelta(d)})`).join('<br>')
+      : 'No tracked metric improved vs the previous run.';
+    const worList = os.worsened.length
+      ? os.worsened.map(d => `${esc(d.label)}: ${d.previous}${d.unit} → ${d.latest}${d.unit} (${fmtDelta(d)})`).join('<br>')
+      : 'No tracked metric got worse vs the previous run.';
+    html += `<div class="finding-card good"><div class="finding-badge good">✅ WHAT IMPROVED</div><div class="finding-body">${impList}</div></div>`;
+    html += `<div class="finding-card crit"><div class="finding-badge crit">🔻 WHAT GOT WORSE</div><div class="finding-body">${worList}</div></div>`;
+  }
+  if (os.bottleneck) {
+    html += `<div class="finding-card high"><div class="finding-badge high">🎯 BIGGEST BOTTLENECK</div>
+      <div class="finding-body">${esc(os.bottleneck.label)} is at ${os.bottleneck.value} vs a ${os.bottleneck.breakeven} breakeven/target.</div></div>`;
+  }
+  html += `<div class="finding-card med"><div class="finding-badge med">➡ WHAT TO FIX NEXT</div><div class="finding-body">${esc(os.nextStep)}</div></div>`;
+
+  html += `<h3 style="font-size:11px;letter-spacing:.1em;color:var(--dim);text-transform:uppercase;margin:24px 0 16px">DEVELOPER NOTES BY SECTION</h3>`;
+  const prevSections = (RUN_HISTORY.previous && RUN_HISTORY.previous.sections) || {};
+  SECTION_ORDER.forEach(secId => {
+    const r = _sectionResults[secId];
+    if (!r) return; // this section never ran / no event seen this session
+    const title = SECTION_TITLES[secId];
+    let sc = 'med', badge = '⚪ UNKNOWN';
+    if (r.status === 'ok')       { sc = 'good'; badge = '✅ OK'; }
+    else if (r.status === 'error')   { sc = 'crit'; badge = '🔴 ERROR'; }
+    else if (r.status === 'skipped') { sc = 'med';  badge = '⏭ SKIPPED'; }
+
+    const metrics = r.metrics || {};
+    const metricLines = Object.keys(metrics).length
+      ? Object.entries(metrics).map(([k,v]) => `${esc(k.replace(/_/g,' '))}: <b>${esc(v)}</b>`).join(' &nbsp;·&nbsp; ')
+      : '';
+
+    const prevMetrics = (prevSections[secId] && prevSections[secId].metrics) || {};
+    const changed = Object.keys(metrics).filter(k =>
+      typeof metrics[k] === 'number' && typeof prevMetrics[k] === 'number' && metrics[k] !== prevMetrics[k]);
+    const vsPrev = changed.length
+      ? 'Changed vs previous run: ' + changed.map(k => `${k.replace(/_/g,' ')} ${prevMetrics[k]} → ${metrics[k]}`).join(', ')
+      : (Object.keys(prevMetrics).length ? 'No change vs previous run.' : 'No previous run to compare.');
+
+    let whatsGood, needsWork, nextStep;
+    if (r.status === 'error') {
+      whatsGood = 'Nothing — the section did not complete.';
+      needsWork = `Error: ${esc(r.error || 'unknown error')}`;
+      nextStep  = 'Fix the exception above; this section produced no figures or metrics this run.';
+    } else if (r.status === 'skipped') {
+      whatsGood = '—';
+      needsWork = `Skipped: ${esc(r.reason || 'unknown reason')}`;
+      nextStep  = 'Resolve the upstream data-load issue for this module, then re-run.';
+    } else {
+      whatsGood = metricLines || 'Ran cleanly and produced its figure(s).';
+      needsWork = changed.length ? 'See "vs previous run" below.' : 'Nothing new flagged this run.';
+      nextStep  = 'Review the corresponding figure in the Figures tab for visual detail.';
+    }
+
+    html += `<div class="finding-card ${sc}" style="margin-bottom:10px">
+      <div class="finding-badge ${sc}">${badge} — §${secId.replace('s','')} ${esc(title)}</div>
+      <div class="finding-body">
+        <b>What looks good:</b> ${whatsGood}<br>
+        <b>Needs improvement:</b> ${needsWork}<br>
+        <b>Vs previous run:</b> ${esc(vsPrev)}<br>
+        <b>Next step:</b> ${nextStep}
+      </div>
+    </div>`;
+  });
+
+  container.innerHTML = html;
+}
+</script>
+{% endblock %}

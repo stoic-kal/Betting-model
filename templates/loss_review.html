@@ -1,0 +1,606 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+/* ── Modern dashboard shell (uses real tokens from static/style.css —
+   the old page referenced --ink/--gold, which don't exist anywhere in
+   the stylesheet, so a lot of its borders/colors were silently no-ops) ── */
+.lr2{max-width:1280px;margin:0 auto}
+.lr2-head{display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:16px;margin-bottom:28px}
+.lr2-head h1{font-size:22px;font-weight:700;letter-spacing:-0.01em;margin:0 0 6px;display:flex;align-items:center;gap:9px}
+.lr2-head .sub{font-size:12.5px;color:var(--text-dim);line-height:1.6;max-width:560px}
+.lr2-filters{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.lr2-filters input,.lr2-filters select{font:inherit;font-size:12px;padding:8px 12px;border-radius:8px;border:1px solid var(--border);background:var(--bg-card);color:var(--text)}
+.lr2-btn{font:inherit;font-size:12px;font-weight:600;padding:8px 14px;border-radius:8px;border:1px solid var(--border);background:var(--bg-card);color:var(--text);cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:6px;transition:background .15s,border-color .15s}
+.lr2-btn:hover{background:var(--bg-card-hover)}
+.lr2-btn.primary{background:var(--violet);border-color:var(--violet);color:#fff}
+.lr2-btn.primary:hover{background:#8b5cf6}
+
+/* KPI strip */
+.lr2-kpis{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:1px;background:var(--border);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:24px}
+.lr2-kpi{background:var(--bg-elevated);padding:18px 20px}
+.lr2-kpi .v{font-size:26px;font-weight:700;letter-spacing:-0.02em;line-height:1.1}
+.lr2-kpi .l{font-size:10.5px;color:var(--text-dim);margin-top:7px;text-transform:uppercase;letter-spacing:.05em}
+.lr2-kpi .v.pos{color:var(--green)}
+.lr2-kpi .v.neg{color:var(--red)}
+.lr2-kpi .v.warn{color:var(--amber)}
+
+/* Section shell */
+.lr2-section{margin-bottom:28px}
+.lr2-section-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.lr2-section-head h2{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-dim)}
+.lr2-section-head .count{font-size:11px;color:var(--text-muted)}
+
+/* Learning flags */
+.lr2-flags{display:flex;flex-direction:column;gap:8px}
+.lr2-flag{display:flex;align-items:flex-start;gap:10px;padding:12px 14px;border-radius:8px;background:var(--bg-card);border-left:3px solid var(--amber);font-size:12px;line-height:1.6;color:var(--text)}
+.lr2-flag.ok{border-left-color:var(--green)}
+.lr2-flag .ic{flex-shrink:0;font-size:14px;line-height:1.4}
+
+/* Charts */
+.lr2-charts{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.lr2-chart-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:16px}
+.lr2-chart-card h3{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-dim);margin:0 0 12px}
+.lr2-chart-box{height:220px;position:relative}
+
+/* Loss review list — cards instead of a table */
+.lr2-loss-list{display:flex;flex-direction:column}
+.lr2-loss-row{display:flex;align-items:center;gap:18px;padding:14px 16px;border-radius:8px;transition:background .12s}
+.lr2-loss-row:hover{background:var(--bg-card)}
+.lr2-loss-row + .lr2-loss-row{border-top:1px solid var(--border)}
+.lr2-loss-col{display:flex;flex-direction:column;gap:2px}
+.lr2-loss-game{flex:2;min-width:0}
+.lr2-loss-game .date{font-size:10.5px;color:var(--text-muted)}
+.lr2-loss-game .matchup{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lr2-loss-pick{flex:1.4;min-width:0}
+.lr2-loss-pick .type{font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.03em}
+.lr2-loss-pick .pick{font-size:12.5px;font-weight:600}
+.lr2-loss-metric{flex:1;text-align:center}
+.lr2-loss-metric .v{font-size:13px;font-weight:600}
+.lr2-loss-metric .l{font-size:9.5px;color:var(--text-muted);margin-top:2px}
+.lr2-loss-tags{flex:1.6;display:flex;gap:5px;flex-wrap:wrap;align-items:center}
+.lr2-pill{display:inline-block;font-size:10px;font-weight:600;padding:3px 9px;border-radius:20px;background:rgba(255,255,255,0.06);color:var(--text-dim);white-space:nowrap}
+.lr2-pill.more{background:transparent;color:var(--text-muted)}
+.lr2-loss-action{flex-shrink:0}
+.lr2-clv{font-weight:700}
+.lr2-clv.pos{color:var(--green)}
+.lr2-clv.neg{color:var(--red)}
+.lr2-show-more{width:100%;margin-top:10px;padding:10px;border-radius:8px;border:1px dashed var(--border);background:transparent;color:var(--text-dim);font:inherit;font-size:12px;cursor:pointer}
+.lr2-show-more:hover{background:var(--bg-card);color:var(--text)}
+.lr2-empty{padding:32px;text-align:center;color:var(--text-dim);font-size:13px}
+.lr2-hidden{display:none}
+
+@media(max-width:1050px){.lr2-kpis{grid-template-columns:repeat(3,1fr)}.lr2-charts{grid-template-columns:1fr}}
+@media(max-width:760px){.lr2-kpis{grid-template-columns:repeat(2,1fr)}.lr2-loss-row{flex-wrap:wrap}.lr2-loss-metric{text-align:left}}
+
+/* ── Modal ─────────────────────────────────────────────────────────── */
+.lr2-modal-bg{display:none;position:fixed;inset:0;background:rgba(4,4,10,0.72);backdrop-filter:blur(4px);z-index:200;overflow-y:auto;padding:40px 16px}
+.lr2-modal-bg.open{display:block}
+.lr2-modal{max-width:760px;margin:0 auto;background:var(--bg-elevated);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow-md);overflow:hidden}
+.lr2-modal-head{padding:20px 24px;display:flex;justify-content:space-between;align-items:flex-start;gap:12px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--bg-elevated);z-index:2}
+.lr2-modal-head h2{font-size:16px;font-weight:700;margin:0 0 5px;letter-spacing:-0.01em}
+.lr2-modal-head .sub{font-size:11.5px;color:var(--text-dim)}
+.lr2-modal-close{font:inherit;font-size:13px;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;color:var(--text-dim);cursor:pointer;padding:7px 10px;flex-shrink:0}
+.lr2-modal-close:hover{color:var(--text);background:var(--bg-card-hover)}
+.lr2-modal-body{padding:22px 24px 26px}
+
+.debrief-section{margin-bottom:22px}
+.debrief-section h3{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-dim);margin:0 0 12px}
+.debrief-section .note{font-size:11px;color:var(--text-muted);line-height:1.65;margin-top:10px}
+
+.exec-summary{background:var(--violet-dim);border:1px solid var(--border-active);border-radius:12px;padding:18px 20px;margin-bottom:24px}
+.exec-summary h3{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#c4b5fd;margin:0 0 10px}
+.exec-summary ul{margin:0;padding-left:0;list-style:none;font-size:12.5px;line-height:1.9;color:var(--text)}
+.exec-summary li{position:relative;padding-left:16px;margin-bottom:3px}
+.exec-summary li::before{content:'';position:absolute;left:0;top:9px;width:5px;height:5px;border-radius:50%;background:#a78bfa}
+.exec-summary li b{color:#c4b5fd;font-weight:600}
+
+.equation-card{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:14px 16px}
+.eq-row{display:flex;align-items:baseline;font-size:12px;padding:6px 0;gap:8px}
+.eq-sign{width:12px;text-align:center;font-weight:700}
+.eq-sign.good{color:var(--green)}.eq-sign.bad{color:var(--red)}
+.eq-label{white-space:nowrap;color:var(--text-dim)}
+.eq-dots{flex:1;border-bottom:1px dotted var(--border);margin-bottom:3px}
+.eq-val{white-space:nowrap;font-weight:700;min-width:74px;text-align:right}
+.eq-val.good{color:var(--green)}.eq-val.bad{color:var(--red)}
+.eq-total{border-top:1px solid var(--border);margin-top:8px;padding-top:10px;font-size:13px}
+.eq-total .eq-label{color:var(--text);font-weight:700}
+.eq-total .eq-val{color:var(--cyan);font-size:15px;min-width:auto}
+
+.compare-card-wrap{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.compare-card{display:flex}
+.compare-item{flex:1;padding:16px 12px;text-align:center;border-right:1px solid var(--border)}
+.compare-item:last-child{border-right:none}
+.compare-item.hero{background:var(--violet-dim)}
+.compare-label{font-size:9.5px;letter-spacing:.04em;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px}
+.compare-val{font-size:20px;font-weight:700;letter-spacing:-0.01em}
+.compare-val.bad{color:var(--red)}
+.compare-note{font-size:11.5px;padding:14px 16px;line-height:1.7;border-top:1px solid var(--border);color:var(--text-dim)}
+.compare-note b{color:var(--text)}
+
+.cause-card{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:8px;font-size:12px;line-height:1.65}
+.cause-card b{display:block;font-size:12.5px;margin-bottom:4px;color:var(--text)}
+.cause-conclusion{display:block;margin-top:6px;color:var(--cyan);font-size:11px}
+.conf-pill{display:inline-block;font-size:9.5px;font-weight:700;letter-spacing:.03em;padding:3px 8px;border-radius:20px;margin-right:8px;text-transform:uppercase}
+.conf-High{background:rgba(239,68,68,0.18);color:#fca5a5}
+.conf-Medium{background:rgba(245,158,11,0.18);color:var(--amber)}
+.conf-Low{background:rgba(255,255,255,0.08);color:var(--text-dim)}
+.conf-Insufficient{background:rgba(255,255,255,0.04);color:var(--text-muted);font-style:italic}
+.ruled-out{font-size:11px;color:var(--text-muted);line-height:1.7;padding:10px 2px 2px}
+
+.cf-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px}
+.cf-card{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:12px 14px;font-size:11.5px;line-height:1.7}
+.cf-card b{display:block;font-size:12.5px;margin-bottom:4px;color:var(--text)}
+.cf-flag{display:inline-block;font-size:9px;font-weight:700;letter-spacing:.03em;padding:3px 8px;border-radius:20px;margin:5px 4px 0 0;text-transform:uppercase}
+.cf-flag.yes{background:rgba(239,68,68,0.18);color:#fca5a5}
+.cf-flag.no{background:rgba(255,255,255,0.06);color:var(--text-muted)}
+
+.assump-row{display:flex;gap:10px;align-items:flex-start;font-size:12px;line-height:1.65;padding:9px 0}
+.assump-row + .assump-row{border-top:1px solid var(--border)}
+.assump-icon{flex-shrink:0;width:18px;text-align:center;font-size:13px;margin-top:1px}
+.assump-feature{font-weight:600;margin-right:5px;color:var(--text)}
+
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:12px}
+.stat-card{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:14px 12px;text-align:center}
+.stat-card .stat-val{font-size:20px;font-weight:700;color:var(--cyan)}
+.stat-card .stat-label{font-size:10px;color:var(--text-dim);margin-top:5px;line-height:1.5}
+.pattern-verdict{font-size:12px;line-height:1.7;padding:12px 14px;border-radius:10px;background:var(--bg-card);border-left:3px solid var(--border)}
+.pattern-verdict.recurring{border-left-color:var(--red);background:rgba(239,68,68,0.06)}
+
+.action-badge{display:inline-block;font-size:13px;font-weight:700;padding:8px 16px;border-radius:8px;background:var(--violet);color:#fff;margin-bottom:10px}
+
+.lr2-advanced{border:1px solid var(--border);border-radius:12px;padding:0;margin-bottom:22px;overflow:hidden}
+.lr2-advanced summary{cursor:pointer;padding:14px 18px;font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-dim);list-style:none;display:flex;justify-content:space-between;align-items:center}
+.lr2-advanced summary::-webkit-details-marker{display:none}
+.lr2-advanced summary::after{content:'▾';transition:transform .15s;color:var(--text-muted)}
+.lr2-advanced[open] summary::after{transform:rotate(180deg)}
+.lr2-advanced summary:hover{background:var(--bg-card)}
+.lr2-advanced-body{padding:6px 18px 18px}
+.lr2-advanced .debrief-section:last-child{margin-bottom:0}
+
+.method{font-size:10.5px;color:var(--text-muted);line-height:1.7;margin-top:6px;padding-top:16px;border-top:1px solid var(--border)}
+.method .tag{display:inline-block;background:var(--bg-card);border:1px solid var(--border);border-radius:20px;padding:3px 8px;margin:3px 3px 0 0;font-size:9.5px}
+</style>
+<main class="lr2">
+
+<div class="lr2-head">
+  <div>
+    <h1>🧠 Postgame Loss Review</h1>
+    <div class="sub">Diagnose prediction errors, data-quality failures, market disagreement and calibration patterns. Never changes live weights automatically.</div>
+  </div>
+  <div class="lr2-filters">
+    <input id="date" type="date">
+    <select id="version"><option value="v3">v3 only</option><option value="">All versions</option></select>
+    <button class="lr2-btn primary" onclick="loadReview()">↻ Analyze</button>
+    <button class="lr2-btn" onclick="clearDate()">All Dates</button>
+    <a id="csv" class="lr2-btn" href="/api/loss-review.csv?version=v3">⬇ Export CSV</a>
+  </div>
+</div>
+
+<div id="kpis" class="lr2-kpis"></div>
+
+<div class="lr2-section">
+  <div class="lr2-section-head"><h2>Learning Flags</h2></div>
+  <div id="warning-list" class="lr2-flags"></div>
+</div>
+
+<div class="lr2-section">
+  <div class="lr2-section-head"><h2>Diagnostics</h2></div>
+  <div class="lr2-charts">
+    <div class="lr2-chart-card"><h3>Loss Reasons</h3><div class="lr2-chart-box"><canvas id="reasons"></canvas></div></div>
+    <div class="lr2-chart-card"><h3>Model Type Win Rate</h3><div class="lr2-chart-box"><canvas id="types"></canvas></div></div>
+    <div class="lr2-chart-card"><h3>Probability Calibration</h3><div class="lr2-chart-box"><canvas id="prob"></canvas></div></div>
+    <div class="lr2-chart-card"><h3>EV Bucket Performance</h3><div class="lr2-chart-box"><canvas id="ev"></canvas></div></div>
+    <div class="lr2-chart-card"><h3>CLV Bucket Performance</h3><div class="lr2-chart-box"><canvas id="clv"></canvas></div></div>
+    <div class="lr2-chart-card"><h3>Totals Direction</h3><div class="lr2-chart-box"><canvas id="direction"></canvas></div></div>
+    <div class="lr2-chart-card"><h3>Expected vs Actual Total Runs</h3><div class="lr2-chart-box"><canvas id="errors"></canvas></div></div>
+    <div class="lr2-chart-card"><h3>Daily Win Rate</h3><div class="lr2-chart-box"><canvas id="daily"></canvas></div></div>
+  </div>
+</div>
+
+<div class="lr2-section">
+  <div class="lr2-section-head"><h2>Postgame Reviews</h2><span class="count" id="loss-count"></span></div>
+  <div id="loss-table"></div>
+</div>
+
+</main>
+<div class="lr2-modal-bg" id="debriefBg" onclick="if(event.target===this)closeDebrief()">
+  <div class="lr2-modal">
+    <div class="lr2-modal-head">
+      <div><h2 id="debriefTitle">Loss Debrief</h2><div class="sub" id="debriefSub"></div></div>
+      <button class="lr2-modal-close" onclick="closeDebrief()">✕ Close</button>
+    </div>
+    <div class="lr2-modal-body" id="debriefBody">Loading…</div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script><script>
+const charts={};const esc=v=>String(v??'—').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+function chart(id,type,labels,datasets,percent=false){if(charts[id])charts[id].destroy();charts[id]=new Chart(document.getElementById(id),{type,data:{labels,datasets},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{font:{size:9},color:'#8b8b96'}}},scales:{y:{beginAtZero:true,max:percent?100:undefined,ticks:{color:'#8b8b96'},grid:{color:'rgba(255,255,255,0.06)'}},x:{ticks:{font:{size:8},color:'#8b8b96'},grid:{display:false}}}}})}
+function statChart(id,rows){chart(id,'bar',rows.map(x=>x.label),[{label:'Win rate %',data:rows.map(x=>x.win_rate),backgroundColor:'#7c3aed'},{label:'Sample n',data:rows.map(x=>x.n),backgroundColor:'#06b6d4'}],true)}
+function clearDate(){document.getElementById('date').value='';loadReview()}
+
+let _allLossRows=[];
+const LOSS_PAGE_SIZE=6;
+
+function lossRowHtml(x){
+  const clvCls = x.clv==null?'':(x.clv>=0?'pos':'neg');
+  const tags = x.loss_reasons.slice(0,2).map(t=>`<span class="lr2-pill">${esc(t)}</span>`).join('');
+  const more = x.loss_reasons.length>2 ? `<span class="lr2-pill more">+${x.loss_reasons.length-2} more</span>` : '';
+  return `<div class="lr2-loss-row">
+    <div class="lr2-loss-col lr2-loss-game"><span class="date">${esc(x.date)}</span><span class="matchup">${esc(x.game)}</span></div>
+    <div class="lr2-loss-col lr2-loss-pick"><span class="type">${esc(x.type)}</span><span class="pick">${esc(x.pick)}</span></div>
+    <div class="lr2-loss-metric"><div class="v">${(x.model_prob*100).toFixed(1)}%</div><div class="l">Model Prob · EV ${Number(x.ev).toFixed(1)}%</div></div>
+    <div class="lr2-loss-metric"><div class="v lr2-clv ${clvCls}">${x.clv==null?'—':(x.clv>0?'+':'')+x.clv.toFixed(2)+'pp'}</div><div class="l">CLV</div></div>
+    <div class="lr2-loss-metric"><div class="v">${x.expected_total??'—'} → ${x.actual_total??'—'}</div><div class="l">${x.total_error==null?'Expected → Actual':'Error '+(x.total_error>0?'+':'')+x.total_error}</div></div>
+    <div class="lr2-loss-tags">${tags}${more}</div>
+    <div class="lr2-loss-action"><button class="lr2-btn" onclick="openDebrief(${x.id})">View Details</button></div>
+  </div>`;
+}
+
+function renderLossList(){
+  const el=document.getElementById('loss-table');
+  document.getElementById('loss-count').textContent = _allLossRows.length ? `${_allLossRows.length} loss${_allLossRows.length===1?'':'es'}` : '';
+  if(!_allLossRows.length){ el.innerHTML='<div class="lr2-empty">No resolved losses in this filter.</div>'; return; }
+  const shown=_allLossRows.slice(0,LOSS_PAGE_SIZE), rest=_allLossRows.slice(LOSS_PAGE_SIZE);
+  let html=`<div class="lr2-loss-list">${shown.map(lossRowHtml).join('')}`;
+  if(rest.length){
+    html+=`<div id="lossRest" class="lr2-hidden">${rest.map(lossRowHtml).join('')}</div>`;
+  }
+  html+='</div>';
+  if(rest.length) html+=`<button class="lr2-show-more" id="lossMoreBtn" onclick="toggleMoreLosses()">Show ${rest.length} more loss${rest.length===1?'':'es'}</button>`;
+  el.innerHTML=html;
+}
+function toggleMoreLosses(){
+  const rest=document.getElementById('lossRest'), btn=document.getElementById('lossMoreBtn');
+  const opening = rest.classList.contains('lr2-hidden');
+  rest.classList.toggle('lr2-hidden');
+  btn.textContent = opening ? 'Show less' : `Show ${_allLossRows.length-LOSS_PAGE_SIZE} more losses`;
+}
+
+async function loadReview(){
+  const date=document.getElementById('date').value,version=document.getElementById('version').value,q=new URLSearchParams({version});
+  if(date)q.set('date',date);
+  document.getElementById('csv').href='/api/loss-review.csv?'+q;
+  const r=await fetch('/api/loss-review?'+q,{cache:'no-store'}),d=await r.json();
+  if(!r.ok||d.status!=='success')throw Error(d.message||'Review failed');
+  const s=d.summary;
+  const highConfMiss = (d.reason_counts.find(x=>x.label==='High-confidence miss')||{count:0}).count;
+  const kpis=[
+    {v:s.win_rate==null?'—':s.win_rate+'%', l:'Win Rate', cls: s.win_rate>=53?'pos':(s.win_rate<48?'neg':'')},
+    {v:s.losses, l:'Losses'},
+    {v:s.avg_loss_clv==null?'—':(s.avg_loss_clv>0?'+':'')+s.avg_loss_clv+'pp', l:'Avg Loss CLV', cls: s.avg_loss_clv>=0?'pos':'neg'},
+    {v:s.large_total_misses, l:'Large Misses', cls: s.large_total_misses>0?'warn':''},
+    {v:s.incomplete_losses, l:'Needs Review', cls: s.incomplete_losses>0?'warn':''},
+    {v:highConfMiss, l:'High-Confidence Misses', cls: highConfMiss>0?'warn':''},
+  ];
+  document.getElementById('kpis').innerHTML=kpis.map(k=>`<div class="lr2-kpi"><div class="v ${k.cls||''}">${esc(k.v)}</div><div class="l">${esc(k.l)}</div></div>`).join('');
+  document.getElementById('warning-list').innerHTML=d.warnings.length
+    ? d.warnings.map(x=>`<div class="lr2-flag"><span class="ic">⚠</span><span>${esc(x)}</span></div>`).join('')
+    : '<div class="lr2-flag ok"><span class="ic">✓</span><span>No threshold-based learning flags in this filter.</span></div>';
+  chart('reasons','bar',d.reason_counts.map(x=>x.label),[{label:'Losses tagged',data:d.reason_counts.map(x=>x.count),backgroundColor:'#ef4444'}]);
+  statChart('types',d.by_type);statChart('prob',d.probability_buckets);statChart('ev',d.ev_buckets);statChart('clv',d.clv_buckets);statChart('direction',d.by_direction);
+  chart('errors','bar',d.total_errors.map(x=>x.game),[{label:'Expected',data:d.total_errors.map(x=>x.expected),backgroundColor:'#7c3aed'},{label:'Actual',data:d.total_errors.map(x=>x.actual),backgroundColor:d.total_errors.map(x=>x.status==='lost'?'#ef4444':'#10b981')}]);
+  statChart('daily',d.daily);
+  _allLossRows=d.losses;
+  renderLossList();
+}
+// ── Per-loss debrief modal ────────────────────────────────────────────
+function confPill(c){return `<span class="conf-pill conf-${c==='Insufficient evidence'?'Insufficient':c}">${esc(c)}</span>`}
+function dbfRow(label,val){return `<div class="dbf-row"><span class="dbf-label">${esc(label)}</span><span class="dbf-val">${val==null?'—':esc(val)}</span></div>`}
+function fmtList(arr){return (arr&&arr.length)?arr.map(esc).join(', '):'none'}
+
+// ── Section 1: Executive Summary ──────────────────────────────────────
+// Pure synthesis of fields already present in the debrief payload — no new
+// data, no backend change. Produces 3-5 plain-English bullets.
+function buildExecutiveSummary(d){
+  const t=d.model_thought_process, er=d.expected_vs_reality, causes=d.root_cause_analysis,
+        learn=d.model_learning, act=d.suggested_action;
+  const bullets=[];
+  const isTotals = 'expected_total' in er;
+
+  // 1. What the model expected / played
+  if(isTotals){
+    const lineNote = (er.market_line!=null && String(d.pick).indexOf(String(er.market_line))===-1) ? ` (market line ${er.market_line})` : '';
+    bullets.push(`Model expected <b>${er.expected_total} runs</b> and played <b>${esc(d.pick)}</b>${lineNote}.`);
+  } else {
+    const mp = er.market_prob_for_pick;
+    bullets.push(`Model gave <b>${esc(d.pick)}</b> a <b>${(d.model_prob*100).toFixed(0)}%</b> win probability` +
+                 (mp!=null?` (market had it at ${(mp*100).toFixed(0)}%).`:'.'));
+  }
+
+  // 2. What actually happened
+  if(isTotals){
+    bullets.push(`Game finished with <b>${er.actual_total} runs</b>${er.total_error!=null?` (${er.total_error>0?'+':''}${er.total_error} vs. expected)`:''}.`);
+  } else {
+    bullets.push(`<b>${esc(er.actual_winner)}</b> won, final score ${er.home_score}-${er.away_score}.`);
+  }
+
+  // 3. Biggest driver + most likely explanation for the miss
+  const items = t.top_contributing_adjustments || t.top_contributing_features;
+  const topFeature = items && items[0];
+  const namedCauses = causes.filter(c=>c.confidence!=='Insufficient evidence');
+  const topCause = namedCauses[0];
+  if(topFeature || topCause){
+    let s='Biggest miss appears to be ';
+    const parts=[];
+    if(topFeature) parts.push(`<b>${esc(topFeature.feature)}</b>`);
+    if(topCause && (!topFeature || topCause.cause.toLowerCase().indexOf(topFeature.feature.toLowerCase().split(' ')[0])===-1))
+      parts.push(`<b>${esc(topCause.cause)}</b> (${topCause.confidence.toLowerCase()} confidence)`);
+    s+=parts.join(' combined with ')+'.';
+    bullets.push(s);
+  }
+
+  // 4. What does NOT explain it — clearly ruled-out named causes
+  const ruledOut = causes.filter(c=>c.confidence==='Insufficient evidence' && !/variance|data quality/i.test(c.cause));
+  const lowConfidence = causes.filter(c=>c.confidence==='Low' && !/variance|data quality/i.test(c.cause));
+  const notExplaining = [...ruledOut, ...lowConfidence].slice(0,2).map(c=>c.cause.replace(/^Weather impact incorrect$/,'Weather').replace(/ performed differently.*| may be.*| stronger.*| outperformed.*/,''));
+  if(notExplaining.length){
+    bullets.push(`<b>${notExplaining.join(' and ')}</b> do not appear to explain the loss.`);
+  }
+
+  // 5. Evidence-for-change verdict
+  if(learn.pattern_check.is_recurring_pattern){
+    bullets.push(`This matches a recurring pattern (${esc(learn.pattern_check.verdict)}) — suggested action: <b>${esc(act.action)}</b>.`);
+  } else {
+    bullets.push(`Not enough evidence to justify a model change yet — suggested action: <b>${esc(act.action)}</b>.`);
+  }
+
+  return bullets;
+}
+
+// ── Section 2: Why the model made this pick ───────────────────────────
+// Same underlying data as model_thought_process — just filtered to
+// meaningful contributors and rendered as an equation instead of a table.
+function summarizeBaseInputs(inputs){
+  if(!inputs||!inputs.length) return '';
+  const notable=inputs.filter(b=>b.above_or_below_reference!=='at');
+  if(!notable.length) return 'All base inputs (starting pitchers, offenses, park, weather) were close to league-average.';
+  const phrase=notable.slice(0,3).map(b=>`${esc(b.feature)} ${esc(b.above_or_below_reference)} ${esc(b.reference_label)}`).join(', ');
+  return `Base projection was also shaped by: ${phrase}.`;
+}
+
+function buildThoughtProcessEquation(d){
+  const t=d.model_thought_process, er=d.expected_vs_reality;
+  const isTotals='expected_total' in er;
+  const items=t.top_contributing_adjustments||t.top_contributing_features||[];
+  const threshold=isTotals?0.05:0.5;
+  const shown=items.filter(f=>Math.abs(f.contribution_runs??f.contribution_pp)>=threshold);
+  const hidden=items.length-shown.length;
+
+  const rows=shown.map(f=>{
+    const raw=f.contribution_runs!=null?f.contribution_runs:f.contribution_pp;
+    const unit=f.contribution_runs!=null?'runs':'pp';
+    const sign=raw>0?'+':'−';
+    const cls=raw>0?'good':'bad';
+    return `<div class="eq-row"><span class="eq-sign ${cls}">${sign}</span><span class="eq-label">${esc(f.feature)}${f.saturated_at_cap?' ⚠':''}</span><span class="eq-dots"></span><span class="eq-val ${cls}">${sign}${Math.abs(raw).toFixed(2)} ${unit}</span></div>`;
+  }).join('');
+
+  const totalRow = isTotals
+    ? `<div class="eq-row eq-total"><span class="eq-label">Expected Total</span><span class="eq-dots"></span><span class="eq-val">${er.expected_total}</span></div>`
+    : `<div class="eq-row eq-total"><span class="eq-label">Model Probability</span><span class="eq-dots"></span><span class="eq-val">${(d.model_prob*100).toFixed(1)}%</span></div>`;
+
+  let out=`<div class="equation-card">${rows}${totalRow}</div>`;
+  if(hidden>0) out+=`<div class="note">${hidden} smaller contributor(s) below ${threshold}${isTotals?' runs':'pp'} hidden.</div>`;
+  if(isTotals){ const bn=summarizeBaseInputs(t.primary_base_inputs); if(bn) out+=`<div class="note">${bn}</div>`; }
+  else if(t.market_prob_used_as_prior!=null){ out+=`<div class="note">Adjustments are applied on top of a market prior of ${(t.market_prob_used_as_prior*100).toFixed(1)}% — this is a first-order approximation, not an exact decomposition.</div>`; }
+  return out;
+}
+
+// ── Section 3: Expected vs Reality ──────────────────────────────────────
+function buildExpectedVsReality(d){
+  const er=d.expected_vs_reality;
+  const isTotals='expected_total' in er;
+  let card, para;
+
+  if(isTotals){
+    const err=er.total_error;
+    const errCls = err==null?'':(Math.abs(err)>=2?'bad':'');
+    card=`<div class="compare-card">
+      <div class="compare-item"><div class="compare-label">Expected</div><div class="compare-val">${esc(er.expected_total)}</div></div>
+      ${er.market_line!=null?`<div class="compare-item"><div class="compare-label">Market Line</div><div class="compare-val">${esc(er.market_line)}</div></div>`:''}
+      <div class="compare-item hero"><div class="compare-label">Actual</div><div class="compare-val">${esc(er.actual_total)}</div></div>
+      <div class="compare-item"><div class="compare-label">Error</div><div class="compare-val ${errCls}">${err==null?'—':(err>0?'+':'')+err}</div></div>
+    </div>`;
+
+    const dir = err==null?'':(err>0?'more runs scored than expected':'fewer runs scored than expected');
+    const magnitude = err==null?'':(Math.abs(err)>=2.5?'a large miss':Math.abs(err)>=1?'a moderate miss':'a small miss');
+    const marketNote = er.model_closer_than_market==null?'':(er.model_closer_than_market
+      ? ' The model was actually closer to the actual total than the market line was — this looks more like bad luck on a reasonable projection than a systematic model error.'
+      : ' The market line was closer to the actual total than the model was, which is a stronger signal that the model\'s projection itself was off, not just variance.');
+    para=`The model missed by <b>${err==null?'—':Math.abs(err)}</b> runs (${dir}), which counts as ${magnitude}.${marketNote}`;
+  } else {
+    const modelPct=(er.model_prob_for_pick*100).toFixed(0);
+    const marketPct=er.market_prob_for_pick==null?null:(er.market_prob_for_pick*100).toFixed(0);
+    card=`<div class="compare-card">
+      <div class="compare-item"><div class="compare-label">Model Prob</div><div class="compare-val">${modelPct}%</div></div>
+      ${marketPct!=null?`<div class="compare-item"><div class="compare-label">Market Prob</div><div class="compare-val">${marketPct}%</div></div>`:''}
+      <div class="compare-item hero"><div class="compare-label">Winner</div><div class="compare-val">${esc(er.actual_winner)}</div></div>
+      <div class="compare-item"><div class="compare-label">Final Score</div><div class="compare-val" style="font-size:15px">${esc(er.home_score)}-${esc(er.away_score)}</div></div>
+    </div>`;
+
+    const edge=er.model_edge_vs_market_pp;
+    const edgeNote = edge==null?'':(edge>0
+      ? ` The model was <b>${Math.abs(edge)}pp more confident</b> than the market on the losing side — that extra confidence is exactly what didn't pay off here.`
+      : ` The model was actually less confident than the market on this pick, so this loss lines up with what the market itself expected more often than not.`);
+    para=`The model gave <b>${esc(d.pick)}</b> a ${modelPct}% chance to win and it lost.${edgeNote}`;
+  }
+
+  return `<div class="compare-card-wrap">${card}<div class="compare-note">${para}</div></div>`;
+}
+
+// ── Section 4: Root Cause Investigation ─────────────────────────────────
+// Backend already ranks causes by confidence (_CONF_ORDER). This just
+// separates named, evidenced hypotheses from generic/insufficient-evidence
+// ones (which get folded into a compact "also considered" line instead of
+// full-size cards), and derives a one-line conclusion from confidence —
+// pure UI synthesis, no new data.
+function causeConclusion(c){
+  if(c==='High') return 'Likely contributor to this loss.';
+  if(c==='Medium') return 'Plausible contributor, not fully confirmed.';
+  if(c==='Low') return 'Possible contributor; evidence is weak.';
+  return 'Cannot be confirmed with data currently stored.';
+}
+function buildRootCauses(causes){
+  const isGeneric = c => /^(Market variance|Random baseball variance)/.test(c.cause);
+  const primary = causes.filter(c => c.confidence!=='Insufficient evidence' && !isGeneric(c));
+  const secondary = causes.filter(c => c.confidence==='Insufficient evidence' || isGeneric(c));
+
+  let out = primary.length
+    ? primary.map(c=>`<div class="cause-card">${confPill(c.confidence)}<b>${esc(c.cause)}</b>${esc(c.evidence)}<span class="cause-conclusion">${causeConclusion(c.confidence)}</span></div>`).join('')
+    : '<div class="cause-card">No hypothesis rose above "insufficient evidence" — see below.</div>';
+
+  if(secondary.length){
+    out += `<div class="ruled-out"><b>Also considered, not a likely explanation:</b> ${secondary.map(c=>esc(c.cause)).join(', ')}.</div>`;
+  }
+  return out;
+}
+
+// ── Section 5: Counterfactual Analysis ──────────────────────────────────
+// Renders the backend's counterfactual_analysis() output — no computation
+// happens here, only presentation.
+function buildCounterfactuals(cf){
+  if(!cf || !cf.length){
+    return '<div class="note">Not available for moneyline picks — there is no single-number "expected total" to algebraically back a factor out of; the win-probability attribution used in Section 2 is a first-order estimate, not an exact decomposition.</div>';
+  }
+  const cards = cf.map(c=>{
+    const dir = c.kind==='additive' ? `remove +${c.original_value}` : `set factor to 1.0 (was ${c.original_value})`;
+    return `<div class="cf-card"><b>${esc(c.factor)}</b>If we ${dir}: expected total → <b>${c.counterfactual_expected_total}</b> (was ${c.original_expected_total})<br>
+      <span class="cf-flag ${c.would_pick_change?'yes':'no'}">Pick change: ${c.would_pick_change?'Yes':'No'}</span>
+      <span class="cf-flag ${c.would_result_change?'yes':'no'}">Result change: ${c.would_result_change==null?'N/A':(c.would_result_change?'Yes':'No')}</span>
+    </div>`;
+  }).join('');
+  const anyFlip = cf.some(c=>c.would_result_change);
+  const summary = anyFlip
+    ? 'At least one single-factor removal would have flipped this loss to a win — the model\'s sensitivity to that input is worth a closer look.'
+    : 'No single factor, removed on its own, would have changed the pick or the result — this loss was not driven by one adjustment being wrong.';
+  return `<div class="cf-grid">${cards}</div><div class="note">${summary}</div>`;
+}
+
+// ── Section 6: Assumption Review ────────────────────────────────────────
+// Pure re-labeling of data already computed in Sections 4/5: feature_review
+// verdicts (Helped/Hurt/no-effect, derived from the same counterfactual
+// math as Section 5), root_cause_analysis confidence for base inputs that
+// can't be isolated on their own, counterfactual would_result_change as a
+// tie-breaker escalation, and the pick-time confirmation checklist. No new
+// backend data — every classification traces to a field already in the payload.
+const _CONF_ORDER2={'High':3,'Medium':2,'Low':1,'Insufficient evidence':0};
+function _findCauseConf(causes, re){
+  const m = causes.filter(c=>re.test(c.cause));
+  if(!m.length) return null;
+  return m.reduce((best,c)=>_CONF_ORDER2[c.confidence]>_CONF_ORDER2[best.confidence]?c:best).confidence;
+}
+function _matchCf(cfMap, feature){
+  if(/lineup/i.test(feature)) return cfMap['Lineup'];
+  if(/bullpen/i.test(feature)) return cfMap['Bullpen'];
+  if(/contact quality/i.test(feature)) return cfMap['Contact Quality'];
+  if(/park/i.test(feature)) return cfMap['Park'];
+  if(/weather/i.test(feature)) return cfMap['Weather'];
+  return null;
+}
+const _BASE_INPUT_CAUSE_RE={
+  'home fip':/FIP|pitcher/i,'away fip':/FIP|pitcher/i,
+  'home rsg':/RSG|offense/i,'away rsg':/RSG|offense/i,
+  'park factor':/park/i,'weather factor':/weather/i,
+};
+function buildAssumptionReview(d){
+  const feats=d.feature_review||[], causes=d.root_cause_analysis||[], er=d.expected_vs_reality;
+  const cfMap={}; (d.counterfactual_analysis||[]).forEach(c=>cfMap[c.factor]=c);
+
+  const items = feats.map(f=>{
+    const v=f.verdict; let flag, note;
+    const cf=_matchCf(cfMap, f.feature);
+    if(/^Hurt/.test(v)){
+      if(cf && cf.would_result_change){ flag='❌'; note='Removing this input alone would have flipped this pick to a win — strong evidence it was the wrong call for this game.'; }
+      else { flag='⚠'; note='This adjustment pushed the projection the wrong direction for this game, but on its own it wasn\'t enough to change the outcome.'; }
+    } else if(/^Helped/.test(v)){ flag='✅'; note='This adjustment pushed the projection in the right direction.'; }
+    else if(/^No measurable effect/.test(v)){ flag='✅'; note='Had no meaningful effect on the projection either way.'; }
+    else if(/^Correctly cautious/.test(v)){ flag='✅'; note='Correctly disagreed with the pick that ended up losing.'; }
+    else if(/^Was cautionary/.test(v)){ flag='✅'; note='Flagged caution appropriately, even though the pick still won.'; }
+    else if(/^Cannot be isolated/.test(v)){
+      const re=_BASE_INPUT_CAUSE_RE[f.feature];
+      const conf = re ? _findCauseConf(causes, re) : null;
+      if((conf==='High'||conf==='Medium') || (cf && cf.would_result_change)){ flag='❌'; note='A root-cause hypothesis (or the counterfactual check) points at this input as a likely contributor to the loss.'; }
+      else if(conf==='Low'){ flag='⚠'; note='A root-cause hypothesis flags this as a possible, unconfirmed contributor.'; }
+      else { flag='✅'; note='No root-cause hypothesis points at this input; treated as reasonable by default.'; }
+    } else { flag='⚠'; note=v; }
+    return {feature: f.feature, flag, note};
+  });
+
+  (er.assumptions_not_confirmed_at_pick_time||[]).forEach(a=>{
+    items.push({feature: a, flag:'⚠', note:'Not confirmed at pick time — the model proceeded without verifying this.'});
+  });
+
+  const rows = items.map(it=>`<div class="assump-row"><span class="assump-icon">${it.flag}</span><div><span class="assump-feature">${esc(it.feature)}</span>${esc(it.note)}</div></div>`).join('');
+  const wrongCount = items.filter(i=>i.flag==='❌').length, possibleCount = items.filter(i=>i.flag==='⚠').length;
+  const summary = wrongCount
+    ? `${wrongCount} assumption(s) look likely wrong and ${possibleCount} more are possibly wrong — worth investigating before trusting this pick type again.`
+    : possibleCount
+      ? `Nothing rises to "likely wrong," but ${possibleCount} assumption(s) are unconfirmed or weakly supported.`
+      : 'All checked assumptions held up reasonably well — this loss does not point to a broken input.';
+  return `${rows}<div class="note">${summary}</div>`;
+}
+
+// ── Section 7: Pattern Check ─────────────────────────────────────────────
+// Restyles model_learning.pattern_check as stat cards instead of a dbfRow
+// list. No new data — same fields already returned by the API.
+function buildPatternCheck(d){
+  const pc=d.model_learning.pattern_check, ls=d.model_learning.learning_service_state;
+  const cards=[
+    {val:`${pc.bucket_win_rate==null?'—':pc.bucket_win_rate+'%'}`, label:`This probability bucket (${esc(pc.probability_bucket)}), n=${pc.bucket_sample_n}`},
+    {val:`${pc.pick_type_win_rate==null?'—':pc.pick_type_win_rate+'%'}`, label:`This pick type overall, n=${pc.pick_type_sample_n}`},
+    {val:`${pc.same_primary_reason_seen_before}`, label:'Other losses with the same primary reason code'},
+  ];
+  const grid=`<div class="stat-grid">${cards.map(c=>`<div class="stat-card"><div class="stat-val">${c.val}</div><div class="stat-label">${c.label}</div></div>`).join('')}</div>`;
+  const verdict=`<div class="pattern-verdict${pc.is_recurring_pattern?' recurring':''}"><b>${pc.is_recurring_pattern?'⚠ Recurring pattern':'Isolated miss'}:</b> ${esc(pc.verdict)}</div>`;
+  const learning = `<div class="note">Model auto-retraining status: ${esc(ls.latest_training_run_status)}. ${esc(ls.note)}</div>`;
+  return grid+verdict+learning;
+}
+
+function renderDebrief(d){
+  const act=d.suggested_action;
+  document.getElementById('debriefTitle').textContent=`${d.pick_type.toUpperCase()} — ${d.matchup}`;
+  document.getElementById('debriefSub').textContent=`${d.date} · Pick: ${d.pick} · Model prob ${(d.model_prob*100).toFixed(1)}% · EV ${Number(d.ev).toFixed(1)}% · ${d.model_version}/${d.model_build||'—'}`;
+
+  let html='';
+  html+=`<div class="exec-summary"><h3>Executive Summary</h3><ul>${buildExecutiveSummary(d).map(b=>`<li>${b}</li>`).join('')}</ul></div>`;
+
+  html+=`<div class="debrief-section"><h3>Why The Model Made This Pick</h3>${buildThoughtProcessEquation(d)}</div>`;
+
+  html+=`<div class="debrief-section"><h3>Expected vs Reality</h3>${buildExpectedVsReality(d)}`;
+  html+=`<div class="note"><b>Confirmed at pick time:</b> ${fmtList(d.expected_vs_reality.assumptions_confirmed_at_pick_time)}<br><b>Not confirmed at pick time:</b> ${fmtList(d.expected_vs_reality.assumptions_not_confirmed_at_pick_time)}${d.expected_vs_reality.missing_inputs_at_pick_time?'<br><b>Missing inputs:</b> '+fmtList(d.expected_vs_reality.missing_inputs_at_pick_time):''}</div></div>`;
+
+  html+=`<div class="debrief-section"><h3>Root Cause Investigation</h3>${buildRootCauses(d.root_cause_analysis)}</div>`;
+
+  html+=`<div class="debrief-section"><h3>Counterfactual Analysis</h3>${buildCounterfactuals(d.counterfactual_analysis)}</div>`;
+
+  html+=`<details class="lr2-advanced"><summary>Advanced Diagnostics — Assumption Review &amp; Pattern Check</summary><div class="lr2-advanced-body">`;
+  html+=`<div class="debrief-section"><h3>Assumption Review</h3>${buildAssumptionReview(d)}</div>`;
+  html+=`<div class="debrief-section"><h3>Pattern Check</h3>${buildPatternCheck(d)}</div>`;
+  html+=`</div></details>`;
+
+  html+=`<div class="debrief-section"><h3>Recommendation</h3><div class="action-badge">${esc(act.action)}</div><div style="font-size:12px;line-height:1.6;color:var(--text-dim)">${esc(act.why)}</div></div>`;
+
+  html+=`<div class="method">${esc(d.disclaimer)}<br>Diagnostic tags: ${d.diagnostic_tags.map(t=>`<span class="tag">${esc(t)}</span>`).join('')}</div>`;
+
+  document.getElementById('debriefBody').innerHTML=html;
+}
+
+async function openDebrief(id){
+  document.getElementById('debriefBg').classList.add('open');
+  document.getElementById('debriefTitle').textContent='Loading…';
+  document.getElementById('debriefSub').textContent='';
+  document.getElementById('debriefBody').innerHTML='Loading…';
+  try{
+    const r=await fetch(`/api/loss-review/${id}`,{cache:'no-store'});
+    const d=await r.json();
+    if(!r.ok||d.status!=='success')throw Error(d.message||'Could not load debrief.');
+    renderDebrief(d.debrief);
+  }catch(e){
+    document.getElementById('debriefBody').innerHTML=`<div class="lr2-flag"><span class="ic">⚠</span><span>${esc(e.message)}</span></div>`;
+  }
+}
+function closeDebrief(){document.getElementById('debriefBg').classList.remove('open')}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDebrief()});
+
+loadReview().catch(e=>document.getElementById('warning-list').innerHTML=`<div class="lr2-flag"><span class="ic">⚠</span><span>${esc(e.message)}</span></div>`);
+</script>{% endblock %}

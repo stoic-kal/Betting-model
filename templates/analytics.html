@@ -1,0 +1,817 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+.an-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.an-title{font-size:26px;font-weight:900;color:var(--text);letter-spacing:-0.02em}
+.an-subtitle{font-size:12px;color:var(--text-dim);margin-top:2px}
+.an-refresh{font-family:inherit;background:var(--violet);color:#fff;border:1px solid rgba(255,255,255,0.1);padding:8px 14px;font-size:12px;font-weight:600;cursor:pointer;border-radius:5px;transition:all 0.15s}
+.an-refresh:hover{background:var(--bg-card);transform:translate(-1px,-1px);box-shadow:var(--shadow-sm)}
+
+/* Tabs */
+.an-tabs{display:flex;gap:4px;margin-bottom:20px;border-bottom:1px solid var(--border);flex-wrap:wrap;padding-bottom:4px}
+.an-tab{font-family:inherit;padding:7px 14px;cursor:pointer;font-size:12px;font-weight:500;color:var(--text-dim);background:var(--bg-card);border:1px solid var(--border);border-radius:5px 5px 0 0;letter-spacing:0;transition:all 0.15s}
+.an-tab:hover{background:var(--violet)}
+.an-tab.active{background:var(--violet-dim);color:#a78bfa;border-color:var(--border-active)}
+
+/* Grid */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+.g4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:16px}
+.card{background:var(--bg-card);border:1px solid var(--border);padding:18px;margin-bottom:16px;border-radius:var(--radius);backdrop-filter:blur(8px)}
+.card-title{font-size:10px;letter-spacing:0.08em;color:var(--text-dim);text-transform:uppercase;
+            margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--border);font-weight:600}
+.sep{height:3px;background:rgba(124,58,237,0.12);margin:20px 0}
+.sec{font-size:11px;font-weight:600;color:var(--text-dim);margin-bottom:14px;letter-spacing:0.06em;
+     display:flex;align-items:center;gap:8px;background:rgba(124,58,237,0.1);padding:8px 12px;border-left:3px solid var(--violet);border-radius:0 6px 6px 0}
+.sec::before{content:'';display:block;width:4px;height:16px;background:var(--violet)}
+
+/* KPI stat */
+.kv{font-size:26px;font-weight:900;line-height:1}
+.kl{font-size:11px;color:var(--text-muted);margin-top:3px;letter-spacing:.3px}
+.ks{font-size:11px;color:var(--text-dim);margin-top:2px}
+.kstat{text-align:center;padding:12px 6px}
+
+/* Colors */
+.g{color:var(--green)}.r{color:var(--red)}.gl{color:var(--amber)}.pu{color:#a78bfa}
+.cy{color:var(--cyan)}.og{color:#ff8800}.wh{color:var(--text)}.dim{color:var(--text-dim)}
+
+/* Tables */
+.t{width:100%;border-collapse:collapse;font-size:8px}
+.t th{text-align:left;padding:7px 9px;background:rgba(124,58,237,0.12);color:var(--amber);font-size:7px;letter-spacing:.5px;border:1px solid var(--border);white-space:nowrap}
+.t td{padding:7px 9px;border:1px solid var(--border);white-space:nowrap;color:var(--text)}
+.t tr:last-child td{border-bottom:1px solid var(--border)}
+.t tr:hover td{background:rgba(124,58,237,0.10)}
+.tr{text-align:right}.tc{text-align:center}
+
+/* Badges */
+.badge{display:inline-block;padding:3px 7px;font-size:8px;font-weight:900;letter-spacing:.3px;border:1px solid var(--border);box-shadow:var(--shadow-sm)}
+.bg{background:rgba(16,185,129,0.15);color:var(--green)}
+.by{background:rgba(245,158,11,0.15);color:var(--amber)}
+.br{background:rgba(239,68,68,0.12);color:var(--red)}
+.bpu{background:rgba(124,58,237,0.12);color:#a78bfa}
+
+/* Cal bars */
+.cb-row{display:flex;align-items:center;gap:8px;margin-bottom:5px;font-size:8px}
+.cb-lbl{width:100px;color:var(--text-muted);flex-shrink:0}
+.cb-wrap{flex:1;height:16px;background:rgba(255,255,255,0.05);border:1px solid var(--border);position:relative;overflow:hidden}
+.cb-pred{position:absolute;top:0;left:0;height:100%;background:rgba(124,58,237,0.3)}
+.cb-act{position:absolute;top:2px;left:0;height:12px}
+.cb-n{width:32px;text-align:right;color:var(--text-muted);font-size:8px;flex-shrink:0}
+.cb-gap{width:48px;text-align:right;font-size:8px;font-weight:700;flex-shrink:0}
+
+/* P-val meter */
+.pvm{height:7px;background:rgba(255,255,255,0.06);border:1px solid var(--border);margin-top:5px;overflow:hidden;border-radius:3px}
+.pvf{height:100%}
+
+/* Rolling bars */
+.card[id$="-rolling"]{min-width:0;overflow:hidden}
+.rb-wrap{display:flex;align-items:flex-end;width:100%;max-width:100%;min-width:0;height:60px;gap:2px;border-bottom:1px solid var(--border);padding:0 2px;box-sizing:border-box;overflow:hidden}
+.rb{min-width:2px;flex:1 1 0;cursor:default}
+
+@media (max-width:1100px){
+  .g4,.g3{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (max-width:760px){
+  .an-header{align-items:flex-start;gap:12px;flex-direction:column}
+  .an-title{font-size:clamp(18px,7vw,26px)}
+  .an-refresh{width:100%}
+  .an-tabs{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .an-tab{flex:0 0 auto;padding:9px 11px}
+  .g2,.g3,.g4{grid-template-columns:1fr}
+  .card{padding:12px 10px;min-width:0;overflow-x:auto}
+  .kv{font-size:22px}
+}
+
+/* Sweep rows (sandbox) */
+.sw-row{display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid var(--border);font-size:8px}
+.sw-row:last-child{border-bottom:none}
+.sw-lbl{width:80px;color:var(--text-muted);font-size:11px}
+.sw-n{width:36px;text-align:center;color:var(--text-dim)}
+.sw-wr{width:52px;text-align:right;font-weight:700}
+.sw-edge{width:60px;text-align:right;font-size:11px}
+.sw-roi{width:60px;text-align:right;font-weight:900}
+.sw-bar{flex:1;height:7px;background:rgba(255,255,255,0.05);overflow:hidden}
+.sw-fill{height:100%;}
+.sw-best{background:rgba(124,58,237,0.10);border-left:3px solid var(--violet)}
+
+/* Loading */
+.loading{text-align:center;padding:50px 20px;color:var(--text-dim);font-size:13px}
+.spin{display:inline-block;width:28px;height:28px;border:1px solid var(--border);border-top-color:var(--amber);
+      animation:spin .8s linear infinite;margin-bottom:12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Model Lab table */
+.lab-wrap{overflow-x:auto}
+.lab-t{width:100%;border-collapse:collapse;font-size:11px;white-space:nowrap}
+.lab-t th{padding:7px 8px;font-size:9px;background:rgba(124,58,237,0.12);color:var(--text-dim);letter-spacing:0.06em;border-bottom:1px solid var(--border);
+          cursor:pointer;user-select:none;text-align:right;position:sticky;top:0;background:var(--bg-elevated)}
+.lab-t th:first-child,.lab-t th:nth-child(2){text-align:left}
+.lab-t th:hover{background:rgba(124,58,237,0.2);color:var(--text)}
+.lab-t th.sort-asc::after{content:' ▲';color:var(--violet)}
+.lab-t th.sort-desc::after{content:' ▼';color:var(--violet)}
+.lab-t td{padding:6px 8px;border:1px solid var(--border);text-align:right}
+.lab-t td:first-child,.lab-t td:nth-child(2){text-align:left}
+.lab-t tr:hover td{background:rgba(124,58,237,0.10)}
+.lab-t .winner{background:rgba(16,185,129,0.08)}
+.score-bar{display:inline-block;height:6px;background:var(--violet);vertical-align:middle;margin-right:4px}
+.group-tag{font-size:9px;padding:1px 5px;font-weight:700;letter-spacing:.3px}
+.tag-intensity{background:rgba(6,182,212,0.12);color:var(--cyan)}
+.tag-signal{background:rgba(179,136,255,.1);color:#a78bfa}
+.tag-odds{background:rgba(245,158,11,0.12);color:var(--amber)}
+.tag-version{background:rgba(245,158,11,0.12);color:var(--amber)}
+.tag-type{background:rgba(0,200,81,.1);color:var(--green)}
+
+/* Panel */
+.an-panel{display:none}
+.an-panel.active{display:block}
+
+/* Metric help tooltip */
+.mh{cursor:help;border-bottom:1px dotted rgba(255,255,255,0.2)}
+</style>
+
+<div class="an-header">
+  <div>
+    <div class="an-title">🔬 MODEL ANALYTICS</div>
+    <div class="an-subtitle" id="genAt">Loading…</div>
+  </div>
+  <div style="display:flex;gap:8px;align-items:center">
+    <div style="display:flex;background:rgba(255,255,255,0.04);border:1px solid var(--border);overflow:hidden">
+      <button id="btn-all" onclick="setVersion(null)"
+        style="padding:7px 12px;font-size:11px;font-weight:600;border:none;cursor:pointer;background:transparent;color:var(--text-dim);letter-spacing:0">ALL HISTORY</button>
+      <button id="btn-v3" onclick="setVersion('v3')"
+        style="padding:7px 12px;font-size:11px;font-weight:600;border:none;cursor:pointer;background:var(--violet);color:#fff;letter-spacing:0">CURRENT v3</button>
+    </div>
+    <button class="an-refresh" onclick="bootAll()">↻ REFRESH</button>
+  </div>
+</div>
+
+<div class="an-tabs">
+  <div class="an-tab" onclick="switchTab('overview')">OVERVIEW</div>
+  <div class="an-tab" onclick="switchTab('moneyline')">⚾ MONEYLINE</div>
+  <div class="an-tab" onclick="switchTab('totals')">🎯 TOTALS</div>
+  <div class="an-tab" onclick="switchTab('sandbox')">🧪 SANDBOX</div>
+  <div class="an-tab" onclick="switchTab('lab')">⚗️ MODEL LAB</div>
+</div>
+
+<!-- OVERVIEW -->
+<div id="panel-overview" class="an-panel">
+  <div id="ov-loading" class="loading"><div class="spin"></div><br>Running diagnostics…</div>
+  <div id="ov-body" style="display:none">
+    <div class="g4" id="ov-kpis"></div><div class="sep"></div>
+    <div class="g2"><div class="card" id="ov-sig"></div><div class="card" id="ov-cal-summary"></div></div><div class="sep"></div>
+    <div class="g2"><div class="card" id="ov-ev"></div><div class="card" id="ov-kelly"></div></div><div class="sep"></div>
+    <div class="card" id="ov-odds"></div><div class="sep"></div>
+    <div class="card" id="ov-cal-curve"></div><div class="sep"></div>
+    <div class="card" id="ov-rolling"></div>
+  </div>
+</div>
+
+<!-- MONEYLINE -->
+<div id="panel-moneyline" class="an-panel">
+  <div id="ml-loading" class="loading"><div class="spin"></div><br>Running ML diagnostics…</div>
+  <div id="ml-body" style="display:none">
+    <div class="g4" id="ml-kpis"></div><div class="sep"></div>
+    <div class="g2"><div class="card" id="ml-sig"></div><div class="card" id="ml-cal-summary"></div></div><div class="sep"></div>
+    <div class="g2"><div class="card" id="ml-ev"></div><div class="card" id="ml-kelly"></div></div><div class="sep"></div>
+    <div class="card" id="ml-odds"></div><div class="sep"></div>
+    <div class="card" id="ml-cal-curve"></div><div class="sep"></div>
+    <div class="card" id="ml-rolling"></div>
+  </div>
+</div>
+
+<!-- TOTALS -->
+<div id="panel-totals" class="an-panel">
+  <div id="tot-loading" class="loading"><div class="spin"></div><br>Running totals diagnostics…</div>
+  <div id="tot-body" style="display:none">
+    <div class="g4" id="tot-kpis"></div><div class="sep"></div>
+    <div class="g2"><div class="card" id="tot-sig"></div><div class="card" id="tot-deep"></div></div><div class="sep"></div>
+    <div class="g2"><div class="card" id="tot-ev"></div><div class="card" id="tot-cal-curve"></div></div>
+    <div class="sep"></div><div class="card" id="tot-tiers"></div>
+  </div>
+</div>
+
+<!-- SANDBOX -->
+<div id="panel-sandbox" class="an-panel">
+  <div id="sb-loading" class="loading"><div class="spin"></div><br>Running sandbox…</div>
+  <div id="sb-body" style="display:none">
+    <div class="card" style="border-color:#2a2a4a;margin-bottom:16px">
+      <div class="card-title">🧪 WHAT IS THE SANDBOX?</div>
+      <p style="color:var(--text-dim);font-size:12px;line-height:1.6;margin:0">
+        Tests alternative EV/prob thresholds against real historical picks <strong style="color:var(--amber)">without touching live models</strong>.
+        Use it to find optimal filters before applying them. ★ = best ROI for that filter level.
+      </p>
+    </div>
+    <div class="sec">ALL PICKS — EV THRESHOLD SWEEP</div>
+    <div class="card" id="sb-ev-all"></div><div class="sep"></div>
+    <div class="sec">ALL PICKS — PROBABILITY FILTER SWEEP</div>
+    <div class="card" id="sb-prob-all"></div><div class="sep"></div>
+    <div class="sec">MONEYLINE ONLY — EV THRESHOLD SWEEP</div>
+    <div class="card" id="sb-ev-ml"></div><div class="sep"></div>
+    <div class="sec">MONEYLINE ONLY — PROBABILITY FILTER SWEEP</div>
+    <div class="card" id="sb-prob-ml"></div><div class="sep"></div>
+    <div class="card" style="border-color:#a78bfa">
+      <div class="card-title" style="color:#a78bfa">📐 LIVE MODEL v3.1 BETAS</div>
+      <div id="sb-betas" style="font-family:monospace;font-size:12px;line-height:2;color:var(--text-dim)"></div>
+      <p style="color:#444;font-size:10px;margin-top:10px;margin-bottom:0">Edit BETA_* constants in services/ml_model_v3.py. Run /analytics Sandbox to see impact.</p>
+    </div>
+  </div>
+</div>
+
+<!-- MODEL LAB -->
+<div id="panel-lab" class="an-panel">
+  <div id="lab-loading" class="loading"><div class="spin"></div><br>Running 18 model variants…</div>
+  <div id="lab-body" style="display:none">
+
+    <div style="display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;align-items:center">
+      <div style="font-size:11px;color:var(--text-muted)">
+        Sort any column · <span style="color:var(--amber)">★</span> = best in metric · Composite score ranks across all 10 weighted metrics
+      </div>
+      <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+        <span style="font-size:11px;color:var(--text-dim)">Filter group:</span>
+        <select id="lab-group-filter" onchange="renderLab()" style="">
+          <option value="">All groups</option>
+          <option value="Intensity">Intensity</option>
+          <option value="Signal">Signal</option>
+          <option value="Odds Range">Odds Range</option>
+          <option value="Version">Version</option>
+          <option value="Type">Type</option>
+        </select>
+        <span style="font-size:11px;color:var(--text-dim)">Min picks:</span>
+        <select id="lab-min-n" onchange="renderLab()" style="">
+          <option value="0">Any</option>
+          <option value="5">5+</option>
+          <option value="10" selected>10+</option>
+          <option value="20">20+</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Metric legend -->
+    <div class="card" style="margin-bottom:16px;padding:12px 18px">
+      <div class="card-title">22 METRICS EXPLAINED</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:4px 20px;font-size:11px;color:var(--text-muted);line-height:1.8">
+        <div><span style="color:var(--amber)">Edge</span> — Win% minus break-even rate</div>
+        <div><span style="color:var(--amber)">Flat ROI</span> — Return on $20/pick flat betting</div>
+        <div><span style="color:var(--amber)">Kelly ROI</span> — Return on Kelly-sized bets</div>
+        <div><span style="color:var(--amber)">p-value</span> — Probability edge is luck (lower=better)</div>
+        <div><span style="color:var(--amber)">Brier</span> — Prob forecast accuracy (lower=better, 0.25=no skill)</div>
+        <div><span style="color:var(--amber)">ECE</span> — Expected Calibration Error % (lower=better)</div>
+        <div><span style="color:var(--amber)">Sharpe</span> — Risk-adjusted return (higher=better)</div>
+        <div><span style="color:var(--amber)">MaxDD</span> — Max peak-to-trough loss ($)</div>
+        <div><span style="color:var(--amber)">ProfFact</span> — Gross wins ÷ gross losses</div>
+        <div><span style="color:var(--amber)">CI Width</span> — 95% CI width (narrower=more certain)</div>
+        <div><span style="color:var(--amber)">WinStrk</span> — Longest consecutive wins</div>
+        <div><span style="color:var(--amber)">LossStrk</span> — Longest consecutive losses</div>
+        <div><span style="color:var(--amber)">Avg Kelly</span> — Mean bet size (higher=more model conviction)</div>
+        <div><span style="color:var(--amber)">Avg EV%</span> — Mean predicted edge</div>
+        <div><span style="color:var(--amber)">ROI/pick</span> — ROI per pick taken (volume-adjusted quality)</div>
+      </div>
+    </div>
+
+    <!-- Comparison table -->
+    <div class="card" style="padding:14px">
+      <div class="card-title" id="lab-table-title">MODEL COMPARISON — 18 VARIANTS × 22 METRICS</div>
+      <div class="lab-wrap">
+        <table class="lab-t" id="lab-table">
+          <thead>
+            <tr>
+              <th onclick="labSort('name')" style="text-align:left">Model</th>
+              <th onclick="labSort('_group')" style="text-align:left">Group</th>
+              <th onclick="labSort('composite_score')" class="sort-desc">Score</th>
+              <th onclick="labSort('n')">N</th>
+              <th onclick="labSort('win_rate')">Win%</th>
+              <th onclick="labSort('break_even')">BE%</th>
+              <th onclick="labSort('edge')">Edge</th>
+              <th onclick="labSort('flat_roi')">FlatROI</th>
+              <th onclick="labSort('kelly_roi')">KellyROI</th>
+              <th onclick="labSort('p_value')">p-val</th>
+              <th onclick="labSort('brier_score')">Brier</th>
+              <th onclick="labSort('ece')">ECE%</th>
+              <th onclick="labSort('sharpe_ratio')">Sharpe</th>
+              <th onclick="labSort('max_drawdown')">MaxDD$</th>
+              <th onclick="labSort('profit_factor')">ProfFact</th>
+              <th onclick="labSort('ci_width')">CI Width</th>
+              <th onclick="labSort('win_streak')">W-Strk</th>
+              <th onclick="labSort('loss_streak')">L-Strk</th>
+              <th onclick="labSort('avg_kelly')">Avg K</th>
+              <th onclick="labSort('avg_ev')">Avg EV</th>
+              <th onclick="labSort('avg_odds')">Avg Odds</th>
+              <th onclick="labSort('avg_model_edge')">MktEdge</th>
+              <th onclick="labSort('roi_per_pick')">ROI/pick</th>
+            </tr>
+          </thead>
+          <tbody id="lab-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="sep"></div>
+
+    <!-- Winner badges -->
+    <div class="sec">METRIC LEADERS</div>
+    <div class="card" id="lab-winners"></div>
+
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════════════════════════════════════════════
+// State
+// ════════════════════════════════════════════════════════════════════════════
+let _an      = null;   // analytics data
+let _lab     = null;   // model lab data
+let _tab     = 'overview';
+let _version = 'v3';   // current model by default; legacy history remains available
+let _labSortCol = 'composite_score';
+let _labSortDir = -1;  // -1 = desc, 1 = asc
+
+const GROUP_COLORS = {
+  'Intensity':  'tag-intensity',
+  'Signal':     'tag-signal',
+  'Odds Range': 'tag-odds',
+  'Version':    'tag-version',
+  'Type':       'tag-type',
+};
+
+// ─── Tab switching ───────────────────────────────────────────────────────────
+function switchTab(name) {
+  _tab = name;
+  document.querySelectorAll('.an-tab').forEach((t,i) => {
+    const tabs = ['overview','moneyline','totals','sandbox','lab'];
+    t.classList.toggle('active', tabs[i] === name);
+  });
+  document.querySelectorAll('.an-panel').forEach(p => p.style.display = 'none');
+  const panel = document.getElementById('panel-' + name);
+  if (panel) panel.style.display = 'block';
+
+  if (name === 'lab' && !_lab)       loadLab();
+  else if (name !== 'lab' && !_an)   loadAnalytics();
+  else if (name !== 'lab' && _an)    renderAnalyticsTab(name);
+  else if (name === 'lab' && _lab)   renderLab();
+}
+
+// ─── Boot ────────────────────────────────────────────────────────────────────
+function bootAll() {
+  _an = null; _lab = null;
+  if (_tab === 'lab') loadLab();
+  else loadAnalytics();
+}
+
+function setVersion(v) {
+  _version = v;
+  _an = null;
+  document.getElementById('btn-all').style.background = v===null ? '#ffd700' : 'transparent';
+  document.getElementById('btn-all').style.color      = v===null ? '#1a1a2e' : '#666';
+  document.getElementById('btn-v3').style.background  = v==='v3' ? '#ffd700' : 'transparent';
+  document.getElementById('btn-v3').style.color       = v==='v3' ? '#1a1a2e' : '#666';
+  if (_tab !== 'lab') loadAnalytics();
+}
+
+async function loadAnalytics() {
+  ['ov','ml','tot','sb'].forEach(p => {
+    const l = document.getElementById(p+'-loading');
+    const b = document.getElementById(p+'-body');
+    if (l) l.style.display = 'block';
+    if (b) b.style.display = 'none';
+  });
+  try {
+    const url = '/api/analytics' + (_version ? '?version=' + _version : '');
+    const r = await fetch(url);
+    if (!r.ok) throw new Error('HTTP ' + r.status + ' — restart Flask server');
+    _an = await r.json();
+    const ss = _an.sample_size||{};
+    document.getElementById('genAt').textContent =
+      'Generated ' + (_an.generated_at||'').slice(0,19).replace('T',' ') +
+      ' · ' + ss.total + ' resolved picks' +
+      (_version ? ' (v3 model only)' : ' (all versions)');
+    renderAnalyticsTab(_tab);
+  } catch(e) {
+    ['ov','ml','tot','sb'].forEach(p => {
+      const l = document.getElementById(p+'-loading');
+      if (l) l.innerHTML = '<span style="color:var(--red)">⚠ ' + e.message + '<br><small>Restart Flask: python run.py (or your start command)</small></span>';
+    });
+  }
+}
+
+async function loadLab() {
+  const l = document.getElementById('lab-loading');
+  const b = document.getElementById('lab-body');
+  if (l) l.style.display = 'block';
+  if (b) b.style.display = 'none';
+  try {
+    const r = await fetch('/api/model-lab');
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    _lab = await r.json();
+    renderLab();
+  } catch(e) {
+    if (l) l.innerHTML = '<span style="color:var(--red)">⚠ ' + e.message + '</span>';
+  }
+}
+
+function show(panelPrefix) {
+  const l = document.getElementById(panelPrefix+'-loading');
+  const b = document.getElementById(panelPrefix+'-body');
+  if (l) l.style.display = 'none';
+  if (b) b.style.display = 'block';
+}
+
+function renderAnalyticsTab(name) {
+  if (!_an) return;
+  if (name === 'overview')  { renderOverview();  show('ov'); }
+  if (name === 'moneyline') { renderMoneyline(); show('ml'); }
+  if (name === 'totals')    { renderTotals();    show('tot'); }
+  if (name === 'sandbox')   { renderSandbox();   show('sb'); }
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// Helpers
+// ════════════════════════════════════════════════════════════════════════════
+const fmtROI  = v => (v>=0?'+':'')+v.toFixed(1)+'%';
+const fmtEdge = v => (v>=0?'+':'')+v.toFixed(1)+'pp';
+const fmtP    = v => '$'+(v>=0?'+':'-')+Math.abs(v).toFixed(2);
+const cROI    = v => v>0?'g':v<0?'r':'wh';
+const cEdge   = v => v>3?'g':v>0?'gl':'r';
+const cWR     = (wr,be) => wr-be>3?'g':wr-be>0?'gl':'r';
+const el      = id => document.getElementById(id);
+
+function sigBadge(sig) {
+  const pv = sig.p_value||1;
+  const cls = pv<0.05?'bg':pv<0.10?'by':pv<0.20?'by':'br';
+  return `<span class="badge ${cls}">${sig.confidence_label||'?'}</span>`;
+}
+
+function kpiHtml(val, label, sub, cls) {
+  return `<div class="card kstat">
+    <div class="kv ${cls||'wh'}">${val}</div>
+    <div class="kl">${label}</div>
+    ${sub?`<div class="ks">${sub}`:''}
+  </div>`;
+}
+
+// Calibration curve render
+function calCurve(cid, cal, title) {
+  const c = el(cid); if(!c) return;
+  const {curve,brier_score,brier_skill,ece_pct,verdict,sample_size,provisional,ece_bins} = cal;
+  let h = `<div class="card-title">${title||'CALIBRATION CURVE'}</div>`;
+  h += `<div style="display:flex;gap:20px;margin-bottom:14px;flex-wrap:wrap">
+    <div><span style="font-size:20px;font-weight:900;color:${verdict.color}">${verdict.grade}</span>
+         <span style="color:var(--text-muted);font-size:11px;margin-left:6px">${verdict.label}</span></div>
+    <div class="kstat"><div class="kv" style="font-size:16px">${brier_score!=null?brier_score.toFixed(4):'—'}</div>
+         <div class="kl">Brier Score</div></div>
+    <div class="kstat"><div class="kv" style="font-size:16px">${ece_pct!=null?ece_pct.toFixed(1)+'%':'—'}</div>
+         <div class="kl">ECE</div></div>
+    <div class="kstat"><div class="kv" style="font-size:16px">${brier_skill!=null?(brier_skill*100).toFixed(1)+'%':'—'}</div>
+         <div class="kl">Brier Skill</div></div>
+  </div>`;
+  if (provisional) h += `<div style="background:rgba(245,158,11,0.10);border:1px solid #b8860b;color:var(--amber);padding:7px;margin-bottom:9px;font-size:9px">PROVISIONAL · n=${sample_size}. Calibration grades stabilize slowly; at least 50 comparable resolved picks are recommended.</div>`;
+  h += `<div style="font-size:9px;color:var(--text-dim);margin-bottom:8px">Headline ECE uses ${ece_bins||5} equal-width bins; the finer rows below remain diagnostic and faded when n&lt;5.</div>`;
+  if (!curve||!curve.length) { h+='<div class="dim" style="font-size:12px">Not enough data.</div>'; c.innerHTML=h; return; }
+  h += '<div style="font-size:10px;color:#444;margin-bottom:6px">■ predicted  ◆ actual  |  gap = actual − predicted</div>';
+  curve.forEach(b => {
+    const pw=Math.min(100,b.predicted), aw=Math.min(100,b.actual);
+    const gc=b.gap>5?'g':b.gap<-5?'r':'gl';
+    const op=b.reliable?'':'opacity:.45;';
+    h+=`<div class="cb-row" style="${op}">
+      <div class="cb-lbl">${b.label}</div>
+      <div class="cb-wrap"><div class="cb-pred" style="width:${pw}%"></div>
+        <div class="cb-act" style="width:${aw}%;background:${b.gap>0?'#00c851':'#ff4444'}"></div></div>
+      <div class="cb-n">n=${b.n}</div>
+      <div class="cb-gap ${gc}">${b.gap>0?'+':''}${b.gap.toFixed(1)}</div>
+    </div>`;
+  });
+  c.innerHTML = h;
+}
+
+function sigCard(cid, sig, title) {
+  const c = el(cid); if(!c) return;
+  const pbc = sig.p_value<0.05?'#00c851':sig.p_value<0.10?'#ffbb33':'#ff4444';
+  const pbw = Math.max(0,Math.min(100,(1-sig.p_value)*100));
+  c.innerHTML=`<div class="card-title">${title||'EDGE SIGNIFICANCE'}</div>
+    <div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:14px">
+      <div class="kstat"><div class="kv ${cWR(sig.win_rate,sig.break_even)}">${sig.win_rate}%</div>
+        <div class="kl">Win Rate</div><div class="ks">BE: ${sig.break_even}%</div></div>
+      <div class="kstat"><div class="kv ${cEdge(sig.edge)}">${fmtEdge(sig.edge)}</div>
+        <div class="kl">Edge</div></div>
+      <div class="kstat"><div class="kv wh">${sig.ci_lo}–${sig.ci_hi}%</div>
+        <div class="kl">95% Wilson CI</div></div>
+      <div class="kstat"><div class="kv" style="color:${pbc}">p=${sig.p_value_pct}%</div>
+        <div class="kl">p-value</div><div class="ks">${sig.wins}W/${sig.losses}L (n=${sig.n})</div></div>
+    </div>
+    ${sigBadge(sig)}
+    <div class="pvm" style="margin-top:8px"><div class="pvf" style="width:${pbw}%;background:${pbc}"></div></div>
+    <div style="font-size:10px;color:#444;margin-top:5px">p<5% = statistically significant.${sig.n<30?' ⚠ n<30, treat as indicative only.':''}</div>`;
+}
+
+function evCard(cid, ev, title) {
+  const c = el(cid); if(!c) return;
+  const rc = ev.rho>0.10?'g':ev.rho>0?'gl':'r';
+  let rows='';
+  (ev.buckets||[]).forEach(b=>{
+    rows+=`<tr><td>${b.label}</td><td class="tc">${b.n}</td>
+      <td class="tr ${cWR(b.win_rate,b.break_even)}">${b.win_rate}%</td>
+      <td class="tr dim" style="font-size:10px">${b.break_even}%</td>
+      <td class="tr ${cEdge(b.edge)}">${fmtEdge(b.edge)}</td>
+      <td class="tr ${cROI(b.roi)}">${fmtROI(b.roi)}</td></tr>`;
+  });
+  c.innerHTML=`<div class="card-title">${title||'EV SIGNAL QUALITY'}</div>
+    <div style="margin-bottom:12px"><span style="font-size:20px;font-weight:900" class="${rc}">ρ=${ev.rho!=null?ev.rho.toFixed(3):'—'}</span>
+    <span style="color:var(--text-muted);font-size:11px;margin-left:8px">Spearman rank</span>
+    <div style="color:var(--text-dim);font-size:11px;margin-top:3px">${ev.verdict}</div></div>
+    <table class="t"><tr><th>EV Range</th><th class="tc">N</th><th class="tr">Win%</th>
+      <th class="tr">BE%</th><th class="tr">Edge</th><th class="tr">ROI</th></tr>${rows}</table>
+    <div style="font-size:10px;color:#444;margin-top:6px">ρ>0.20 = EV predicts wins. ρ≈0 = EV is noise.</div>`;
+}
+
+function kellyCard(cid, kel, title) {
+  const c = el(cid); if(!c) return;
+  const ec = kel.efficiency>0?'g':'r';
+  let rows='';
+  (kel.buckets||[]).forEach(b=>{
+    rows+=`<tr><td>${b.label}</td><td class="tc">${b.n}</td>
+      <td class="tr">${b.avg_kelly.toFixed(3)}u</td>
+      <td class="tr ${cWR(b.win_rate,b.break_even)}">${b.win_rate}%</td>
+      <td class="tr ${cEdge(b.edge)}">${fmtEdge(b.edge)}</td>
+      <td class="tr ${cROI(b.roi)}">${fmtROI(b.roi)}</td></tr>`;
+  });
+  c.innerHTML=`<div class="card-title">${title||'KELLY EFFICIENCY'}</div>
+    <div style="display:flex;gap:16px;margin-bottom:12px;flex-wrap:wrap">
+      <div class="kstat"><div class="kv ${cROI(kel.flat_roi)}" style="font-size:18px">${fmtROI(kel.flat_roi)}</div><div class="kl">Flat ROI</div></div>
+      <div class="kstat"><div class="kv ${cROI(kel.kelly_roi)}" style="font-size:18px">${fmtROI(kel.kelly_roi)}</div><div class="kl">Kelly ROI</div></div>
+      <div class="kstat"><div class="kv ${ec}" style="font-size:18px">${kel.efficiency>0?'+':''}${kel.efficiency}pp</div><div class="kl">Kelly Advantage</div></div>
+    </div>
+    <table class="t"><tr><th>Kelly Bucket</th><th class="tc">N</th><th class="tr">Avg K</th>
+      <th class="tr">Win%</th><th class="tr">Edge</th><th class="tr">ROI</th></tr>${rows}</table>`;
+}
+
+function oddsCard(cid, odds, title) {
+  const c = el(cid); if(!c) return;
+  let rows='';
+  (odds||[]).forEach(b=>{
+    rows+=`<tr><td>${b.label}</td><td class="tc">${b.n}</td>
+      <td class="tr ${cWR(b.win_rate,b.break_even)}">${b.win_rate}%</td>
+      <td class="tr dim" style="font-size:10px">${b.break_even}%</td>
+      <td class="tr ${cEdge(b.edge)}">${fmtEdge(b.edge)}</td>
+      <td class="tr ${cROI(b.roi)}">${fmtROI(b.roi)}</td>
+      <td class="tr dim">${b.profit>=0?'+$':'−$'}${Math.abs(b.profit).toFixed(0)}</td></tr>`;
+  });
+  c.innerHTML=`<div class="card-title">${title||'WIN RATE BY ODDS RANGE'}</div>
+    <table class="t"><tr><th>Range</th><th class="tc">N</th><th class="tr">Win%</th>
+      <th class="tr">BE%</th><th class="tr">Edge</th><th class="tr">ROI</th><th class="tr">Profit</th></tr>${rows}</table>
+    <div style="font-size:10px;color:#444;margin-top:6px">Edge = win% − break-even%. Find the odds range where you have consistent edge.</div>`;
+}
+
+function rollingCard(cid, rolling, title) {
+  const c = el(cid); if(!c) return;
+  if (!rolling||!rolling.length) {
+    c.innerHTML=`<div class="card-title">${title||'ROLLING PERFORMANCE'}</div><div class="dim" style="font-size:12px">Need more picks for rolling window.</div>`;
+    return;
+  }
+  const mx = Math.max(...rolling.map(r=>Math.abs(r.edge)),1);
+  let bars='';
+  rolling.forEach(r=>{
+    const h=Math.max(4,Math.round(Math.abs(r.edge)/mx*55));
+    const bg=r.edge>0?'#00c851':'#ff4444';
+    bars+=`<div class="rb" style="height:${h}px;background:${bg};flex:1"
+      title="Pick #${r.pick_idx} (${r.date}): L10 WR=${r.win_rate}%, edge=${r.edge>=0?'+':''}${r.edge}pp"></div>`;
+  });
+  const last=rolling[rolling.length-1];
+  const trend=rolling.length>4?(rolling[rolling.length-1].edge>rolling[rolling.length-5].edge?'📈 Improving':'📉 Declining'):'—';
+  c.innerHTML=`<div class="card-title">${title||'ROLLING 10-PICK EDGE'}</div>
+    <div style="display:flex;gap:16px;margin-bottom:12px">
+      <div class="kstat"><div class="kv ${cEdge(last.edge)}" style="font-size:18px">${fmtEdge(last.edge)}</div><div class="kl">Current L10 Edge</div></div>
+      <div class="kstat"><div class="kv wh" style="font-size:18px">${last.win_rate}%</div><div class="kl">L10 Win Rate</div></div>
+      <div class="kstat"><div class="kv gl" style="font-size:18px">${trend}</div><div class="kl">Trend</div></div>
+    </div>
+    <div class="rb-wrap">${bars}</div>
+    <div style="font-size:10px;color:#444;margin-top:5px">Each bar = edge over break-even in last 10 picks at that point in time.</div>`;
+}
+
+function sweepRows(sweep, key) {
+  if (!sweep||!sweep.length) return '<div class="dim" style="font-size:12px;padding:8px">No data.</div>';
+  const best = sweep.reduce((b,x)=>(!b||x.roi>b.roi)?x:b, null);
+  let h='';
+  sweep.forEach(b=>{
+    const isBest = best && b[key]===best[key];
+    const bw=Math.max(0,Math.min(100,(b.roi+30)/60*100));
+    const bc=b.roi>0?'#00c851':'#ff4444';
+    h+=`<div class="sw-row${isBest?' sw-best':''}">
+      <div class="sw-lbl">${key==='min_ev'?'EV≥':'Prob≥'}${b[key]}%</div>
+      <div class="sw-n">${b.n}</div>
+      <div class="sw-wr ${cWR(b.win_rate,b.break_even)}">${b.win_rate}%</div>
+      <div class="sw-edge ${cEdge(b.edge)}">${fmtEdge(b.edge)}</div>
+      <div class="sw-roi ${cROI(b.roi)}">${fmtROI(b.roi)}</div>
+      <div class="sw-bar"><div class="sw-fill" style="width:${bw}%;background:${bc}"></div></div>
+      ${isBest?'<span style="color:var(--amber);font-size:10px;font-weight:900">★</span>':''}
+    </div>`;
+  });
+  if (best) h+=`<div style="margin-top:10px;font-size:11px;color:var(--amber)">
+    ★ Optimal: ${key==='min_ev'?'EV≥':'Prob≥'}${best[key]}% → ${best.n} picks, ${best.win_rate}% WR, ${fmtROI(best.roi)} ROI</div>`;
+  return h;
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// Tab renderers
+// ════════════════════════════════════════════════════════════════════════════
+function renderOverview() {
+  const ov=_an.overall, s=ov.significance;
+  el('ov-kpis').innerHTML=[
+    kpiHtml(s.win_rate+'%','Overall Win Rate','BE: '+s.break_even+'%', cWR(s.win_rate,s.break_even)),
+    kpiHtml(fmtEdge(s.edge),'Edge vs Break-Even',s.wins+'W/'+s.losses+'L', cEdge(s.edge)),
+    kpiHtml(s.ci_lo+'–'+s.ci_hi+'%','Wilson 95% CI','true WR range','wh'),
+    kpiHtml('p='+s.p_value_pct+'%','Significance',s.confidence_label, s.significant?'g':'r'),
+  ].join('');
+  sigCard('ov-sig', s, 'OVERALL EDGE SIGNIFICANCE');
+  calCurve('ov-cal-summary', ov.calibration, 'OVERALL CALIBRATION SUMMARY');
+  evCard('ov-ev', ov.ev_signal, 'EV SIGNAL QUALITY');
+  kellyCard('ov-kelly', ov.kelly, 'KELLY EFFICIENCY');
+  oddsCard('ov-odds', ov.odds, 'PERFORMANCE BY ODDS RANGE');
+  calCurve('ov-cal-curve', ov.calibration, 'CALIBRATION CURVE — PREDICTED vs ACTUAL');
+  rollingCard('ov-rolling', ov.rolling, 'ROLLING 10-PICK EDGE');
+}
+
+function renderMoneyline() {
+  const ml=_an.moneyline, s=ml.significance;
+  el('ml-kpis').innerHTML=[
+    kpiHtml(s.win_rate+'%','ML Win Rate','BE: '+s.break_even+'%', cWR(s.win_rate,s.break_even)),
+    kpiHtml(fmtEdge(s.edge),'ML Edge',s.wins+'W/'+s.losses+'L', cEdge(s.edge)),
+    kpiHtml(s.ci_lo+'–'+s.ci_hi+'%','Wilson 95% CI','','wh'),
+    kpiHtml('p='+s.p_value_pct+'%','p-value',s.confidence_label, s.significant?'g':'r'),
+  ].join('');
+  sigCard('ml-sig', s, 'MONEYLINE SIGNIFICANCE');
+  calCurve('ml-cal-summary', ml.calibration, 'MONEYLINE CALIBRATION');
+  evCard('ml-ev', ml.ev_signal, 'MONEYLINE EV SIGNAL');
+  kellyCard('ml-kelly', ml.kelly, 'MONEYLINE KELLY EFFICIENCY');
+  oddsCard('ml-odds', ml.odds, 'MONEYLINE — BY ODDS RANGE');
+  calCurve('ml-cal-curve', ml.calibration, 'MONEYLINE CALIBRATION CURVE');
+  rollingCard('ml-rolling', ml.rolling, 'MONEYLINE ROLLING 10-PICK EDGE');
+}
+
+function renderTotals() {
+  const tot=_an.totals, s=tot.significance, dd=tot.deep_dive;
+  el('tot-kpis').innerHTML=[
+    kpiHtml(s.win_rate+'%','Totals Win Rate','BE: '+s.break_even+'%', cWR(s.win_rate,s.break_even)),
+    kpiHtml(fmtEdge(s.edge),'Totals Edge',s.wins+'W/'+s.losses+'L', cEdge(s.edge)),
+    kpiHtml((dd.over.n||0)+' OVER / '+(dd.under.n||0)+' UNDER','Direction Split','','wh'),
+    kpiHtml('p='+s.p_value_pct+'%','p-value',s.confidence_label, s.p_value<0.10?'g':'r'),
+  ].join('');
+  sigCard('tot-sig', s, 'TOTALS SIGNIFICANCE');
+  const o=dd.over, u=dd.under;
+  el('tot-deep').innerHTML=`<div class="card-title">OVER vs UNDER BREAKDOWN</div>
+    <div style="color:var(--text-dim);font-size:11px;margin-bottom:12px">${dd.verdict}</div>
+    <table class="t">
+      <tr><th>Side</th><th class="tc">N</th><th class="tr">Win%</th><th class="tr">BE%</th>
+          <th class="tr">Edge</th><th class="tr">Avg Line</th><th class="tr">Avg EV</th></tr>
+      <tr><td style="color:var(--green);font-weight:700">OVER</td><td class="tc">${o.n||0}</td>
+        <td class="tr ${o.n>0?cWR(o.win_rate,o.break_even):'dim'}">${o.win_rate||0}%</td>
+        <td class="tr dim">${o.break_even||0}%</td>
+        <td class="tr ${o.n>0?cEdge(o.edge):'dim'}">${o.n>0?fmtEdge(o.edge):'—'}</td>
+        <td class="tr">${o.avg_line||'—'}</td><td class="tr">${o.avg_ev!=null?o.avg_ev+'%':'—'}</td></tr>
+      <tr><td style="color:var(--red);font-weight:700">UNDER</td><td class="tc">${u.n||0}</td>
+        <td class="tr ${u.n>0?cWR(u.win_rate,u.break_even):'dim'}">${u.win_rate||0}%</td>
+        <td class="tr dim">${u.break_even||0}%</td>
+        <td class="tr ${u.n>0?cEdge(u.edge):'dim'}">${u.n>0?fmtEdge(u.edge):'—'}</td>
+        <td class="tr">${u.avg_line||'—'}</td><td class="tr">${u.avg_ev!=null?u.avg_ev+'%':'—'}</td></tr>
+    </table>`;
+  evCard('tot-ev', tot.ev_signal, 'TOTALS EV SIGNAL');
+  calCurve('tot-cal-curve', tot.calibration, 'TOTALS CALIBRATION CURVE');
+  const tiers=tot.recommendation_tiers||[];
+  el('tot-tiers').innerHTML=`<div class="card-title">TOTALS CLASSIFICATION RECORDS</div><div style="font-size:10px;color:var(--text-dim);margin-bottom:10px">Forecast accuracy includes every game. Recommendation performance includes only Qualified Picks and Strong Locks.</div><table class="t"><tr><th>Classification</th><th class="tc">N</th><th class="tr">Record</th><th class="tr">Win%</th><th class="tr">Flat Units</th></tr>${tiers.map(x=>`<tr><td>${x.label}</td><td class="tc">${x.n}</td><td class="tr">${x.wins}-${x.losses}</td><td class="tr">${x.win_rate==null?'—':x.win_rate+'%'}</td><td class="tr ${x.flat_units>=0?'g':'r'}">${x.flat_units>0?'+':''}${x.flat_units.toFixed(2)}u</td></tr>`).join('')}</table>`;
+}
+
+function renderSandbox() {
+  const sb=_an.sandbox, mlsb=_an.ml_sandbox, betas=sb.live_betas||{};
+  el('sb-ev-all').innerHTML   = sweepRows(sb.ev_sweep, 'min_ev');
+  el('sb-prob-all').innerHTML = sweepRows(sb.prob_sweep, 'min_prob');
+  el('sb-ev-ml').innerHTML    = sweepRows(mlsb.ev_sweep, 'min_ev');
+  el('sb-prob-ml').innerHTML  = sweepRows(mlsb.prob_sweep, 'min_prob');
+  const bHelp = {fip:'1.0 FIP adv ≈ +5% home win prob',rsg:'1.0 RS/G adv ≈ +4% win prob',
+    form:'L10 W%: 0.1 form adv ≈ +0.9%',bp:'1.0 ERA adv ≈ +3.7%',
+    wpct:'0.1 W% adv ≈ +0.7%',shrink:'Pull-back toward market consensus'};
+  el('sb-betas').innerHTML = Object.entries(betas).map(([k,v])=>
+    `<div><span style="color:#a78bfa;width:70px;display:inline-block">β_${k}</span>
+     <span style="color:var(--amber)">${v}</span>
+     <span style="color:#444;font-size:10px;margin-left:10px">${bHelp[k]||''}</span></div>`
+  ).join('');
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// Model Lab
+// ════════════════════════════════════════════════════════════════════════════
+function renderLab() {
+  if (!_lab) return;
+  const winners = _lab.metric_winners||{};
+  const groupF  = el('lab-group-filter').value;
+  const minN    = parseInt(el('lab-min-n').value)||0;
+
+  let variants = _lab.variants.filter(v=>{
+    if (groupF && v.group!==groupF) return false;
+    if ((v.metrics.n||0)<minN) return false;
+    return true;
+  });
+
+  // Sort
+  variants.sort((a,b)=>{
+    const col = _labSortCol;
+    let av, bv;
+    if (col==='name')    { av=a.name; bv=b.name; }
+    else if (col==='_group') { av=a.group; bv=b.group; }
+    else if (col==='composite_score') { av=a.composite_score||0; bv=b.composite_score||0; }
+    else { av=a.metrics[col]; bv=b.metrics[col]; }
+    if (av==null) return 1; if (bv==null) return -1;
+    return _labSortDir * (av < bv ? -1 : av > bv ? 1 : 0);
+  });
+
+  el('lab-table-title').textContent = `MODEL COMPARISON — ${variants.length}/${_lab.n_variants} VARIANTS × 22 METRICS`;
+
+  // Build header sort indicators
+  document.querySelectorAll('.lab-t th').forEach(th=>{
+    th.classList.remove('sort-asc','sort-desc');
+  });
+
+  const tbody = el('lab-tbody');
+  tbody.innerHTML = variants.map(v=>{
+    const m = v.metrics;
+    if (!m.n) return `<tr><td>${v.name}</td><td><span class="group-tag ${GROUP_COLORS[v.group]||''}">${v.group}</span></td>
+      <td colspan="21" style="color:#444">No picks matched this variant's filters</td></tr>`;
+
+    const w = (metric, val, fmt, higherBetter=true) => {
+      const isWinner = winners[metric]===v.id;
+      const display = val==null?'—':fmt(val);
+      return `<td class="tr${isWinner?' winner':''}"${isWinner?' title="★ Best in this metric"':''}>
+        ${isWinner?'<span style="color:var(--amber)">★</span> ':''}${display}</td>`;
+    };
+
+    const fROI  = v => v!=null?fmtROI(v):'—';
+    const fPct  = v => v!=null?v.toFixed(1)+'%':'—';
+    const fDollar= v=> v!=null?('$'+Math.abs(v).toFixed(0)):'—';
+    const f3    = v => v!=null?v.toFixed(3):'—';
+    const f1    = v => v!=null?v.toFixed(1):'—';
+    const fInt  = v => v!=null?v:'—';
+    const fEdge = v => v!=null?fmtEdge(v):'—';
+
+    const wr = m.win_rate, be = m.break_even, edge = m.edge, fr = m.flat_roi, kr = m.kelly_roi;
+    const pv = m.p_value_pct;
+    const sc = v.composite_score||0;
+    const barW = Math.round(sc);
+
+    return `<tr title="${v.desc}">
+      <td style="font-weight:700;color:var(--text-dim)">${v.name}</td>
+      <td><span class="group-tag ${GROUP_COLORS[v.group]||''}">${v.group}</span></td>
+      <td class="tr"><div style="display:flex;align-items:center;gap:4px;justify-content:flex-end">
+        <div class="score-bar" style="width:${barW*.4}px;opacity:.8"></div>
+        <span style="color:${sc>70?'#00c851':sc>40?'#ffbb33':'#888'};font-weight:900">${sc.toFixed(0)}</span></div></td>
+      <td class="tc" style="font-weight:700">${m.n}</td>
+      <td class="tr" style="color:${wr-be>5?'#00c851':wr-be>0?'#ffd700':'#ff4444'};font-weight:700">${fPct(wr)}</td>
+      <td class="tr dim">${fPct(be)}</td>
+      ${w('edge',edge,fEdge)}
+      ${w('flat_roi',fr,fROI)}
+      ${w('kelly_roi',kr,fROI)}
+      <td class="tr" style="color:${pv!=null&&pv<5?'#00c851':pv!=null&&pv<10?'#ffbb33':'#ff4444'}">${fPct(pv)}</td>
+      ${w('brier_score',m.brier_score,f3,false)}
+      ${w('ece',m.ece,v=>v!=null?v.toFixed(1)+'%':'—',false)}
+      ${w('sharpe_ratio',m.sharpe_ratio,f3)}
+      ${w('max_drawdown',m.max_drawdown,fDollar,false)}
+      ${w('profit_factor',m.profit_factor,f3)}
+      ${w('ci_width',m.ci_width,fPct,false)}
+      ${w('win_streak',m.win_streak,fInt)}
+      <td class="tr" style="color:${(m.loss_streak||0)>5?'#ff4444':'#888'}">${m.loss_streak||0}</td>
+      <td class="tr dim">${m.avg_kelly!=null?m.avg_kelly.toFixed(3)+'u':'—'}</td>
+      <td class="tr dim">${m.avg_ev!=null?m.avg_ev.toFixed(1)+'%':'—'}</td>
+      <td class="tr dim">${m.avg_odds!=null?m.avg_odds.toFixed(3):'—'}</td>
+      <td class="tr dim">${m.avg_model_edge!=null?m.avg_model_edge.toFixed(1)+'pp':'—'}</td>
+      ${w('roi_per_pick',m.roi_per_pick,v=>v!=null?v.toFixed(2)+'%':'—')}
+    </tr>`;
+  }).join('');
+
+  // Metric winners
+  const metricLabels = {
+    edge:'Edge',flat_roi:'Flat ROI',kelly_roi:'Kelly ROI',p_value:'p-value (lowest)',
+    brier_score:'Brier Score (lowest)',ece:'ECE (lowest)',sharpe_ratio:'Sharpe Ratio',
+    max_drawdown:'Max Drawdown (lowest)',profit_factor:'Profit Factor',
+    roi_per_pick:'ROI/pick',win_rate:'Win Rate',win_streak:'Win Streak',
+  };
+  const winnerHtml = Object.entries(winners).map(([metric, vid])=>{
+    const variant = _lab.variants.find(v=>v.id===vid);
+    if (!variant) return '';
+    return `<div style="display:inline-flex;align-items:center;gap:6px;margin:4px 6px 4px 0;
+              background:rgba(124,58,237,0.12);border:1px solid var(--border-active);padding:5px 10px">
+      <span style="color:var(--amber);font-size:11px">★</span>
+      <span style="color:var(--text-dim);font-size:10px">${metricLabels[metric]||metric}</span>
+      <span style="color:var(--text-dim);font-size:11px;font-weight:700">${variant.name}</span>
+    </div>`;
+  }).join('');
+  el('lab-winners').innerHTML = `<div class="card-title">BEST MODEL PER METRIC</div>${winnerHtml}`;
+
+  show('lab');
+}
+
+function labSort(col) {
+  if (_labSortCol===col) _labSortDir *= -1;
+  else { _labSortCol=col; _labSortDir=-1; }
+  renderLab();
+}
+
+// ── Boot on load ─────────────────────────────────────────────────────────────
+switchTab('overview');  // already calls loadAnalytics() when _an is null
+</script>
+{% endblock %}

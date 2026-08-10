@@ -1,0 +1,56 @@
+{
+  "source": "/Users/kalyaan/betting-model/ios/JingleezMobile/JingleezMobile/ResultsView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Transparent Results",
+        "location": {
+          "startingColumn": 37,
+          "startingLine": 11
+        }
+      },
+      {
+        "comment": "",
+        "key": "Market",
+        "location": {
+          "startingColumn": 16,
+          "startingLine": 9
+        }
+      },
+      {
+        "comment": "",
+        "key": "All",
+        "location": {
+          "startingColumn": 49,
+          "startingLine": 9
+        }
+      },
+      {
+        "comment": "",
+        "key": "Moneyline",
+        "location": {
+          "startingColumn": 72,
+          "startingLine": 9
+        }
+      },
+      {
+        "comment": "",
+        "key": "Totals",
+        "location": {
+          "startingColumn": 107,
+          "startingLine": 9
+        }
+      },
+      {
+        "comment": "",
+        "key": "%@ · %@",
+        "location": {
+          "startingColumn": 455,
+          "startingLine": 13
+        }
+      }
+    ]
+  },
+  "version": 1
+}

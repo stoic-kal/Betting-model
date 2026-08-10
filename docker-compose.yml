@@ -1,0 +1,29 @@
+version: '3.9'
+
+services:
+  flask:
+    build:
+      context: .
+      dockerfile: Dockerfile.flask
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./database:/app/database
+      - ./totals_diagnostics:/app/totals_diagnostics
+    environment:
+      - FLASK_ENV=production
+      - DATABASE_PATH=/app/database/picks.db
+    restart: unless-stopped
+
+  athena:
+    build:
+      context: ./athena
+      dockerfile: Dockerfile
+    ports:
+      - "5173:80"
+    depends_on:
+      - flask
+    restart: unless-stopped
+
+volumes:
+  db_data:

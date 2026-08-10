@@ -1,0 +1,128 @@
+{
+  "" : {
+    "diagnostics" : "/Users/kalyaan/betting-model/ios/JingleezMobile/build/Build/Intermediates.noindex/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/JingleezMobile-master.dia",
+    "emit-module-dependencies" : "/Users/kalyaan/betting-model/ios/JingleezMobile/build/Build/Intermediates.noindex/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/JingleezMobile-master-emit-module.d",
+    "emit-module-diagnostics" : "/Users/kalyaan/betting-model/ios/JingleezMobile/build/Build/Intermediates.noindex/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/JingleezMobile-master-emit-module.dia",
+    "swift-dependencies" : "/Users/kalyaan/betting-model/ios/JingleezMobile/build/Build/Intermediates.noindex/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/JingleezMobile-master.swiftdeps"
+  },
+  "/Users/kalyaan/betting-model/ios/JingleezMobile/JingleezMobile/APIClient.swift" : {
+    "const-values" : "/Users/kalyaan/betting-model/ios/JingleezMobile/build/Build/Intermediates.noindex/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/APIClient.swiftconstvalues",
+    "dependencies" : "/Users/kalyaan/betting-model/ios/JingleezMobile/build/Build/Intermediates.noindex/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/APIClient.d",
+    "diagnostics" : "/Users/kalyaan/betting-model/ios/JingleezMobile/build/Build/Intermediates.noindex/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/APIClient.dia",
+    "index-unit-output-path" : "/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/APIClient.o",
+    "llvm-bc" : "/Users/kalyaan/betting-model/ios/JingleezMobile/build/Build/Intermediates.noindex/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/APIClient.bc",
+    "object" : "/Users/kalyaan/betting-model/ios/JingleezMobile/build/Build/Intermediates.noindex/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/APIClient.o",
+    "swift-dependencies" : "/Users/kalyaan/betting-model/ios/JingleezMobile/build/Build/Intermediates.noindex/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/APIClient.swiftdeps",
+    "swiftmodule" : "/Users/kalyaan/betting-model/ios/JingleezMobile/build/Build/Intermediates.noindex/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/APIClient~partial.swiftmodule"
+  },
+  "/Users/kalyaan/betting-model/ios/JingleezMobile/JingleezMobile/AccountView.swift" : {
+    "const-values" : "/Users/kalyaan/betting-model/ios/JingleezMobile/build/Build/Intermediates.noindex/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/AccountView.swiftconstvalues",
+    "dependencies" : "/Users/kalyaan/betting-model/ios/JingleezMobile/build/Build/Intermediates.noindex/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/AccountView.d",
+    "diagnostics" : "/Users/kalyaan/betting-model/ios/JingleezMobile/build/Build/Intermediates.noindex/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/AccountView.dia",
+    "index-unit-output-path" : "/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/AccountView.o",
+    "llvm-bc" : "/Users/kalyaan/betting-model/ios/JingleezMobile/build/Build/Intermediates.noindex/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/AccountView.bc",
+    "object" : "/Users/kalyaan/betting-model/ios/JingleezMobile/build/Build/Intermediates.noindex/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/AccountView.o",
+    "swift-dependencies" : "/Users/kalyaan/betting-model/ios/JingleezMobile/build/Build/Intermediates.noindex/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/AccountView.swiftdeps",
+    "swiftmodule" : "/Users/kalyaan/betting-model/ios/JingleezMobile/build/Build/Intermediates.noindex/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/AccountView~partial.swiftmodule"
+  },
+  "/Users/kalyaan/betting-model/ios/JingleezMobile/JingleezMobile/AlertsView.swift" : {
+    "const-values" : "/Users/kalyaan/betting-model/ios/JingleezMobile/build/Build/Intermediates.noindex/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/AlertsView.swiftconstvalues",
+    "dependencies" : "/Users/kalyaan/betting-model/ios/JingleezMobile/build/Build/Intermediates.noindex/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/AlertsView.d",
+    "diagnostics" : "/Users/kalyaan/betting-model/ios/JingleezMobile/build/Build/Intermediates.noindex/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/AlertsView.dia",
+    "index-unit-output-path" : "/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/AlertsView.o",
+    "llvm-bc" : "/Users/kalyaan/betting-model/ios/JingleezMobile/build/Build/Intermediates.noindex/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/AlertsView.bc",
+    "object" : "/Users/kalyaan/betting-model/ios/JingleezMobile/build/Build/Intermediates.noindex/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/AlertsView.o",
+    "swift-dependencies" : "/Users/kalyaan/betting-model/ios/JingleezMobile/build/Build/Intermediates.noindex/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/AlertsView.swiftdeps",
+    "swiftmodule" : "/Users/kalyaan/betting-model/ios/JingleezMobile/build/Build/Intermediates.noindex/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/AlertsView~partial.swiftmodule"
+  },
+  "/Users/kalyaan/betting-model/ios/JingleezMobile/JingleezMobile/AppSettings.swift" : {
+    "const-values" : "/Users/kalyaan/betting-model/ios/JingleezMobile/build/Build/Intermediates.noindex/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/AppSettings.swiftconstvalues",
+    "dependencies" : "/Users/kalyaan/betting-model/ios/JingleezMobile/build/Build/Intermediates.noindex/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/AppSettings.d",
+    "diagnostics" : "/Users/kalyaan/betting-model/ios/JingleezMobile/build/Build/Intermediates.noindex/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/AppSettings.dia",
+    "index-unit-output-path" : "/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/AppSettings.o",
+    "llvm-bc" : "/Users/kalyaan/betting-model/ios/JingleezMobile/build/Build/Intermediates.noindex/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/AppSettings.bc",
+    "object" : "/Users/kalyaan/betting-model/ios/JingleezMobile/build/Build/Intermediates.noindex/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/AppSettings.o",
+    "swift-dependencies" : "/Users/kalyaan/betting-model/ios/JingleezMobile/build/Build/Intermediates.noindex/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/AppSettings.swiftdeps",
+    "swiftmodule" : "/Users/kalyaan/betting-model/ios/JingleezMobile/build/Build/Intermediates.noindex/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/AppSettings~partial.swiftmodule"
+  },
+  "/Users/kalyaan/betting-model/ios/JingleezMobile/JingleezMobile/InsightsView.swift" : {
+    "const-values" : "/Users/kalyaan/betting-model/ios/JingleezMobile/build/Build/Intermediates.noindex/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/InsightsView.swiftconstvalues",
+    "dependencies" : "/Users/kalyaan/betting-model/ios/JingleezMobile/build/Build/Intermediates.noindex/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/InsightsView.d",
+    "diagnostics" : "/Users/kalyaan/betting-model/ios/JingleezMobile/build/Build/Intermediates.noindex/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/InsightsView.dia",
+    "index-unit-output-path" : "/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/InsightsView.o",
+    "llvm-bc" : "/Users/kalyaan/betting-model/ios/JingleezMobile/build/Build/Intermediates.noindex/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/InsightsView.bc",
+    "object" : "/Users/kalyaan/betting-model/ios/JingleezMobile/build/Build/Intermediates.noindex/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/InsightsView.o",
+    "swift-dependencies" : "/Users/kalyaan/betting-model/ios/JingleezMobile/build/Build/Intermediates.noindex/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/InsightsView.swiftdeps",
+    "swiftmodule" : "/Users/kalyaan/betting-model/ios/JingleezMobile/build/Build/Intermediates.noindex/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/InsightsView~partial.swiftmodule"
+  },
+  "/Users/kalyaan/betting-model/ios/JingleezMobile/JingleezMobile/JingleezMobileApp.swift" : {
+    "const-values" : "/Users/kalyaan/betting-model/ios/JingleezMobile/build/Build/Intermediates.noindex/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/JingleezMobileApp.swiftconstvalues",
+    "dependencies" : "/Users/kalyaan/betting-model/ios/JingleezMobile/build/Build/Intermediates.noindex/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/JingleezMobileApp.d",
+    "diagnostics" : "/Users/kalyaan/betting-model/ios/JingleezMobile/build/Build/Intermediates.noindex/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/JingleezMobileApp.dia",
+    "index-unit-output-path" : "/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/JingleezMobileApp.o",
+    "llvm-bc" : "/Users/kalyaan/betting-model/ios/JingleezMobile/build/Build/Intermediates.noindex/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/JingleezMobileApp.bc",
+    "object" : "/Users/kalyaan/betting-model/ios/JingleezMobile/build/Build/Intermediates.noindex/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/JingleezMobileApp.o",
+    "swift-dependencies" : "/Users/kalyaan/betting-model/ios/JingleezMobile/build/Build/Intermediates.noindex/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/JingleezMobileApp.swiftdeps",
+    "swiftmodule" : "/Users/kalyaan/betting-model/ios/JingleezMobile/build/Build/Intermediates.noindex/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/JingleezMobileApp~partial.swiftmodule"
+  },
+  "/Users/kalyaan/betting-model/ios/JingleezMobile/JingleezMobile/Models.swift" : {
+    "const-values" : "/Users/kalyaan/betting-model/ios/JingleezMobile/build/Build/Intermediates.noindex/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/Models.swiftconstvalues",
+    "dependencies" : "/Users/kalyaan/betting-model/ios/JingleezMobile/build/Build/Intermediates.noindex/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/Models.d",
+    "diagnostics" : "/Users/kalyaan/betting-model/ios/JingleezMobile/build/Build/Intermediates.noindex/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/Models.dia",
+    "index-unit-output-path" : "/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/Models.o",
+    "llvm-bc" : "/Users/kalyaan/betting-model/ios/JingleezMobile/build/Build/Intermediates.noindex/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/Models.bc",
+    "object" : "/Users/kalyaan/betting-model/ios/JingleezMobile/build/Build/Intermediates.noindex/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/Models.o",
+    "swift-dependencies" : "/Users/kalyaan/betting-model/ios/JingleezMobile/build/Build/Intermediates.noindex/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/Models.swiftdeps",
+    "swiftmodule" : "/Users/kalyaan/betting-model/ios/JingleezMobile/build/Build/Intermediates.noindex/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/Models~partial.swiftmodule"
+  },
+  "/Users/kalyaan/betting-model/ios/JingleezMobile/JingleezMobile/ResultsView.swift" : {
+    "const-values" : "/Users/kalyaan/betting-model/ios/JingleezMobile/build/Build/Intermediates.noindex/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/ResultsView.swiftconstvalues",
+    "dependencies" : "/Users/kalyaan/betting-model/ios/JingleezMobile/build/Build/Intermediates.noindex/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/ResultsView.d",
+    "diagnostics" : "/Users/kalyaan/betting-model/ios/JingleezMobile/build/Build/Intermediates.noindex/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/ResultsView.dia",
+    "index-unit-output-path" : "/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/ResultsView.o",
+    "llvm-bc" : "/Users/kalyaan/betting-model/ios/JingleezMobile/build/Build/Intermediates.noindex/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/ResultsView.bc",
+    "object" : "/Users/kalyaan/betting-model/ios/JingleezMobile/build/Build/Intermediates.noindex/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/ResultsView.o",
+    "swift-dependencies" : "/Users/kalyaan/betting-model/ios/JingleezMobile/build/Build/Intermediates.noindex/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/ResultsView.swiftdeps",
+    "swiftmodule" : "/Users/kalyaan/betting-model/ios/JingleezMobile/build/Build/Intermediates.noindex/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/ResultsView~partial.swiftmodule"
+  },
+  "/Users/kalyaan/betting-model/ios/JingleezMobile/JingleezMobile/RootView.swift" : {
+    "const-values" : "/Users/kalyaan/betting-model/ios/JingleezMobile/build/Build/Intermediates.noindex/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/RootView.swiftconstvalues",
+    "dependencies" : "/Users/kalyaan/betting-model/ios/JingleezMobile/build/Build/Intermediates.noindex/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/RootView.d",
+    "diagnostics" : "/Users/kalyaan/betting-model/ios/JingleezMobile/build/Build/Intermediates.noindex/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/RootView.dia",
+    "index-unit-output-path" : "/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/RootView.o",
+    "llvm-bc" : "/Users/kalyaan/betting-model/ios/JingleezMobile/build/Build/Intermediates.noindex/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/RootView.bc",
+    "object" : "/Users/kalyaan/betting-model/ios/JingleezMobile/build/Build/Intermediates.noindex/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/RootView.o",
+    "swift-dependencies" : "/Users/kalyaan/betting-model/ios/JingleezMobile/build/Build/Intermediates.noindex/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/RootView.swiftdeps",
+    "swiftmodule" : "/Users/kalyaan/betting-model/ios/JingleezMobile/build/Build/Intermediates.noindex/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/RootView~partial.swiftmodule"
+  },
+  "/Users/kalyaan/betting-model/ios/JingleezMobile/JingleezMobile/Theme.swift" : {
+    "const-values" : "/Users/kalyaan/betting-model/ios/JingleezMobile/build/Build/Intermediates.noindex/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/Theme.swiftconstvalues",
+    "dependencies" : "/Users/kalyaan/betting-model/ios/JingleezMobile/build/Build/Intermediates.noindex/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/Theme.d",
+    "diagnostics" : "/Users/kalyaan/betting-model/ios/JingleezMobile/build/Build/Intermediates.noindex/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/Theme.dia",
+    "index-unit-output-path" : "/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/Theme.o",
+    "llvm-bc" : "/Users/kalyaan/betting-model/ios/JingleezMobile/build/Build/Intermediates.noindex/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/Theme.bc",
+    "object" : "/Users/kalyaan/betting-model/ios/JingleezMobile/build/Build/Intermediates.noindex/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/Theme.o",
+    "swift-dependencies" : "/Users/kalyaan/betting-model/ios/JingleezMobile/build/Build/Intermediates.noindex/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/Theme.swiftdeps",
+    "swiftmodule" : "/Users/kalyaan/betting-model/ios/JingleezMobile/build/Build/Intermediates.noindex/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/Theme~partial.swiftmodule"
+  },
+  "/Users/kalyaan/betting-model/ios/JingleezMobile/JingleezMobile/TodayView.swift" : {
+    "const-values" : "/Users/kalyaan/betting-model/ios/JingleezMobile/build/Build/Intermediates.noindex/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/TodayView.swiftconstvalues",
+    "dependencies" : "/Users/kalyaan/betting-model/ios/JingleezMobile/build/Build/Intermediates.noindex/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/TodayView.d",
+    "diagnostics" : "/Users/kalyaan/betting-model/ios/JingleezMobile/build/Build/Intermediates.noindex/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/TodayView.dia",
+    "index-unit-output-path" : "/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/TodayView.o",
+    "llvm-bc" : "/Users/kalyaan/betting-model/ios/JingleezMobile/build/Build/Intermediates.noindex/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/TodayView.bc",
+    "object" : "/Users/kalyaan/betting-model/ios/JingleezMobile/build/Build/Intermediates.noindex/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/TodayView.o",
+    "swift-dependencies" : "/Users/kalyaan/betting-model/ios/JingleezMobile/build/Build/Intermediates.noindex/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/TodayView.swiftdeps",
+    "swiftmodule" : "/Users/kalyaan/betting-model/ios/JingleezMobile/build/Build/Intermediates.noindex/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/TodayView~partial.swiftmodule"
+  },
+  "/Users/kalyaan/betting-model/ios/JingleezMobile/build/Build/Intermediates.noindex/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/DerivedSources/GeneratedAssetSymbols.swift" : {
+    "const-values" : "/Users/kalyaan/betting-model/ios/JingleezMobile/build/Build/Intermediates.noindex/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/GeneratedAssetSymbols.swiftconstvalues",
+    "dependencies" : "/Users/kalyaan/betting-model/ios/JingleezMobile/build/Build/Intermediates.noindex/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/GeneratedAssetSymbols.d",
+    "diagnostics" : "/Users/kalyaan/betting-model/ios/JingleezMobile/build/Build/Intermediates.noindex/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/GeneratedAssetSymbols.dia",
+    "index-unit-output-path" : "/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/GeneratedAssetSymbols.o",
+    "llvm-bc" : "/Users/kalyaan/betting-model/ios/JingleezMobile/build/Build/Intermediates.noindex/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/GeneratedAssetSymbols.bc",
+    "object" : "/Users/kalyaan/betting-model/ios/JingleezMobile/build/Build/Intermediates.noindex/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/GeneratedAssetSymbols.o",
+    "swift-dependencies" : "/Users/kalyaan/betting-model/ios/JingleezMobile/build/Build/Intermediates.noindex/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/GeneratedAssetSymbols.swiftdeps",
+    "swiftmodule" : "/Users/kalyaan/betting-model/ios/JingleezMobile/build/Build/Intermediates.noindex/JingleezMobile.build/Release-iphonesimulator/JingleezMobile.build/Objects-normal/x86_64/GeneratedAssetSymbols~partial.swiftmodule"
+  }
+}

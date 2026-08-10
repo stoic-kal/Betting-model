@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+.sec-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}.sec-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:14px}.sec-ok{color:var(--green);font-weight:700}.sec-bad{color:var(--red);font-weight:700}.sec-table{width:100%;border-collapse:collapse;background:var(--bg-card);margin-top:14px}.sec-table th{padding:8px 10px;text-align:left;font-size:9px;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-dim);background:rgba(124,58,237,0.12);border-bottom:1px solid var(--border)}
+.sec-table td{padding:8px 10px;text-align:left;font-size:12px;border-bottom:1px solid var(--border)}.sec-note{background:rgba(124,58,237,0.06);color:var(--text-dim);border-left:3px solid var(--violet);border-radius:0 var(--radius-sm) var(--radius-sm) 0;padding:12px 14px;margin:12px 0;line-height:1.7;font-size:12px}
+</style>
+<h1 style="font-size:24px;font-weight:800;letter-spacing:-0.02em;color:var(--text);margin-bottom:16px">Security Monitor</h1>
+<div class="sec-note">Local health checks run every five minutes while app.py is running. Blocked requests are logged without storing raw IP addresses. This monitor supplements—not replaces—TLS, authentication and managed infrastructure for a future public deployment.</div>
+<div id="sec-status">Loading security health…</div>
+<div id="sec-checks" class="sec-grid"></div>
+<h2 style="font-size:14px;font-weight:700;color:var(--text);margin:20px 0 10px">Recent Security Events</h2>
+<table class="sec-table"><thead><tr><th>TIME</th><th>EVENT</th><th>SEVERITY</th><th>METHOD</th><th>PATH</th></tr></thead><tbody id="sec-events"></tbody></table>
+{% endblock %}
+{% block scripts %}<script>
+const esc=v=>String(v??'—').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+async function loadSecurity(){try{const r=await fetch('/api/security-health',{cache:'no-store'}),d=await r.json();if(!r.ok)throw Error(d.message||'Unavailable');document.getElementById('sec-status').innerHTML=`<h2 class="${d.health==='healthy'?'sec-ok':'sec-bad'}">${d.health==='healthy'?'✅ HEALTHY':'⚠ NEEDS ATTENTION'} · ${Number(d.blocked_events_24h||0)} warning/critical events in 24h</h2>`;document.getElementById('sec-checks').innerHTML=d.checks.map(c=>`<div class="sec-card"><strong class="${c.ok?'sec-ok':'sec-bad'}">${c.ok?'✓':'✕'} ${esc(c.name)}</strong><p>${esc(c.detail)}</p></div>`).join('');document.getElementById('sec-events').innerHTML=(d.recent_events||[]).map(e=>`<tr><td>${esc(e.occurred_at)}</td><td>${esc(e.event_type)}</td><td>${esc(e.severity)}</td><td>${esc(e.method)}</td><td>${esc(e.path)}</td></tr>`).join('')||'<tr><td colspan="5">No events recorded.</td></tr>'}catch(e){document.getElementById('sec-status').innerHTML=`<h2 class="sec-bad">Could not load monitor: ${esc(e.message)}</h2>`}}
+loadSecurity();setInterval(loadSecurity,60000);
+</script>{% endblock %}

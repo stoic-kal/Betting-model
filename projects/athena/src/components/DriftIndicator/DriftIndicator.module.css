@@ -1,0 +1,25 @@
+.root {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-weight: 600;
+  font-family: var(--font-mono);
+}
+
+.sm { font-size: 10px; }
+.md { font-size: 12px; }
+.lg { font-size: 15px; }
+
+.good    { color: #10B981; }
+.bad     { color: #EF4444; }
+.neutral { color: #6B7280; }
+
+.arrow { font-size: 0.9em; }
+
+.label {
+  font-size: 0.8em;
+  font-weight: 400;
+  color: var(--text-muted);
+  font-family: inherit;
+  margin-left: 2px;
+}

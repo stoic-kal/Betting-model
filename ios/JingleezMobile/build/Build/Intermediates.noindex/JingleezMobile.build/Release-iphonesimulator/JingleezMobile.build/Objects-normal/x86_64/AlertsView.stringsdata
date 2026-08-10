@@ -1,0 +1,48 @@
+{
+  "source": "/Users/kalyaan/betting-model/ios/JingleezMobile/JingleezMobile/AlertsView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Alerts",
+        "location": {
+          "startingColumn": 1202,
+          "startingLine": 5
+        }
+      },
+      {
+        "comment": "",
+        "key": "Signal, not noise",
+        "location": {
+          "startingColumn": 157,
+          "startingLine": 5
+        }
+      },
+      {
+        "comment": "",
+        "key": "Choose the model events worth interrupting your day. Push delivery will activate when the hosted backend is connected.",
+        "location": {
+          "startingColumn": 204,
+          "startingLine": 5
+        }
+      },
+      {
+        "comment": "",
+        "key": "Jingleez never sends bet-slip links, accepts wagers, holds funds or connects to sportsbook accounts.",
+        "location": {
+          "startingColumn": 966,
+          "startingLine": 5
+        }
+      },
+      {
+        "comment": "",
+        "key": "No sportsbook alerts",
+        "location": {
+          "startingColumn": 874,
+          "startingLine": 5
+        }
+      }
+    ]
+  },
+  "version": 1
+}

@@ -1,0 +1,56 @@
+.tableWrap {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.table thead th {
+  padding: 8px 12px;
+  text-align: left;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-disabled);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border-bottom: 1px solid var(--border-subtle);
+  white-space: nowrap;
+  user-select: none;
+}
+
+.sortable {
+  cursor: pointer;
+  transition: color 0.15s;
+}
+.sortable:hover { color: var(--text-muted); }
+.active { color: var(--text-2) !important; }
+
+.table tbody tr:hover { background: rgba(255,255,255,0.02); }
+
+.table td {
+  padding: 8px 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  color: var(--text-2);
+  vertical-align: middle;
+}
+
+.right { text-align: right; }
+
+.mono {
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+.teamName {
+  color: var(--text);
+  font-weight: 500;
+  font-size: 12px;
+}
+
+.pos { color: #10B981; }
+.neg { color: #EF4444; }
+
+.row {}

@@ -1,0 +1,436 @@
+{
+  "run_at": "2026-08-08T06:42:38.273966+00:00",
+  "summary": {
+    "total_picks": 90,
+    "resolved": 81,
+    "with_snapshot": 60,
+    "won": 42,
+    "date_min": "2026-07-31",
+    "date_max": "2026-08-07",
+    "overall_wr": 51.9,
+    "overall_roi": 0.81,
+    "over_record": [
+      12,
+      14
+    ],
+    "over_wr": 46.2,
+    "over_roi": -10.21,
+    "under_record": [
+      30,
+      25
+    ],
+    "under_wr": 54.5,
+    "under_roi": 6.02,
+    "avg_ev": 16.6591,
+    "avg_prob": 0.5966,
+    "avg_clv": 1.865,
+    "beat_close": 81.1,
+    "clv_picks": 37
+  },
+  "calibration": {
+    "bins": [
+      "50-55%",
+      "52-57%",
+      "55-60%",
+      "57-63%",
+      "60-65%",
+      "62-67%",
+      "65-70%",
+      "70-75%",
+      "75-80%"
+    ],
+    "pred_centers": [
+      52.5,
+      54.5,
+      57.5,
+      60.5,
+      62.5,
+      64.5,
+      67.5,
+      72.5,
+      77.5
+    ],
+    "actual_wr": [
+      65.4,
+      61.5,
+      43.5,
+      17.6,
+      41.7,
+      70.0,
+      44.4,
+      50.0,
+      100.0
+    ],
+    "bin_counts": [
+      26,
+      26,
+      23,
+      17,
+      12,
+      10,
+      9,
+      8,
+      1
+    ],
+    "brier": 0.2653,
+    "ece": 0.1718,
+    "baseline_brier": 0.2497
+  },
+  "data_health": [
+    {
+      "name": "home_fip",
+      "coverage": 67.8,
+      "mean": 2.452,
+      "std": 0.492,
+      "constant": false
+    },
+    {
+      "name": "away_fip",
+      "coverage": 67.8,
+      "mean": 2.431,
+      "std": 0.436,
+      "constant": false
+    },
+    {
+      "name": "home_rsg",
+      "coverage": 67.8,
+      "mean": 4.584,
+      "std": 0.463,
+      "constant": false
+    },
+    {
+      "name": "away_rsg",
+      "coverage": 67.8,
+      "mean": 4.423,
+      "std": 0.546,
+      "constant": false
+    },
+    {
+      "name": "expected_total",
+      "coverage": 67.8,
+      "mean": 8.432,
+      "std": 1.218,
+      "constant": false
+    },
+    {
+      "name": "market_line",
+      "coverage": 67.8,
+      "mean": 8.566,
+      "std": 0.947,
+      "constant": false
+    },
+    {
+      "name": "lineup_runs_adj",
+      "coverage": 67.8,
+      "mean": 0.028,
+      "std": 0.138,
+      "constant": false
+    },
+    {
+      "name": "bullpen_workload_adj",
+      "coverage": 67.8,
+      "mean": 0.313,
+      "std": 0.143,
+      "constant": false
+    },
+    {
+      "name": "defense_runs_adj",
+      "coverage": 67.8,
+      "mean": -0.007,
+      "std": 0.044,
+      "constant": false
+    }
+  ],
+  "features": [
+    {
+      "name": "Home Rsg",
+      "key": "home_rsg",
+      "corr": -0.093,
+      "n": 60,
+      "mean_won": 4.505,
+      "mean_lost": 4.705
+    },
+    {
+      "name": "Market Line",
+      "key": "market_line",
+      "corr": -0.076,
+      "n": 60,
+      "mean_won": 8.412,
+      "mean_lost": 8.75
+    },
+    {
+      "name": "Defense Runs Adj",
+      "key": "defense_runs_adj",
+      "corr": 0.063,
+      "n": 60,
+      "mean_won": -0.001,
+      "mean_lost": -0.014
+    },
+    {
+      "name": "Expected Total",
+      "key": "expected_total",
+      "corr": -0.054,
+      "n": 60,
+      "mean_won": 8.287,
+      "mean_lost": 8.595
+    },
+    {
+      "name": "Away Rsg",
+      "key": "away_rsg",
+      "corr": -0.04,
+      "n": 60,
+      "mean_won": 4.394,
+      "mean_lost": 4.493
+    },
+    {
+      "name": "Home Lineup Ops",
+      "key": "home_lineup_ops",
+      "corr": 0.032,
+      "n": 60,
+      "mean_won": 0.735,
+      "mean_lost": 0.729
+    },
+    {
+      "name": "Home Fielding Pct",
+      "key": "home_fielding_pct",
+      "corr": -0.023,
+      "n": 60,
+      "mean_won": 0.986,
+      "mean_lost": 0.986
+    },
+    {
+      "name": "Bullpen Workload Adj",
+      "key": "bullpen_workload_adj",
+      "corr": 0.021,
+      "n": 60,
+      "mean_won": 0.315,
+      "mean_lost": 0.301
+    },
+    {
+      "name": "Home Fip",
+      "key": "home_fip",
+      "corr": 0.016,
+      "n": 60,
+      "mean_won": 2.469,
+      "mean_lost": 2.432
+    },
+    {
+      "name": "Lineup Runs Adj",
+      "key": "lineup_runs_adj",
+      "corr": 0.015,
+      "n": 60,
+      "mean_won": 0.033,
+      "mean_lost": 0.023
+    }
+  ],
+  "sections": {
+    "s1": {
+      "title": "Data Health Audit",
+      "status": "ok",
+      "metrics": {
+        "resolved_picks": 81,
+        "with_snapshot": 60,
+        "coverage_pct": 74.1,
+        "constant_features": 14,
+        "healthy_features": 11,
+        "partial_features": 5,
+        "broken_features": 0,
+        "audited_features": 16
+      },
+      "error": null,
+      "reason": null,
+      "elapsed": 2.97
+    },
+    "s2": {
+      "title": "Prediction Distribution",
+      "status": "ok",
+      "metrics": {
+        "model_prob_mean": 0.5966,
+        "model_prob_std": 0.0819,
+        "ev_mean": 16.66,
+        "over_mean_edge_runs": -0.73,
+        "under_mean_edge_runs": 0.6
+      },
+      "error": null,
+      "reason": null,
+      "elapsed": 0.39
+    },
+    "s3": {
+      "title": "Residual Analysis",
+      "status": "ok",
+      "metrics": {
+        "worst_segment": "month=7",
+        "worst_segment_wr": 37.5,
+        "worst_segment_n": 8
+      },
+      "error": null,
+      "reason": null,
+      "elapsed": 0.38
+    },
+    "s4": {
+      "title": "Error Heatmaps",
+      "status": "ok",
+      "metrics": {},
+      "error": null,
+      "reason": null,
+      "elapsed": 0.75
+    },
+    "s5": {
+      "title": "Calibration",
+      "status": "ok",
+      "metrics": {
+        "brier": 0.2653,
+        "log_loss": 0.7262,
+        "ece": 0.2423,
+        "mce": 0.4919
+      },
+      "error": null,
+      "reason": null,
+      "elapsed": 0.26
+    },
+    "s6": {
+      "title": "Over vs Under",
+      "status": "ok",
+      "metrics": {
+        "over_wr": 46.2,
+        "over_roi": -10.21,
+        "under_wr": 54.5,
+        "under_roi": 6.02
+      },
+      "error": null,
+      "reason": null,
+      "elapsed": 0.44
+    },
+    "s7": {
+      "title": "Feature Importance",
+      "status": "ok",
+      "metrics": {
+        "top_feature": "home_rsg",
+        "top_feature_corr": -0.215,
+        "features_evaluated": 26
+      },
+      "error": null,
+      "reason": null,
+      "elapsed": 0.21
+    },
+    "s9": {
+      "title": "Edge Analysis",
+      "status": "ok",
+      "metrics": {
+        "best_ev_threshold": 26,
+        "best_ev_threshold_roi": 16.03,
+        "best_ev_threshold_n": 20
+      },
+      "error": null,
+      "reason": null,
+      "elapsed": 0.43
+    },
+    "s11": {
+      "title": "CLV Analysis",
+      "status": "ok",
+      "metrics": {
+        "avg_clv": 1.865,
+        "beat_close_pct": 81.1,
+        "roi_clv_positive": 9.88,
+        "roi_clv_nonpositive": 40.06
+      },
+      "error": null,
+      "reason": null,
+      "elapsed": 0.19
+    },
+    "s12": {
+      "title": "Team Analysis",
+      "status": "ok",
+      "metrics": {
+        "teams_evaluated": 29,
+        "best_team": "Philadelphia Phillies",
+        "best_team_roi": 98.34,
+        "worst_team": "New York Mets",
+        "worst_team_roi": -100.0
+      },
+      "error": null,
+      "reason": null,
+      "elapsed": 0.31
+    },
+    "s19": {
+      "title": "Filter Grid Search",
+      "status": "ok",
+      "metrics": {
+        "filters_evaluated": 22,
+        "best_filter": "CLV > 1",
+        "best_filter_roi": 20.94,
+        "best_filter_n": 24
+      },
+      "error": null,
+      "reason": null,
+      "elapsed": 0.14
+    },
+    "s13": {
+      "title": "Pitcher Quality",
+      "status": "ok",
+      "metrics": {
+        "avg_home_fip": 2.453,
+        "avg_away_fip": 2.428,
+        "fip_std": 0.5
+      },
+      "error": null,
+      "reason": null,
+      "elapsed": 0.4
+    },
+    "s14": {
+      "title": "Umpire Analysis",
+      "status": "ok",
+      "metrics": {
+        "ump_runs_adj_std": 0.0125
+      },
+      "error": null,
+      "reason": null,
+      "elapsed": 0.15
+    },
+    "s15": {
+      "title": "Weather Analysis",
+      "status": "ok",
+      "metrics": {
+        "weather_factor_mean": 1.0091,
+        "weather_factor_std": 0.0141
+      },
+      "error": null,
+      "reason": null,
+      "elapsed": 0.25
+    },
+    "s21": {
+      "title": "Temporal Analysis",
+      "status": "ok",
+      "metrics": {
+        "rolling_10_wr_latest": 80.0,
+        "season_wr": 51.9
+      },
+      "error": null,
+      "reason": null,
+      "elapsed": 0.28
+    },
+    "s24": {
+      "title": "Root Cause Report",
+      "status": "ok",
+      "metrics": {
+        "issues_found": 5,
+        "critical_issues": 1,
+        "over_wr": 46.2,
+        "under_wr": 54.5,
+        "overall_wr": 51.9,
+        "avg_clv": 1.865
+      },
+      "error": null,
+      "reason": null,
+      "elapsed": 0.0
+    },
+    "s25": {
+      "title": "Retraining Roadmap",
+      "status": "ok",
+      "metrics": {},
+      "error": null,
+      "reason": null,
+      "elapsed": 0.0
+    }
+  }
+}

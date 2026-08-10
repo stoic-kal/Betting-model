@@ -1,0 +1,222 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+  .page-title { text-align:center; color:var(--text); font-size:28px; font-weight:800; margin-bottom:6px; letter-spacing:-0.02em; }
+  .date-label  { text-align:center; color:var(--text-dim); font-size:13px; margin-bottom:20px; }
+  .auto-status { text-align:center; color:var(--text-muted); font-size:12px; margin:6px 0 14px; }
+
+  .games-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+    gap: 16px; margin-top:10px;
+  }
+  .game-card {
+    background: var(--bg-card); border:1px solid var(--border); border-radius:12px;
+    padding:16px; text-decoration:none; display:block; cursor:pointer; position:relative;
+    transition: border-color 0.15s, box-shadow 0.15s; backdrop-filter:blur(8px);
+  }
+  .game-card:hover { border-color:rgba(124,58,237,0.5); box-shadow:var(--glow-violet); }
+
+  .game-card-header {
+    display:flex; justify-content:space-between; align-items:center;
+    margin-bottom:10px; padding-bottom:8px; border-bottom:1px solid var(--border);
+  }
+  .game-time { font-size:11px; color:var(--text-muted); }
+  .game-status-live { background:rgba(239,68,68,0.12); color:#ef4444; border:1px solid rgba(239,68,68,0.35); border-radius:20px; font-size:10px; padding:3px 8px; }
+  @keyframes blink { 50% { opacity:0.5; } }
+
+  .live-score { display:flex; justify-content:center; gap:18px; font-size:14px; font-weight:900; color:var(--text); margin:5px 0 8px; font-family:'SF Mono','Fira Code',ui-monospace,monospace; }
+  .live-score[hidden] { display:none; }
+
+  .matchup-row { display:flex; align-items:center; justify-content:space-between; margin:12px 0; }
+  .team-block   { flex:1; text-align:center; }
+  .team-logo    { width:48px; height:48px; object-fit:contain; display:block; margin:0 auto 4px; }
+  .team-abbr    { font-size:18px; font-weight:800; color:var(--text); display:block; }
+  .team-record  { font-size:11px; color:var(--text-muted); margin-top:2px; }
+  .vs-badge     { font-size:13px; color:var(--text-muted); padding:0 8px; }
+
+  .pitchers-row { display:flex; justify-content:space-between; margin:8px 0; font-size:11px; color:var(--text-dim); border-top:1px solid var(--border); padding-top:8px; }
+  .pitcher-label { color:var(--text-muted); font-size:9px; display:block; margin-bottom:2px; }
+  .pitcher-name  { color:var(--text); font-weight:600; font-size:11px; }
+  .pitcher-hand  { background:var(--violet-dim); color:#a78bfa; font-size:9px; padding:1px 5px; border-radius:4px; margin-left:4px; }
+
+  .odds-row   { display:flex; justify-content:space-between; align-items:center; margin-top:10px; padding-top:8px; border-top:1px solid var(--border); }
+  .odds-block { text-align:center; flex:1; }
+  .odds-label { font-size:9px; color:var(--text-muted); display:block; margin-bottom:2px; }
+  .odds-value { font-size:13px; font-weight:700; color:var(--text); font-family:'SF Mono','Fira Code',ui-monospace,monospace; }
+  .odds-value.positive { color:var(--green); }
+  .odds-value.negative { color:var(--red); }
+  .odds-divider { width:1px; height:32px; background:rgba(255,255,255,0.07); margin:0 4px; }
+
+  .venue-label   { font-size:10px; color:var(--text-muted); text-align:center; margin-top:8px; }
+  .no-odds-badge { background:rgba(255,255,255,0.03); color:var(--text-muted); font-size:10px; padding:8px; text-align:center; border:1px solid var(--border); border-radius:6px; margin-top:10px; }
+  .no-games-msg  { text-align:center; padding:40px; border:1px solid rgba(124,58,237,0.3); box-shadow:var(--glow-violet); border-radius:12px; background:var(--bg-card); }
+  .click-hint    { position:absolute; bottom:8px; right:10px; font-size:9px; color:var(--text-muted); font-style:italic; }
+
+  @media (max-width:760px) {
+    .games-grid { grid-template-columns:1fr; }
+    .team-abbr  { font-size:15px; }
+    .click-hint { position:static; text-align:right; margin-top:8px; }
+  }
+</style>
+
+<h1 class="page-title">⚾ TODAY'S MLB GAMES</h1>
+<div class="date-label">📅 {{ today }}</div>
+<div id="auto-status" class="auto-status">● Automatic updates every 30 seconds</div>
+<div style="text-align:center;margin:14px auto 20px;max-width:760px">
+  <button id="slate-btn" type="button" class="btn" style="font-size:13px;padding:10px 22px;background:var(--violet)!important" onclick="generateSlate(event)">⚡ GENERATE TODAY'S FULL SLATE</button>
+  <div id="slate-report" style="display:none;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px;margin-top:10px;font-size:12px;line-height:1.7;text-align:left;color:var(--text)"></div>
+</div>
+
+{% if error %}
+  <div class="no-games-msg">
+    ⚠️ Could not load schedule: {{ error }}<br>
+    <small style="color:#aaa;font-size:11px">Check your connection and try refreshing.</small>
+  </div>
+
+{% elif not games %}
+  <div class="no-games-msg">
+    No games scheduled for today.
+  </div>
+
+{% else %}
+  <div class="games-grid">
+    {% for g in games %}
+    <a class="game-card" href="/game/{{ g.slug }}" data-game-pk="{{ g.game_pk }}">
+
+      <!-- Header: time + status -->
+      <div class="game-card-header">
+        <span class="game-time">⏰ {{ g.time }}</span>
+        {% if g.game_state == 'Live' or 'Live' in g.status or 'In Progress' in g.status %}
+          <span class="game-card-status game-status-live">● LIVE</span>
+        {% elif 'Final' in g.status %}
+          <span class="game-card-status" style="font-size:10px;color:var(--text-muted)">FINAL</span>
+        {% else %}
+          <span class="game-card-status" style="font-size:10px;color:var(--green)">▸ UPCOMING</span>
+        {% endif %}
+      </div>
+      <div class="live-score" hidden><span class="away-score">—</span><span>–</span><span class="home-score">—</span></div>
+
+      <!-- Matchup -->
+      <div class="matchup-row">
+        <div class="team-block">
+          {% if g.away_team_id %}<img class="team-logo" src="https://midfield.mlbstatic.com/v1/team/{{ g.away_team_id }}/spots/72" alt="{{ g.away }} logo" loading="lazy" onerror="this.style.display='none'">{% endif %}
+          <span class="team-abbr">{{ g.away_abbr }}</span>
+          <span class="team-record">{{ g.away_record }}</span>
+        </div>
+        <div class="vs-badge">@</div>
+        <div class="team-block">
+          {% if g.home_team_id %}<img class="team-logo" src="https://midfield.mlbstatic.com/v1/team/{{ g.home_team_id }}/spots/72" alt="{{ g.home }} logo" loading="lazy" onerror="this.style.display='none'">{% endif %}
+          <span class="team-abbr">{{ g.home_abbr }}</span>
+          <span class="team-record">{{ g.home_record }}</span>
+        </div>
+      </div>
+
+      <!-- Probable pitchers -->
+      <div class="pitchers-row">
+        <div style="text-align:left">
+          <span class="pitcher-label">AWAY SP</span>
+          <span class="pitcher-name">{{ g.away_sp_name.split()[-1] if g.away_sp_name != 'TBD' else 'TBD' }}{% if g.away_sp_hand != '?' %}<span class="pitcher-hand">{{ g.away_sp_hand }}HP</span>{% endif %}</span>
+        </div>
+        <div style="text-align:right">
+          <span class="pitcher-label">HOME SP</span>
+          <span class="pitcher-name">{{ g.home_sp_name.split()[-1] if g.home_sp_name != 'TBD' else 'TBD' }}{% if g.home_sp_hand != '?' %}<span class="pitcher-hand">{{ g.home_sp_hand }}HP</span>{% endif %}</span>
+        </div>
+      </div>
+
+      <!-- Odds -->
+      {% if g.odds %}
+        <div class="odds-row">
+          <div class="odds-block">
+            <span class="odds-label">{{ g.away_abbr }} ML</span>
+            <span class="odds-value {% if g.odds.away_ml_avg and '+' in g.odds.away_ml_avg %}positive{% else %}negative{% endif %}">
+              {{ g.odds.away_ml_avg }}
+            </span>
+          </div>
+          <div class="odds-divider"></div>
+          <div class="odds-block">
+            <span class="odds-label">TOTAL</span>
+            <span class="odds-value">{{ g.odds.total_line or 'N/A' }}</span>
+          </div>
+          <div class="odds-divider"></div>
+          <div class="odds-block">
+            <span class="odds-label">{{ g.home_abbr }} ML</span>
+            <span class="odds-value {% if g.odds.home_ml_avg and '+' in g.odds.home_ml_avg %}positive{% else %}negative{% endif %}">
+              {{ g.odds.home_ml_avg }}
+            </span>
+          </div>
+        </div>
+      {% else %}
+        <div class="no-odds-badge">Odds not yet available</div>
+      {% endif %}
+
+      <!-- Venue -->
+      <div class="venue-label">📍 {{ g.venue }}</div>
+      <span class="click-hint">CLICK FOR ANALYSIS ▸</span>
+
+    </a>
+    {% endfor %}
+  </div>
+{% endif %}
+<script>
+async function generateSlate(event) {
+  event.preventDefault();
+  const button = document.getElementById('slate-btn'), report = document.getElementById('slate-report');
+  button.disabled = true;
+  button.textContent = '⏳ RUNNING SLATE…';
+  report.style.display = 'block';
+  report.textContent = 'Checking lineups and generating picks…';
+  try {
+    const response = await fetch('/api/run-picks', {method:'POST', headers:{'Content-Type':'application/json','X-Requested-With':'Jingleez'}});
+    const d = await response.json();
+    if (!response.ok || d.status !== 'success') throw Error(d.message || 'Generation failed');
+    const missing = (d.unavailable || []).map(x =>
+      `<li><strong>${x.matchup}</strong>: ${x.reason}${x.missing?.length ? ` (missing ${x.missing.join(', ')})` : ''}</li>`
+    ).join('');
+    const lockedBadge = d.recorded_count > 0
+      ? `<strong style="color:var(--green)">🔒 ${d.recorded_count} picks RECORDED</strong> for ${d.locked_games} confirmed-lineup game(s). `
+      : '';
+    const previewBadge = d.preview_games > 0
+      ? `👁 ${d.preview_games} game(s) previewed — auto-locks when lineups post.`
+      : '';
+    report.innerHTML = `${lockedBadge}${previewBadge}<br>${d.games_count} games · ${d.moneyline_count} MLs · ${d.totals_count} Totals${missing ? `<br><strong>⚠ Needs attention:</strong><ul>${missing}</ul>` : ''}`;
+  } catch(error) {
+    report.innerHTML = `<strong>❌ Could not finish slate:</strong> ${error.message}`;
+  } finally {
+    button.disabled = false;
+    button.textContent = '⚡ GENERATE TODAY\'S FULL SLATE';
+  }
+}
+async function refreshLiveGames() {
+  const statusLine = document.getElementById('auto-status');
+  try {
+    const response = await fetch('/api/live-state', {cache:'no-store'});
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || 'update failed');
+    data.games.forEach(game => {
+      const card = document.querySelector(`[data-game-pk="${game.game_pk}"]`);
+      if (!card) return;
+      const status = card.querySelector('.game-card-status');
+      const score = card.querySelector('.live-score');
+      if (game.game_state === 'Live') {
+        status.className = 'game-card-status game-status-live'; status.textContent = '● LIVE';
+      } else if (game.game_state === 'Final' || String(game.status).includes('Final')) {
+        status.className = 'game-card-status'; status.style.cssText = 'font-size:10px;color:var(--text-muted)'; status.textContent = 'FINAL';
+      } else {
+        status.className = 'game-card-status'; status.style.cssText = 'font-size:10px;color:var(--green)'; status.textContent = `▸ ${game.status || 'UPCOMING'}`;
+      }
+      if (game.away_score != null && game.home_score != null) {
+        score.hidden = false; score.querySelector('.away-score').textContent = game.away_score; score.querySelector('.home-score').textContent = game.home_score;
+      }
+    });
+    const now = new Date().toLocaleTimeString([], {hour:'numeric',minute:'2-digit',second:'2-digit'});
+    statusLine.textContent = `● Updated ${now} · results and CLV automation active`;
+  } catch (error) {
+    statusLine.textContent = `⚠ Automatic update failed: ${error.message}`;
+  }
+}
+refreshLiveGames();
+setInterval(refreshLiveGames, 30000);
+</script>
+{% endblock %}

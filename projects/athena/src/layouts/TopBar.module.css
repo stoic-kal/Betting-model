@@ -1,0 +1,118 @@
+.bar {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  height: 44px;
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 0 16px 0 0;
+  overflow: hidden;
+  z-index: 10;
+}
+
+/* Status pill group */
+.pills {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex: 1;
+  overflow: hidden;
+}
+
+.pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 12px;
+  height: 44px;
+  border-right: 1px solid var(--border-subtle);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.pillLabel {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: var(--text-disabled);
+}
+
+.pillValue {
+  font-size: 11px;
+  font-weight: 600;
+  font-family: var(--font-mono);
+}
+
+.pillValue[data-ok="true"]   { color: var(--success); }
+.pillValue[data-ok="false"]  { color: var(--danger);  }
+.pillValue[data-warn="true"] { color: var(--warning); }
+.pillValue[data-neutral]     { color: var(--text-2);  }
+
+/* Dot indicator */
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.dot[data-ok="true"]   { background: var(--success); box-shadow: 0 0 6px var(--success); }
+.dot[data-ok="false"]  { background: var(--danger);  box-shadow: 0 0 6px var(--danger);  }
+.dot[data-warn="true"] { background: var(--warning); box-shadow: 0 0 6px var(--warning); }
+
+/* Pulse animation for live dot */
+.dotPulse {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+
+/* Right side actions */
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.runBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: var(--radius-md);
+  background: rgba(139, 92, 246, 0.15);
+  border: 1px solid rgba(139, 92, 246, 0.30);
+  color: var(--purple);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  font-family: inherit;
+}
+
+.runBtn:hover {
+  background: rgba(139, 92, 246, 0.25);
+  border-color: rgba(139, 92, 246, 0.50);
+}
+
+.runBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.timestamp {
+  font-size: 10px;
+  font-family: var(--font-mono);
+  color: var(--text-disabled);
+  white-space: nowrap;
+  padding-left: 12px;
+  border-left: 1px solid var(--border-subtle);
+  margin-left: 4px;
+}

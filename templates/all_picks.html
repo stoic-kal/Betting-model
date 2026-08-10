@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+  #buttonsContainer { display: flex; gap: 15px; }
+  #buttonsContainer .nes-btn { flex: 1 1 320px; width: auto !important; margin-right: 0 !important; }
+  @media (max-width: 760px) {
+    #buttonsContainer { flex-direction: column; }
+    #buttonsContainer .nes-btn { flex-basis: auto; width: 100% !important; padding: 12px 8px !important; font-size: 12px !important; }
+  }
+</style>
+<h1 style="font-size:24px;font-weight:800;letter-spacing:-0.02em;color:var(--text);margin-bottom:20px">All Picks</h1>
+
+<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:20px">
+    <label style="font-weight:600;color:var(--text-dim);font-size:12px;margin-right:10px">Select Date:</label>
+    <input type="date" id="pickDate" style="padding:7px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg-input);color:var(--text);font:inherit;font-size:12px;outline:none">
+</div>
+
+<div id="buttonsContainer" style="display: none; margin-bottom: 30px;">
+    <button onclick="showPicksByType('moneyline')" class="btn" style="padding:12px 20px;font-size:14px;width:48%">
+        💰 Moneyline Picks for <span id="dateDisplay"></span>
+    </button>
+    <button onclick="showPicksByType('totals')" class="btn" style="background:var(--green)!important" style="padding:12px 20px;font-size:14px;width:48%">
+        📈 Totals Picks for <span id="dateDisplay2"></span>
+    </button>
+</div>
+
+<div id="picksTable" style="overflow-x: auto; margin-top: 20px;"></div>
+
+<div id="noPicks" style="text-align:center;padding:40px;color:var(--text-muted);font-size:16px">
+    Select a date above
+</div>
+
+<script>
+let allPicks = [];
+let selectedDate = '';
+
+document.getElementById('pickDate').addEventListener('change', function() {
+    selectedDate = this.value;
+    
+    if (!selectedDate) {
+        document.getElementById('buttonsContainer').style.display = 'none';
+        document.getElementById('noPicks').style.display = 'block';
+        document.getElementById('picksTable').innerHTML = '';
+        return;
+    }
+    
+    // Format date for display (e.g., "08/02/2026")
+    const [year, month, day] = selectedDate.split('-');
+    const displayDate = `${month}/${day}/${year}`;
+    
+    document.getElementById('dateDisplay').textContent = displayDate;
+    document.getElementById('dateDisplay2').textContent = displayDate;
+    document.getElementById('buttonsContainer').style.display = 'flex';
+    document.getElementById('noPicks').style.display = 'none';
+    document.getElementById('picksTable').innerHTML = '';
+    
+    // Load picks for this date
+    fetch(`/api/picks-by-date?date=${selectedDate}`)
+        .then(r => r.json())
+        .then(data => {
+            allPicks = data;
+        });
+});
+
+function showPicksByType(type) {
+    let filtered = allPicks.filter(p => p.pick_type === type);
+    
+    if (filtered.length === 0) {
+        document.getElementById('picksTable').innerHTML = '<p style="text-align: center; color: #999;">No picks for this date</p>';
+        return;
+    }
+    
+    const html = `
+        <table class="nes-table is-bordered" style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="background:rgba(124,58,237,0.15);color:var(--text-dim);font-size:10px;text-transform:uppercase;letter-spacing:0.06em">
+                    <th>Matchup</th>
+                    <th>Pick</th>
+                    <th>Odds</th>
+                    <th>Probability</th>
+                    <th>EV</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${filtered.map(p => `
+                    <tr style="background: ${p.status === 'won' ? 'rgba(16,185,129,0.08)' : p.status === 'lost' ? 'rgba(239,68,68,0.08)' : 'transparent'}">
+                        <td>${p.matchup}</td>
+                        <td><strong>${p.pick}</strong></td>
+                        <td>${parseFloat(p.odds).toFixed(2)}</td>
+                        <td>${(p.model_prob * 100).toFixed(1)}%</td>
+                        <td><strong>${parseFloat(p.ev).toFixed(1)}%</strong></td>
+                        <td>${p.status || 'PENDING'}</td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>
+    `;
+    
+    document.getElementById('picksTable').innerHTML = html;
+}
+
+// Set today as default
+const today = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/New_York', year: 'numeric', month: '2-digit', day: '2-digit'
+}).format(new Date());
+document.getElementById('pickDate').value = today;
+document.getElementById('pickDate').dispatchEvent(new Event('change'));
+</script>
+{% endblock %}

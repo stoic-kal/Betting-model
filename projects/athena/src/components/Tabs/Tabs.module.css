@@ -1,0 +1,106 @@
+.tabs {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+/* Line variant */
+.line {
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: 0;
+  gap: 0;
+}
+.line .tab {
+  padding: 8px 14px;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  border-radius: 0;
+  background: transparent;
+  color: var(--text-muted);
+  transition: color 0.15s, border-color 0.15s;
+}
+.line .tab.active {
+  color: var(--text);
+  border-bottom-color: #8B5CF6;
+}
+.line .tab:hover:not(.active):not(.disabled) {
+  color: var(--text-2);
+  border-bottom-color: rgba(139,92,246,0.3);
+}
+
+/* Pill variant */
+.pill {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 3px;
+  gap: 2px;
+}
+.pill .tab {
+  border-radius: calc(var(--radius-lg) - 2px);
+  background: transparent;
+  color: var(--text-muted);
+  transition: background 0.15s, color 0.15s;
+}
+.pill .tab.active {
+  background: rgba(139,92,246,0.18);
+  color: #C4B5FD;
+}
+.pill .tab:hover:not(.active):not(.disabled) {
+  background: rgba(255,255,255,0.05);
+  color: var(--text-2);
+}
+
+/* Card variant */
+.card {
+  gap: 6px;
+}
+.card .tab {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--bg-card);
+  color: var(--text-muted);
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+.card .tab.active {
+  border-color: rgba(139,92,246,0.35);
+  background: rgba(139,92,246,0.10);
+  color: #C4B5FD;
+}
+
+/* Common tab button */
+.tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  outline: none;
+  font-weight: 500;
+}
+
+.disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* Sizes */
+.sm .tab { font-size: 11px; padding: 5px 10px; }
+.md .tab { font-size: 12px; padding: 7px 14px; }
+.lg .tab { font-size: 13px; padding: 9px 18px; }
+
+.tabIcon { font-size: 0.9em; }
+
+.tabLabel { white-space: nowrap; }
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 99px;
+  background: rgba(139,92,246,0.20);
+  color: #A78BFA;
+  font-size: 9px;
+  font-weight: 700;
+}
