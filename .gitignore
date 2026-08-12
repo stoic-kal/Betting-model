@@ -63,26 +63,6 @@ data/games_with_team_features.csv
 # Formatting tool artifacts
 # -----------------------------
 *.isorted
-# Python
-__pycache__/
-*.py[cod]
-.pytest_cache/
-
-# Virtual environments
-venv/
-.venv/
-
-# ML generated files
-catboost_info/
-
-# Runtime
-logs/
-tmp/
-*.log
-
-# macOS
-.DS_Store
-
 # ==============================
 # Local / generated files
 # ==============================
@@ -96,12 +76,6 @@ __pycache__/
 venv/
 .venv/
 
-# macOS
-.DS_Store
-
-# Claude local settings
-.claude/settings.local.json
-
 # ML runtime
 catboost_info/
 
@@ -110,6 +84,12 @@ logs/
 tmp/
 *.log
 
+# macOS
+.DS_Store
+
+# Claude local settings
+.claude/settings.local.json
+
 # Filesystem artifacts
 .fuse_hidden*
 
@@ -117,7 +97,7 @@ tmp/
 *.db-wal
 *.db-shm
 
-# Environment/secrets
+# Environment / secrets
 .env
 .env.*
 !.env.example
