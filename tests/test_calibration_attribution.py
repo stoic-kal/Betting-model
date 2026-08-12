@@ -7,7 +7,7 @@ def _module():
     import importlib.util
     from pathlib import Path
 
-    path = Path(__file__).resolve().parents[1] / "totals_diagnostics" / "calibration_attribution.py"
+    path = Path(__file__).resolve().parents[1] / "research" / "diagnostics" / "totals" / "calibration_attribution.py"
     spec = importlib.util.spec_from_file_location("calibration_attribution_test", path)
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)

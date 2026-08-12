@@ -537,7 +537,7 @@ def _skip_log_classification(field_name, skip_index, cohort_games):
 def load_feature_catalog_module():
     import importlib.util
 
-    path = REPO_ROOT / "totals_diagnostics" / "feature_catalog.py"
+    path = REPO_ROOT / "research" / "diagnostics" / "totals" / "feature_catalog.py"
     spec = importlib.util.spec_from_file_location("totals_feature_catalog", path)
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)

@@ -71,7 +71,7 @@ def test_complete_history_correlation_uses_wins_and_losses(tmp_path):
 def test_run_distribution_report_has_interval_and_distribution_metrics():
     import importlib.util
     from pathlib import Path
-    path = Path(__file__).resolve().parents[1] / "totals_diagnostics" / "run_distribution_diagnostics.py"
+    path = Path(__file__).resolve().parents[1] / "research" / "diagnostics" / "totals" / "run_distribution_diagnostics.py"
     spec = importlib.util.spec_from_file_location("run_distribution_test", path)
     module = importlib.util.module_from_spec(spec); spec.loader.exec_module(module)
     frame = pd.DataFrame({
