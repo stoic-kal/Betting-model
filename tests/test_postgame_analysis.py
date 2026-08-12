@@ -1,6 +1,6 @@
 import pytest
 
-from routes.game_routes import _postgame_analysis
+from web.routes.game_routes import _postgame_analysis
 
 
 def test_postgame_analysis_grades_locked_context():

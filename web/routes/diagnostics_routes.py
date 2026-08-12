@@ -12,7 +12,7 @@ from services.diag_metrics_service import compute_diag_metrics, load_history, sa
 
 diagnostics_bp = Blueprint("diagnostics", __name__)
 
-DIAG_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "totals_diagnostics")
+DIAG_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "research", "diagnostics", "totals")
 FIG_DIR = os.path.join(DIAG_DIR, "figures")
 VENV_PY = os.path.join(os.path.dirname(os.path.dirname(__file__)), "venv", "bin", "python")
 RUNNER = os.path.join(DIAG_DIR, "run_all.py")

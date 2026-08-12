@@ -13,7 +13,7 @@ from pipeline.calibration_common import (
 )
 
 DB_PATH = Path(__file__).parent.parent / "database" / "picks.db"
-HISTORY_DIR = Path(__file__).parent.parent / "totals_diagnostics" / "history"
+HISTORY_DIR = Path(__file__).parent.parent / "research" / "diagnostics" / "totals" / "history"
 LATEST_PATH = HISTORY_DIR / "latest.json"
 PREVIOUS_PATH = HISTORY_DIR / "previous.json"
 

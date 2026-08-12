@@ -4,7 +4,7 @@ import json
 
 from flask import Blueprint, Response, jsonify, request
 
-from analytics.pick_analyzer import get_full_analytics
+from research.analytics.pick_analyzer import get_full_analytics
 from services.analytics_service import _load_resolved, get_full_analytics_v2, sandbox_simulate
 from services.loss_review_service import get_loss_debrief, get_loss_review, loss_review_csv
 from services.market_signals_service import get_market_signals, signals_csv

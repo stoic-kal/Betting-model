@@ -42,7 +42,7 @@ NEUTRAL_CONTEXT = {
 
 class RegressionTests(unittest.TestCase):
     def test_dashboard_analytics_has_complete_summary_shape(self):
-        from analytics.pick_analyzer import get_full_analytics
+        from research.analytics.pick_analyzer import get_full_analytics
 
         payload = get_full_analytics()
         self.assertIn("summary", payload)
