@@ -116,7 +116,7 @@ def section6(res, snp):
     ax.legend(fontsize=7)
     _ann(
         ax,
-        "Positive CLV = beat closing line.\nPositive CLV + negative ROI\n= directional model is wrong.",
+        "Positive CLV = beat closing price.\nROI can still be negative from\noutcome variance or model error.",
     )
 
     ax = axes[1, 1]
@@ -358,7 +358,7 @@ def section9(res, snp):
             ax.text(i, v + 0.5 if v >= 0 else v - 2, f"n={n}", ha="center", fontsize=6)
         _ann(
             ax,
-            "Positive CLV + positive ROI\n= CLV is a leading indicator.\nPositive CLV + negative ROI\n= directional error.",
+            "CLV and realized ROI measure different things.\nA short-run divergence does not identify\na directional or calibration defect by itself.",
         )
 
     ax = axes[1, 1]
@@ -443,16 +443,15 @@ def section11(res):
 
     if avg_clv > 0 and (roi_pos_clv < 0 or res["profit"].sum() < 0):
         print(f"""
-  CRITICAL FINDING:
+  OBSERVATION:
     Average CLV is POSITIVE (+{avg_clv:.2f}pp) — meaning the model consistently
     gets better prices than the closing line. This is a sign of genuine
     market edge-finding ability.
 
-    YET the model has negative ROI. This paradox means:
-    → The directional prediction (OVER vs UNDER) is wrong
-      even when the price obtained is correct.
-    → Fix: The probability model needs recalibration, not
-      the odds-finding mechanism.
+    Realized ROI is negative over this sample. That divergence does not, by
+    itself, identify directional error or a calibration fix: closing-price
+    value and realized outcomes converge on different horizons. More resolved
+    picks and chronological out-of-sample testing are required.
 """)
 
     fig, axes = plt.subplots(1, 3, figsize=(16, 5))

@@ -1,0 +1,71 @@
+{
+  "model_name": "totals_logistic_regression",
+  "version": "20260810_192901",
+  "trained_at": "2026-08-10T19:29:01.749493+00:00",
+  "feature_schema_version": "v2.1",
+  "feature_list": [
+    "home_k_rate",
+    "home_bb_rate",
+    "home_hr_rate",
+    "home_hard_hit_pct",
+    "home_fb_velo",
+    "home_xwoba_against",
+    "home_fip",
+    "home_days_rest",
+    "away_k_rate",
+    "away_bb_rate",
+    "away_hr_rate",
+    "away_hard_hit_pct",
+    "away_fb_velo",
+    "away_xwoba_against",
+    "away_fip",
+    "away_days_rest",
+    "home_bat_k_rate",
+    "home_bat_hard_hit_pct",
+    "home_bat_iso",
+    "home_bat_woba",
+    "away_bat_k_rate",
+    "away_bat_hard_hit_pct",
+    "away_bat_iso",
+    "away_bat_woba",
+    "home_L10_rs",
+    "home_L10_ra",
+    "away_L10_rs",
+    "away_L10_ra",
+    "park_factor",
+    "is_dome",
+    "is_coors",
+    "temp_f",
+    "wind_mph",
+    "wind_out_factor"
+  ],
+  "dataset_path": "data/games_v2_features_final.csv",
+  "dataset_hash": "f1e080f856f4d601146aae11526d5c379cd61aeb2dd439785b0ac160a9cfa7bc",
+  "metrics": {
+    "n": 814,
+    "accuracy": 0.5319410319410319,
+    "auc": 0.5356346899224806,
+    "log_loss": 0.6872500293782855,
+    "brier": 0.2471182155838986,
+    "ece": 0.019252186463787402
+  },
+  "calibration_metrics": {
+    "calibrated": {
+      "n": 814,
+      "accuracy": 0.5319410319410319,
+      "auc": 0.5356346899224806,
+      "log_loss": 0.6872500293782855,
+      "brier": 0.2471182155838986,
+      "ece": 0.019252186463787402
+    }
+  },
+  "hyperparameters": {},
+  "git_commit": "c108de24e2cc7c72beac3105fa214ded48e5b794",
+  "model_path": "models/registry/totals_logistic_regression/20260810_192901/model.pkl",
+  "extra": {
+    "model_family": "logistic_regression",
+    "tuning_status": "untuned_baseline_fixed_params",
+    "training_sample_size": 3795
+  },
+  "calibration_method": "sigmoid"
+}

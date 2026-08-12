@@ -1,0 +1,58 @@
+{
+  "generated_at": "2026-08-11T01:06:49.699974+00:00",
+  "model_version_comparisons": {
+    "moneyline": {
+      "model_name": "moneyline",
+      "comparison": "ok",
+      "champion_version": "20260810_195938",
+      "challenger_version": "20260811_010607",
+      "champion_metrics": {
+        "n": 814,
+        "auc": 0.5576565538345251,
+        "log_loss": 0.6848741020552247,
+        "brier": 0.24585978896068258,
+        "ece": 0.028365122191063477
+      },
+      "challenger_metrics": {
+        "n": 814,
+        "accuracy": 0.547911547911548,
+        "auc": 0.5455260318563356,
+        "log_loss": 0.6875452232343724,
+        "brier": 0.2471574636797573,
+        "ece": 0.019183795293718577
+      },
+      "delta": {
+        "auc": -0.012131,
+        "log_loss": 0.002671,
+        "brier": 0.001298,
+        "ece": -0.009181
+      }
+    },
+    "totals": {
+      "model_name": "totals",
+      "comparison": "challenger_is_champion",
+      "champion_version": "20260810_195938",
+      "champion_metrics": {
+        "n": 814,
+        "auc": 0.5440528100775194,
+        "log_loss": 0.6855794309599128,
+        "brier": 0.24632466064344416,
+        "ece": 0.02482218616703754
+      }
+    }
+  },
+  "shadow_comparisons": {
+    "moneyline": {
+      "pick_type": "moneyline",
+      "comparison": "insufficient_shadow_data",
+      "graded_rows": 0,
+      "recommendation": "NO ACTION - insufficient shadow data (0 graded rows, need >= 30)"
+    },
+    "totals": {
+      "pick_type": "totals",
+      "comparison": "insufficient_shadow_data",
+      "graded_rows": 0,
+      "recommendation": "NO ACTION - insufficient shadow data (0 graded rows, need >= 30)"
+    }
+  }
+}

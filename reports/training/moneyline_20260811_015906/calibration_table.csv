@@ -1,0 +1,4 @@
+bin,bin_lower,bin_upper,n,successes,predicted_sum,avg_predicted,actual_rate,actual_ci_lower,actual_ci_upper,ci_width,reliable
+0.30-0.40,0.3,0.4,128,56,48.405927,0.3782,0.4375,0.3546,0.524,0.1694,True
+0.40-0.50,0.4,0.5,672,307,302.893511,0.4507,0.4568,0.4195,0.4946,0.0751,True
+0.50-0.60,0.5,0.6,14,4,7.147776,0.5106,0.2857,0.1172,0.5465,0.4293,False

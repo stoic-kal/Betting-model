@@ -545,14 +545,16 @@ function buildAssumptionReview(d){
 // list. No new data — same fields already returned by the API.
 function buildPatternCheck(d){
   const pc=d.model_learning.pattern_check, ls=d.model_learning.learning_service_state;
+  const lr=d.loss_review_learning_record||{};
   const cards=[
     {val:`${pc.bucket_win_rate==null?'—':pc.bucket_win_rate+'%'}`, label:`This probability bucket (${esc(pc.probability_bucket)}), n=${pc.bucket_sample_n}`},
     {val:`${pc.pick_type_win_rate==null?'—':pc.pick_type_win_rate+'%'}`, label:`This pick type overall, n=${pc.pick_type_sample_n}`},
     {val:`${pc.same_primary_reason_seen_before}`, label:'Other losses with the same primary reason code'},
+    {val:lr.eligible_for_learning?'YES':'NO', label:lr.eligible_for_learning?'Recorded for chronological batch learning':`Excluded: ${lr.reason||'not eligible'}`},
   ];
   const grid=`<div class="stat-grid">${cards.map(c=>`<div class="stat-card"><div class="stat-val">${c.val}</div><div class="stat-label">${c.label}</div></div>`).join('')}</div>`;
   const verdict=`<div class="pattern-verdict${pc.is_recurring_pattern?' recurring':''}"><b>${pc.is_recurring_pattern?'⚠ Recurring pattern':'Isolated miss'}:</b> ${esc(pc.verdict)}</div>`;
-  const learning = `<div class="note">Model auto-retraining status: ${esc(ls.latest_training_run_status)}. ${esc(ls.note)}</div>`;
+  const learning = `<div class="note">Model auto-retraining status: ${esc(ls.latest_training_run_status)}. ${esc(ls.note)} Review reason codes are retained for audit and pattern analysis only; the final outcome and locked pregame inputs are the learning evidence.</div>`;
   return grid+verdict+learning;
 }
 

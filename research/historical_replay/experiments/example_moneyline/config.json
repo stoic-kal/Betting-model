@@ -1,0 +1,11 @@
+{
+  "experiment_name": "example_moneyline",
+  "target": "home_win",
+  "start_date": "2021-09-01",
+  "end_date": "2021-09-07",
+  "min_training_rows": 2000,
+  "seed": 42,
+  "min_edge": 0.02,
+  "historical_baseline": {"name": "historical_baseline", "family": "extra_trees", "parameters": {"n_estimators": 40, "max_depth": 8, "min_samples_leaf": 5}},
+  "candidate": {"name": "candidate", "family": "logistic_regression", "parameters": {"C": 1.0}}
+}

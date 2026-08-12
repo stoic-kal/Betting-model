@@ -103,9 +103,9 @@ def pitcher_statcast_profile(pitcher_id, days=60):
     return result
 
 
-def _bullpen_fetch_once(team_abbr, team_id, days):
+def _bullpen_fetch_once(team_abbr, team_id, days, reference_date=None):
 
-    end = date.today() - timedelta(days=1)
+    end = (reference_date or date.today()) - timedelta(days=1)
     start = end - timedelta(days=days + 2)
     schedule = requests.get(
         "https://statsapi.mlb.com/api/v1/schedule",
@@ -282,6 +282,7 @@ def game_day_context(game_pk):
         "double_header": None,
         "day_night": None,
         "roof_status": "unknown",
+        "game_date": None,
     }
     if not game_pk:
         return fallback
@@ -312,6 +313,7 @@ def game_day_context(game_pk):
             "day_night": scheduled.get("dayNight") or dt.get("dayNight"),
             "roof_status": weather.get("condition") or venue.get("roofType") or "unknown",
             "venue_id": venue.get("id") or scheduled.get("venue", {}).get("id"),
+            "game_date": scheduled.get("officialDate") or dt.get("officialDate"),
         }
     except Exception as exc:
         result = {**fallback, "error": str(exc)}
@@ -327,7 +329,11 @@ def _venue_info(venue_id):
         return _CACHE[key]
     try:
         venue = (
-            requests.get(f"https://statsapi.mlb.com/api/v1/venues/{venue_id}", timeout=8)
+            requests.get(
+                f"https://statsapi.mlb.com/api/v1/venues/{venue_id}",
+                params={"hydrate": "location,timezone"},
+                timeout=8,
+            )
             .json()
             .get("venues", [{}])[0]
         )
@@ -341,23 +347,33 @@ def _venue_info(venue_id):
     return result
 
 
-def team_travel_context(team_abbr, current_venue_id):
+def team_travel_context(team_abbr, current_venue_id, game_date=None):
     team_id = TEAM_IDS.get(team_abbr)
     fallback = {"available": False, "miles": 0, "timezone_delta": 0}
     if not team_id or not current_venue_id:
         return fallback
-    key = ("travel", team_abbr, current_venue_id, date.today().isoformat())
+    try:
+        reference_date = (
+            game_date
+            if isinstance(game_date, date)
+            else date.fromisoformat(str(game_date)[:10])
+            if game_date
+            else date.today()
+        )
+    except (TypeError, ValueError):
+        reference_date = date.today()
+    key = ("travel", team_abbr, current_venue_id, reference_date.isoformat())
     if key in _CACHE:
         return _CACHE[key]
     try:
-        start = date.today() - timedelta(days=7)
+        start = reference_date - timedelta(days=7)
         schedule = requests.get(
             "https://statsapi.mlb.com/api/v1/schedule",
             params={
                 "sportId": 1,
                 "teamId": team_id,
                 "startDate": start.isoformat(),
-                "endDate": (date.today() - timedelta(days=1)).isoformat(),
+                "endDate": (reference_date - timedelta(days=1)).isoformat(),
             },
             timeout=8,
         ).json()
@@ -378,14 +394,16 @@ def team_travel_context(team_abbr, current_venue_id):
             + math.cos(lat1) * math.cos(lat2) * math.sin((lon2 - lon1) / 2) ** 2
         )
         miles = 3958.8 * 2 * math.asin(math.sqrt(a))
-        now = datetime.now()
+        # Noon avoids DST-transition ambiguity while preserving the offset that
+        # was knowable on the game date.
+        at_game = datetime.combine(reference_date, datetime.min.time()).replace(hour=12)
         old_off = (
-            ZoneInfo(old["timezone"]).utcoffset(now).total_seconds() / 3600
+            ZoneInfo(old["timezone"]).utcoffset(at_game).total_seconds() / 3600
             if old.get("timezone")
             else 0
         )
         new_off = (
-            ZoneInfo(new["timezone"]).utcoffset(now).total_seconds() / 3600
+            ZoneInfo(new["timezone"]).utcoffset(at_game).total_seconds() / 3600
             if new.get("timezone")
             else 0
         )
@@ -425,6 +443,10 @@ def get_advanced_context(
         "away_bullpen": bullpen_availability(away_abbr),
         "lineup_handedness": handedness_lineup_proxy(base_context, away_hand, home_hand),
         "game_day": day,
-        "home_travel": team_travel_context(home_abbr, day.get("venue_id")),
-        "away_travel": team_travel_context(away_abbr, day.get("venue_id")),
+        "home_travel": team_travel_context(
+            home_abbr, day.get("venue_id"), game_date=day.get("game_date")
+        ),
+        "away_travel": team_travel_context(
+            away_abbr, day.get("venue_id"), game_date=day.get("game_date")
+        ),
     }

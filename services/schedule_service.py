@@ -5,6 +5,7 @@ import numpy as np
 import requests
 
 from config import ODDS_API_KEY, today_et
+from services.baseball_metrics import baseball_innings, fip_from_mlb_stat
 
 API_KEY = ODDS_API_KEY
 
@@ -138,14 +139,13 @@ def _fetch_pitcher_stats(player_id: int) -> dict:
         if not splits:
             return fallback
         s = splits[0].get("stat", {})
-        ip = float(s.get("inningsPitched", 1) or 1)
+        ip = baseball_innings(s.get("inningsPitched", 0))
         so = float(s.get("strikeOuts", 0) or 0)
         bb = float(s.get("baseOnBalls", 0) or 0)
-        hr = float(s.get("homeRunsAllowed", 0) or 0)
         era = float(s.get("era", 0) or 0)
         whip = float(s.get("whip", 0) or 0)
         k9 = float(s.get("strikeoutsPer9Inn", 0) or 0)
-        fip = (13 * hr + 3 * bb - 2 * so) / max(ip, 0.1) + 3.10
+        fip = fip_from_mlb_stat(s)
         return {
             "era": round(era, 2),
             "whip": round(whip, 2),

@@ -19,6 +19,7 @@ def load_totals(db_path=DB_PATH):
                model_prob, ev, kelly_units, status,
                model_version, model_build, forecast_stage,
                recommendation_tier, feature_snapshot,
+               home_score, away_score, actual_total,
                created_at, updated_at
         FROM picks
         WHERE pick_type = 'totals'

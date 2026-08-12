@@ -234,6 +234,7 @@ def get_game_context(away_abbr, home_abbr, game_pk=None, away_sp_id=None, home_s
         "away_fielding_pct": round(away_fielding, 4),
         "defense_adv": round((home_fielding - away_fielding) * 100, 3),
         "travel_timezone_adv": 0,
+        "travel_context_available": False,
         "context_complete": home_lineup["confirmed"] and away_lineup["confirmed"],
     }
     from services.advanced_context_service import get_advanced_context
@@ -276,6 +277,7 @@ def get_game_context(away_abbr, home_abbr, game_pk=None, away_sp_id=None, home_s
     home_travel = advanced.get("home_travel", {})
     away_travel = advanced.get("away_travel", {})
     if home_travel.get("available") and away_travel.get("available"):
+        result["travel_context_available"] = True
         result["home_travel_miles"] = home_travel["miles"]
         result["away_travel_miles"] = away_travel["miles"]
         result["travel_timezone_adv"] = round(

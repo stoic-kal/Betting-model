@@ -53,3 +53,25 @@ class ProductionConfig(Config):
 EV_THRESHOLDS = {"moneyline": 0.000, "totals": 0.000, "high_confidence": 0.10}
 
 FLASK_CONFIG = {"DEBUG": False, "PORT": 3000, "HOST": "127.0.0.1", "TEMPLATES_AUTO_RELOAD": True}
+
+KELLY_CONFIG = {
+    "fraction": float(os.getenv("KELLY_FRACTION", "0.5")),
+    "min_units": float(os.getenv("KELLY_MIN_UNITS", "0.0")),
+    "max_units": float(os.getenv("KELLY_MAX_UNITS", "1.0")),
+    "prob_floor": float(os.getenv("KELLY_PROB_FLOOR", "0.01")),
+    "prob_cap": float(os.getenv("KELLY_PROB_CAP", "0.99")),
+}
+
+PORTFOLIO_LIMITS = {
+    "max_decimal_odds": float(os.getenv("MAX_DECIMAL_ODDS", "100")),
+    "max_single_wager_units": float(os.getenv("MAX_SINGLE_WAGER_UNITS", "0.5")),
+    "max_game_exposure_units": float(os.getenv("MAX_GAME_EXPOSURE_UNITS", "1.0")),
+    "max_daily_exposure_units": float(os.getenv("MAX_DAILY_EXPOSURE_UNITS", "5.0")),
+}
+
+CONFIDENCE_BANDS = [
+    (0.65, "Very High", "🟢"),
+    (0.60, "High", "🟢"),
+    (0.55, "Moderate", "🟡"),
+    (0.0, "Low", "🔴"),
+]

@@ -1,9 +1,18 @@
+import hashlib
+import json
 import math
 import sqlite3
 from collections import defaultdict
+from pathlib import Path
+
+import pandas as pd
+
+from pipeline import model_registry, shadow_report
+from pipeline.calibration_common import brier_score, expected_calibration_error, wilson_interval
 
 DB_PATH = "database/picks.db"
 UNIT_SIZE = 20.0
+DIAGNOSTICS_DIR = Path("reports/training")
 
 
 VARIANTS = [
@@ -243,16 +252,6 @@ def apply_filters(picks: list, filters: dict) -> list:
     return result
 
 
-def _wilson_ci(wins, n, z=1.96):
-    if n == 0:
-        return 0.0, 1.0
-    p_hat = wins / n
-    d = 1 + z**2 / n
-    c = (p_hat + z**2 / (2 * n)) / d
-    m = (z * math.sqrt(p_hat * (1 - p_hat) / n + z**2 / (4 * n**2))) / d
-    return round(max(0, c - m) * 100, 1), round(min(1, c + m) * 100, 1)
-
-
 def _p_value(wins, n, null_p=0.5238):
     if n == 0:
         return 1.0
@@ -264,30 +263,11 @@ def _p_value(wins, n, null_p=0.5238):
     return round(0.5 * math.erfc(z / math.sqrt(2)), 4)
 
 
-def _brier(picks):
-    if not picks:
-        return None
-    return round(
-        sum((float(p["model_prob"]) - (1 if p["status"] == "won" else 0)) ** 2 for p in picks)
-        / len(picks),
-        4,
+def _pick_probs_outcomes(picks):
+    return (
+        [float(p["model_prob"]) for p in picks],
+        [1 if p["status"] == "won" else 0 for p in picks],
     )
-
-
-def _ece(picks):
-    if not picks:
-        return None
-    buckets = [(0.45, 0.50), (0.50, 0.55), (0.55, 0.60), (0.60, 0.65), (0.65, 0.70), (0.70, 1.0)]
-    total_n = len(picks)
-    ece = 0.0
-    for lo, hi in buckets:
-        sub = [p for p in picks if lo <= float(p["model_prob"]) < hi]
-        if not sub:
-            continue
-        pred = (lo + hi) / 2
-        act = sum(1 for p in sub if p["status"] == "won") / len(sub)
-        ece += len(sub) / total_n * abs(pred - act)
-    return round(ece * 100, 2)
 
 
 def _max_drawdown(pnl_series):
@@ -394,10 +374,12 @@ def compute_metrics(picks: list) -> dict:
         by_date[p["date"]] += flat_pnl[i]
     daily_pnl = list(by_date.values())
 
-    ci_lo, ci_hi = _wilson_ci(won, n)
+    ci_low, ci_high = wilson_interval(won, n)
+    ci_lo, ci_hi = round(ci_low * 100, 1), round(ci_high * 100, 1)
     pval = _p_value(won, n, null_p=be)
-    brier = _brier(picks)
-    ece = _ece(picks)
+    probs, outcomes = _pick_probs_outcomes(picks)
+    brier = round(brier_score(outcomes, probs), 4)
+    ece = round(expected_calibration_error(outcomes, probs) * 100, 2)
     max_dd = _max_drawdown(flat_pnl)
     pf = _profit_factor(flat_pnl, flat_pnl)
     sharpe = _sharpe(daily_pnl)
@@ -575,4 +557,250 @@ def run_model_lab() -> dict:
         "total_picks": len(all_picks),
         "metric_winners": metric_winners,
         "n_variants": len(results),
+        "candidates": get_all_candidates(),
+    }
+
+
+def _hash_hyperparameters(hyperparameters):
+    if not hyperparameters:
+        return "none"
+    encoded = json.dumps(hyperparameters, sort_keys=True, default=str).encode()
+    return hashlib.sha256(encoded).hexdigest()[:10]
+
+
+def _diagnostics_dir(model_name, version):
+    return DIAGNOSTICS_DIR / f"{model_name}_{version}"
+
+
+def _candidate_dict(model_name, version, meta, status):
+    extra = meta.get("extra") or {}
+    metrics = meta.get("metrics") or {}
+    identity = model_registry.model_identity(meta)
+    diag_dir = _diagnostics_dir(model_name, version)
+    pick_type = "moneyline" if model_name.startswith("moneyline") else "totals"
+    return {
+        "id": f"{model_name}::{version}",
+        "model_name": model_name,
+        "version": version,
+        "name": f"{model_name} · {identity['model_family']} · {version}",
+        "model_family": identity["model_family"],
+        "pick_type": pick_type,
+        "status": status,
+        "training_date": meta.get("trained_at"),
+        "dataset_version": identity["dataset_version"],
+        "feature_schema_version": identity["feature_schema_version"],
+        "calibration_version": identity["calibration_version"],
+        "prediction_pipeline_version": identity["prediction_pipeline_version"],
+        "feature_count": len(meta.get("feature_list") or []),
+        "training_sample_size": extra.get("training_sample_size"),
+        "hyperparameter_version": _hash_hyperparameters(meta.get("hyperparameters")),
+        "tuning_status": extra.get("tuning_status", "unknown"),
+        "walk_forward_score": extra.get("walk_forward_best_log_loss"),
+        "auc": metrics.get("auc"),
+        "log_loss": metrics.get("log_loss"),
+        "brier": metrics.get("brier"),
+        "ece": metrics.get("ece"),
+        "calibration_score": metrics.get("ece"),
+        "n": metrics.get("n"),
+        "shadow_status": False,
+        "production_status": False,
+        "has_diagnostics": diag_dir.exists(),
+        "git_commit": meta.get("git_commit"),
+    }
+
+
+def _list_registry_model_names():
+    root = model_registry.REGISTRY_DIR
+    if not root.exists():
+        return []
+    return sorted(p.name for p in root.iterdir() if p.is_dir())
+
+
+def get_registry_candidates():
+    candidates = []
+    for name in _list_registry_model_names():
+        versions = model_registry.list_versions(name)
+        is_primary = name in ("moneyline", "totals")
+        champion_version = model_registry.get_champion_version(name) if is_primary else None
+        champion_metrics = None
+        if champion_version is not None:
+            champion_metrics = model_registry.load_metadata(name, champion_version).get("metrics") or {}
+        for version in versions:
+            meta = model_registry.load_metadata(name, version)
+            metrics = meta.get("metrics") or {}
+            status = "experimental"
+            if is_primary:
+                if version == champion_version:
+                    status = "candidate"
+                elif champion_metrics is not None:
+                    regressions = sum(
+                        1
+                        for k in ("log_loss", "brier")
+                        if metrics.get(k) is not None
+                        and champion_metrics.get(k) is not None
+                        and metrics[k] > champion_metrics[k]
+                    )
+                    status = "rejected" if regressions == 2 else "experimental"
+            candidates.append(_candidate_dict(name, version, meta, status))
+    return candidates
+
+
+def get_production_shadow_entries():
+    all_picks = _load_all_resolved()
+    live_variant = next(v for v in VARIANTS if v["id"] == "current_live")
+    filtered = apply_filters(all_picks, live_variant["filters"])
+    metrics = compute_metrics(filtered)
+    entries = [
+        {
+            "id": "production::live",
+            "model_name": "production",
+            "version": "live",
+            "name": "Production (hand-tuned formula)",
+            "model_family": "heuristic",
+            "pick_type": "moneyline",
+            "status": "production",
+            "auc": None,
+            "log_loss": None,
+            "brier": metrics.get("brier_score"),
+            "ece": metrics.get("ece"),
+            "win_rate": metrics.get("win_rate"),
+            "edge": metrics.get("edge"),
+            "flat_roi": metrics.get("flat_roi"),
+            "kelly_roi": metrics.get("kelly_roi"),
+            "n": metrics.get("n"),
+            "shadow_status": False,
+            "production_status": True,
+            "has_diagnostics": False,
+        }
+    ]
+    for pick_type in ("moneyline", "totals"):
+        rows = [r for r in shadow_report._fetch_graded_shadow_rows() if r["pick_type"] == pick_type]
+        if rows:
+            y_true = [shadow_report._outcome_label(r) for r in rows]
+            v2_prob = [r["v2_model_prob"] for r in rows]
+            odds_dec = [r["odds_dec"] for r in rows]
+            shadow_metrics = shadow_report.compute_metrics(y_true, v2_prob, odds_dec)
+        else:
+            shadow_metrics = {"n": 0}
+        entries.append(
+            {
+                "id": f"shadow::{pick_type}",
+                "model_name": f"{pick_type}_shadow_v2",
+                "version": "live",
+                "name": f"Shadow v2 LightGBM ({pick_type})",
+                "model_family": "lightgbm",
+                "pick_type": pick_type,
+                "status": "shadow",
+                "auc": shadow_metrics.get("auc"),
+                "log_loss": shadow_metrics.get("log_loss"),
+                "brier": shadow_metrics.get("brier"),
+                "ece": None,
+                "n": shadow_metrics.get("n"),
+                "shadow_status": True,
+                "production_status": False,
+                "has_diagnostics": False,
+            }
+        )
+    return entries
+
+
+def get_all_candidates():
+    return get_production_shadow_entries() + get_registry_candidates()
+
+
+def _find_candidate(candidate_id):
+    for c in get_all_candidates():
+        if c["id"] == candidate_id:
+            return c
+    return None
+
+
+def _two_proportion_significance(a, b):
+    n1, n2 = a.get("n"), b.get("n")
+    wr1, wr2 = a.get("win_rate"), b.get("win_rate")
+    if not n1 or not n2 or wr1 is None or wr2 is None:
+        return None
+    w1 = round(wr1 / 100 * n1)
+    w2 = round(wr2 / 100 * n2)
+    p_pool = (w1 + w2) / (n1 + n2)
+    if p_pool in (0, 1):
+        return None
+    se = math.sqrt(p_pool * (1 - p_pool) * (1 / n1 + 1 / n2))
+    if se == 0:
+        return None
+    z = (wr2 / 100 - wr1 / 100) / se
+    p_value = round(math.erfc(abs(z) / math.sqrt(2)), 4)
+    return {"z": round(z, 3), "p_value": p_value, "significant": p_value < 0.05}
+
+
+def compare_candidates(candidate_id_a, candidate_id_b):
+    a = _find_candidate(candidate_id_a)
+    b = _find_candidate(candidate_id_b)
+    if not a or not b:
+        return None
+    metric_keys = ["auc", "log_loss", "brier", "ece", "win_rate", "edge", "flat_roi", "kelly_roi"]
+    lower_is_better = {"log_loss", "brier", "ece"}
+    deltas = {}
+    for key in metric_keys:
+        av, bv = a.get(key), b.get(key)
+        if av is None or bv is None:
+            continue
+        delta = round(bv - av, 5)
+        improved = (delta < 0) if key in lower_is_better else (delta > 0)
+        deltas[key] = {"delta": delta, "improved": improved}
+    return {"a": a, "b": b, "deltas": deltas, "significance": _two_proportion_significance(a, b)}
+
+
+def get_candidate_detail(candidate_id):
+    if candidate_id.startswith("production::") or candidate_id.startswith("shadow::"):
+        return _find_candidate(candidate_id)
+
+    model_name, version = candidate_id.split("::", 1)
+    meta = model_registry.load_metadata(model_name, version)
+    diag_dir = _diagnostics_dir(model_name, version)
+
+    diagnostics = {}
+    csv_files = {
+        "calibration_table": "calibration_table.csv",
+        "calibration_table_merged": "calibration_table_merged.csv",
+        "feature_importance_leave_one_out": "feature_importance_leave_one_out.csv",
+        "feature_importance_combined": "feature_importance_combined.csv",
+        "roc_curve": "roc_curve.csv",
+        "pr_curve": "pr_curve.csv",
+        "feature_importance_gain": "feature_importance_gain.csv",
+        "feature_importance_permutation": "feature_importance_permutation.csv",
+        "shap_summary": "shap_summary.csv",
+        "feature_redundancy": "feature_redundancy.csv",
+        "probability_distribution": "probability_distribution.csv",
+        "feature_engineering_verdicts": "feature_engineering_verdicts.csv",
+        "engineering_backlog": "engineering_backlog.csv",
+    }
+    json_files = {
+        "confusion_matrix": "confusion_matrix.json",
+        "correlation_matrix": "correlation_matrix.json",
+        "calibration_bucket_summary": "calibration_bucket_summary.json",
+        "feature_importance_provenance": "feature_importance_provenance.json",
+        "engineering_audit": "engineering_audit.json",
+    }
+    if diag_dir.exists():
+        for key, fname in csv_files.items():
+            fpath = diag_dir / fname
+            if fpath.exists() and fpath.stat().st_size > 0:
+                try:
+                    diagnostics[key] = pd.read_csv(fpath).to_dict("records")
+                except pd.errors.EmptyDataError:
+                    diagnostics[key] = []
+        for key, fname in json_files.items():
+            fpath = diag_dir / fname
+            if fpath.exists():
+                diagnostics[key] = json.loads(fpath.read_text())
+
+    return {
+        "id": candidate_id,
+        "registry": meta,
+        "diagnostics": diagnostics,
+        "diagnostics_available": diag_dir.exists(),
+        "learning_curve_available": False,
+        "walk_forward_history_available": False,
+        "feature_drift_available": False,
     }

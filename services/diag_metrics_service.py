@@ -5,6 +5,13 @@ import sqlite3
 from datetime import datetime, timezone
 from pathlib import Path
 
+from pipeline.calibration_common import (
+    DEFAULT_MIN_BUCKET_N,
+    brier_score,
+    expected_calibration_error,
+    wilson_interval,
+)
+
 DB_PATH = Path(__file__).parent.parent / "database" / "picks.db"
 HISTORY_DIR = Path(__file__).parent.parent / "totals_diagnostics" / "history"
 LATEST_PATH = HISTORY_DIR / "latest.json"
@@ -89,35 +96,34 @@ def compute_diag_metrics(db_path=DB_PATH):
 
     calib_picks = [p for p in resolved if p.get("model_prob") is not None]
     bins, pred_centers, actual_wr, bin_counts = [], [], [], []
+    actual_ci_lower, actual_ci_upper, bin_reliable = [], [], []
     for lo in [0.5, 0.52, 0.55, 0.58, 0.60, 0.62, 0.65, 0.70, 0.75]:
         hi = lo + 0.05
         bucket = [p for p in calib_picks if lo <= float(p["model_prob"]) < hi]
         if bucket:
             bucket_won = [p for p in bucket if p["status"] == "won"]
+            ci_low, ci_high = wilson_interval(len(bucket_won), len(bucket))
             bins.append(f"{int(lo*100)}-{int(hi*100)}%")
             pred_centers.append(round((lo + hi) / 2 * 100, 1))
             actual_wr.append(round(len(bucket_won) / len(bucket) * 100, 1))
+            actual_ci_lower.append(round(ci_low * 100, 1))
+            actual_ci_upper.append(round(ci_high * 100, 1))
             bin_counts.append(len(bucket))
+            bin_reliable.append(len(bucket) >= DEFAULT_MIN_BUCKET_N)
 
-    brier_vals = [(float(p["model_prob"]) - int(p["status"] == "won")) ** 2 for p in calib_picks]
-    brier = round(sum(brier_vals) / len(brier_vals), 4) if brier_vals else None
-
-    ece = 0
-    total_calib = len(calib_picks)
-    for lo in [i / 20 for i in range(10, 20)]:
-        hi = lo + 0.05
-        b = [p for p in calib_picks if lo <= float(p["model_prob"]) < hi]
-        if b:
-            b_wr = len([x for x in b if x["status"] == "won"]) / len(b)
-            b_prob = sum(float(x["model_prob"]) for x in b) / len(b)
-            ece += (len(b) / total_calib) * abs(b_wr - b_prob)
-    ece = round(ece, 4) if calib_picks else None
+    calib_probs = [float(p["model_prob"]) for p in calib_picks]
+    calib_outcomes = [int(p["status"] == "won") for p in calib_picks]
+    brier = round(brier_score(calib_outcomes, calib_probs), 4) if calib_picks else None
+    ece = round(expected_calibration_error(calib_outcomes, calib_probs), 4) if calib_picks else None
 
     calibration = {
 "bins": bins,
 "pred_centers": pred_centers,
 "actual_wr": actual_wr,
+"actual_ci_lower": actual_ci_lower,
+"actual_ci_upper": actual_ci_upper,
 "bin_counts": bin_counts,
+"bin_reliable": bin_reliable,
 "brier": brier,
 "ece": ece,
 "baseline_brier": (

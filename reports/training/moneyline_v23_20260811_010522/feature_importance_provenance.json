@@ -1,0 +1,48 @@
+{
+  "gain_importance": {
+    "applicable": true,
+    "reason": null,
+    "tree_model": true
+  },
+  "permutation_importance": {
+    "applicable": true,
+    "scoring": "neg_log_loss",
+    "n_repeats": 10,
+    "n_rows": 814
+  },
+  "shap": {
+    "applicable": true,
+    "explainer": "tree",
+    "n_rows_explained": 500
+  },
+  "leave_one_feature_out": {
+    "applicable": true,
+    "retrained_per_feature": true,
+    "features_evaluated": [
+      "away_bullpen_bb_rate_season",
+      "away_k_rate",
+      "away_lineup_woba_vs_pitcher_hand",
+      "home_bullpen_bb_rate_season",
+      "home_pitch_mix_x_lineup_matchup",
+      "home_bullpen_whip_30d",
+      "home_bullpen_era_season",
+      "home_fb_velo",
+      "away_fb_velo",
+      "home_L10_ra",
+      "away_bat_woba",
+      "away_lineup_strength_vs_pitcher_hand",
+      "away_hard_hit_pct",
+      "away_L10_rs",
+      "away_bullpen_xfip_30d",
+      "away_bullpen_k_rate_season",
+      "away_lineup_bb_rate_vs_pitcher_hand",
+      "away_bat_hard_hit_pct",
+      "away_bullpen_xfip_season",
+      "temp_f"
+    ],
+    "features_evaluated_count": 20,
+    "total_features": 86,
+    "approximation": "single chronological holdout split instead of full walk-forward, restricted to the top features by shap/permutation rank, to keep one retrain per feature tractable",
+    "holdout_frac": 0.2
+  }
+}

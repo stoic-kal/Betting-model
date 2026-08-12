@@ -1,0 +1,7 @@
+feature_a,feature_b,correlation
+home_lineup_woba_vs_pitcher_hand,home_lineup_strength_vs_pitcher_hand,1.0
+away_lineup_woba_vs_pitcher_hand,away_lineup_strength_vs_pitcher_hand,1.0
+wind_out_factor,away_fb_rate_x_wind_out,0.9478
+home_bullpen_era_season,home_bullpen_whip_season,0.9433
+wind_out_factor,home_fb_rate_x_wind_out,0.9386
+away_bullpen_era_season,away_bullpen_whip_season,0.9382

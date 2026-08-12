@@ -1,0 +1,92 @@
+{
+  "model_name": "moneyline",
+  "version": "20260810_185112",
+  "trained_at": "2026-08-10T18:51:13.836130+00:00",
+  "feature_schema_version": "v2.1",
+  "feature_list": [
+    "home_k_rate",
+    "home_bb_rate",
+    "home_hr_rate",
+    "home_hard_hit_pct",
+    "home_fb_velo",
+    "home_xwoba_against",
+    "home_fip",
+    "home_is_lefty",
+    "home_days_rest",
+    "away_k_rate",
+    "away_bb_rate",
+    "away_hr_rate",
+    "away_hard_hit_pct",
+    "away_fb_velo",
+    "away_xwoba_against",
+    "away_fip",
+    "away_is_lefty",
+    "away_days_rest",
+    "home_bat_k_rate",
+    "home_bat_hard_hit_pct",
+    "home_bat_iso",
+    "home_bat_woba",
+    "away_bat_k_rate",
+    "away_bat_hard_hit_pct",
+    "away_bat_iso",
+    "away_bat_woba",
+    "home_L10_wr",
+    "home_L10_rs",
+    "home_L10_ra",
+    "away_L10_wr",
+    "away_L10_rs",
+    "away_L10_ra",
+    "park_factor",
+    "is_dome",
+    "is_coors",
+    "temp_f",
+    "wind_mph",
+    "wind_out_factor"
+  ],
+  "dataset_path": "data/games_v2_features_final.csv",
+  "dataset_hash": "f1e080f856f4d601146aae11526d5c379cd61aeb2dd439785b0ac160a9cfa7bc",
+  "metrics": {
+    "n": 814,
+    "accuracy": 0.547911547911548,
+    "auc": 0.5455260318563356,
+    "log_loss": 0.6875452232343724,
+    "brier": 0.2471574636797573,
+    "ece": 0.019183795293718577
+  },
+  "calibration_metrics": {
+    "raw": {
+      "n": 814,
+      "accuracy": 0.5466830466830467,
+      "auc": 0.5455260318563356,
+      "log_loss": 0.6867852581838666,
+      "brier": 0.24681281130920027,
+      "ece": 0.018562494318912423
+    },
+    "calibrated": {
+      "n": 814,
+      "accuracy": 0.547911547911548,
+      "auc": 0.5455260318563356,
+      "log_loss": 0.6875452232343724,
+      "brier": 0.2471574636797573,
+      "ece": 0.019183795293718577
+    }
+  },
+  "hyperparameters": {
+    "num_leaves": 53,
+    "max_depth": 6,
+    "learning_rate": 0.021664821992895947,
+    "n_estimators": 50,
+    "min_child_samples": 37,
+    "subsample": 0.8976012715483691,
+    "colsample_bytree": 0.6966219731921359,
+    "reg_alpha": 0.0014952629688522077,
+    "reg_lambda": 0.014775475739688154
+  },
+  "git_commit": "c108de24e2cc7c72beac3105fa214ded48e5b794",
+  "model_path": "models/registry/moneyline/20260810_185112/model.pkl",
+  "extra": {
+    "walk_forward_best_log_loss": 0.6836638936815768,
+    "avg_degraded_features_per_row": 0.00018443378827001107
+  },
+  "calibration_method": "sigmoid"
+}

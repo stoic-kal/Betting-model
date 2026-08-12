@@ -1,0 +1,395 @@
+{
+  "selection": "abs disagreement above prior-OOF 80th percentile",
+  "cutoffs": [
+    {
+      "test_fold": 2,
+      "x": 0.02640383781041691,
+      "prior_n": 2162
+    },
+    {
+      "test_fold": 3,
+      "x": 0.02509598614470588,
+      "prior_n": 4324
+    },
+    {
+      "test_fold": 4,
+      "x": 0.0249721247722283,
+      "prior_n": 6486
+    }
+  ],
+  "reference_n": 6486,
+  "cohort": {
+    "n": 1100,
+    "over_rate": 0.47909090909090907,
+    "mean_signed_disagreement": -0.016433719867591002,
+    "mean_absolute_disagreement": 0.03453180116714785,
+    "base_log_loss": 0.6932385480270831,
+    "market_log_loss": 0.6937435727255866,
+    "base_advantage": 0.0005050246985035534,
+    "base_brier": 0.2500347699993845,
+    "market_brier": 0.25029925801865305
+  },
+  "cluster_selection": [
+    {
+      "k": 2,
+      "silhouette": 0.19361214000966542
+    },
+    {
+      "k": 3,
+      "silhouette": 0.14120849848641764
+    },
+    {
+      "k": 4,
+      "silhouette": 0.1508765331983985
+    },
+    {
+      "k": 5,
+      "silhouette": 0.14562028884947242
+    },
+    {
+      "k": 6,
+      "silhouette": 0.1204386637169537
+    },
+    {
+      "k": 7,
+      "silhouette": 0.11756516792880936
+    },
+    {
+      "k": 8,
+      "silhouette": 0.11262200252277249
+    }
+  ],
+  "selected_k": 2,
+  "clusters": [
+    {
+      "cluster": 0,
+      "n": 683,
+      "over_rate": 0.48755490483162517,
+      "mean_signed_disagreement": -0.026224085181771703,
+      "mean_absolute_disagreement": 0.03499312365635502,
+      "base_log_loss": 0.6925079888391841,
+      "market_log_loss": 0.6933385456702699,
+      "base_advantage": 0.0008305568310857936,
+      "base_brier": 0.24967535640694927,
+      "market_brier": 0.2500964377399231,
+      "top_traits": [
+        {
+          "kind": "categorical",
+          "feature": "home_team",
+          "value": "HOU",
+          "cohort_value": 0.0849194729136164,
+          "reference_value": 0.033765032377428304,
+          "enrichment": 2.5150123347840916
+        },
+        {
+          "kind": "categorical",
+          "feature": "home_team",
+          "value": "NYY",
+          "cohort_value": 0.07320644216691069,
+          "reference_value": 0.034227567067530065,
+          "enrichment": 2.138815242768391
+        },
+        {
+          "kind": "categorical",
+          "feature": "home_team",
+          "value": "LAD",
+          "cohort_value": 0.06588579795021962,
+          "reference_value": 0.031914893617021274,
+          "enrichment": 2.0644216691068817
+        },
+        {
+          "kind": "categorical",
+          "feature": "home_team",
+          "value": "CLE",
+          "cohort_value": 0.06149341142020498,
+          "reference_value": 0.03299414122725871,
+          "enrichment": 1.8637676003338763
+        },
+        {
+          "kind": "categorical",
+          "feature": "home_team",
+          "value": "CHC",
+          "cohort_value": 0.055636896046852125,
+          "reference_value": 0.034227567067530065,
+          "enrichment": 1.6254995845039768
+        },
+        {
+          "kind": "categorical",
+          "feature": "home_team",
+          "value": "WSH",
+          "cohort_value": 0.0527086383601757,
+          "reference_value": 0.033919210607462225,
+          "enrichment": 1.5539464927459072
+        },
+        {
+          "kind": "categorical",
+          "feature": "home_team",
+          "value": "BOS",
+          "cohort_value": 0.0527086383601757,
+          "reference_value": 0.033919210607462225,
+          "enrichment": 1.5539464927459072
+        },
+        {
+          "kind": "categorical",
+          "feature": "home_team",
+          "value": "MIN",
+          "cohort_value": 0.048316251830161056,
+          "reference_value": 0.03299414122725871,
+          "enrichment": 1.4643888288337599
+        }
+      ]
+    },
+    {
+      "cluster": 1,
+      "n": 417,
+      "over_rate": 0.46522781774580335,
+      "mean_signed_disagreement": -0.0003981814752998212,
+      "mean_absolute_disagreement": 0.033776205819117895,
+      "base_log_loss": 0.6944351233875987,
+      "market_log_loss": 0.6944069623629516,
+      "base_advantage": -2.8161024647088695e-05,
+      "base_brier": 0.2506234498162507,
+      "market_brier": 0.25063145526175273,
+      "top_traits": [
+        {
+          "kind": "categorical",
+          "feature": "home_team",
+          "value": "BAL",
+          "cohort_value": 0.09832134292565947,
+          "reference_value": 0.03361085414739439,
+          "enrichment": 2.9252854597056297
+        },
+        {
+          "kind": "categorical",
+          "feature": "home_team",
+          "value": "DET",
+          "cohort_value": 0.07673860911270983,
+          "reference_value": 0.03314831945729263,
+          "enrichment": 2.315007528860632
+        },
+        {
+          "kind": "categorical",
+          "feature": "home_team",
+          "value": "KC",
+          "cohort_value": 0.05275779376498801,
+          "reference_value": 0.03314831945729263,
+          "enrichment": 1.5915676760916848
+        },
+        {
+          "kind": "categorical",
+          "feature": "moneyline_role",
+          "value": "road_favorite",
+          "cohort_value": 0.5611510791366906,
+          "reference_value": 0.368331791551033,
+          "enrichment": 1.5234934697700189
+        },
+        {
+          "kind": "categorical",
+          "feature": "home_team",
+          "value": "COL",
+          "cohort_value": 0.050359712230215826,
+          "reference_value": 0.034381745297563986,
+          "enrichment": 1.4647223924895956
+        },
+        {
+          "kind": "categorical",
+          "feature": "month",
+          "value": "3",
+          "cohort_value": 0.019184652278177457,
+          "reference_value": 0.01341350601295097,
+          "enrichment": 1.4302489043248159
+        },
+        {
+          "kind": "categorical",
+          "feature": "month",
+          "value": "6",
+          "cohort_value": 0.1606714628297362,
+          "reference_value": 0.11748381128584644,
+          "enrichment": 1.3676051284956288
+        },
+        {
+          "kind": "categorical",
+          "feature": "home_team",
+          "value": "LAA",
+          "cohort_value": 0.045563549160671464,
+          "reference_value": 0.033765032377428304,
+          "enrichment": 1.349430045005092
+        }
+      ]
+    }
+  ],
+  "overall_top_commonalities": [
+    {
+      "kind": "categorical",
+      "feature": "home_team",
+      "value": "HOU",
+      "cohort_value": 0.057272727272727274,
+      "reference_value": 0.033765032377428304,
+      "enrichment": 1.6962141967621422
+    },
+    {
+      "kind": "categorical",
+      "feature": "home_team",
+      "value": "NYY",
+      "cohort_value": 0.05545454545454546,
+      "reference_value": 0.034227567067530065,
+      "enrichment": 1.6201719901719902
+    },
+    {
+      "kind": "categorical",
+      "feature": "home_team",
+      "value": "BOS",
+      "cohort_value": 0.04909090909090909,
+      "reference_value": 0.033919210607462225,
+      "enrichment": 1.447289256198347
+    },
+    {
+      "kind": "categorical",
+      "feature": "home_team",
+      "value": "BAL",
+      "cohort_value": 0.04727272727272727,
+      "reference_value": 0.03361085414739439,
+      "enrichment": 1.4064720600500416
+    },
+    {
+      "kind": "categorical",
+      "feature": "home_team",
+      "value": "CLE",
+      "cohort_value": 0.046363636363636364,
+      "reference_value": 0.03299414122725871,
+      "enrichment": 1.4052081563296517
+    },
+    {
+      "kind": "categorical",
+      "feature": "home_team",
+      "value": "WSH",
+      "cohort_value": 0.045454545454545456,
+      "reference_value": 0.033919210607462225,
+      "enrichment": 1.3400826446280993
+    },
+    {
+      "kind": "categorical",
+      "feature": "home_team",
+      "value": "LAD",
+      "cohort_value": 0.04181818181818182,
+      "reference_value": 0.031914893617021274,
+      "enrichment": 1.3103030303030303
+    },
+    {
+      "kind": "categorical",
+      "feature": "home_team",
+      "value": "CHC",
+      "cohort_value": 0.04454545454545455,
+      "reference_value": 0.034227567067530065,
+      "enrichment": 1.3014496314496315
+    },
+    {
+      "kind": "categorical",
+      "feature": "home_team",
+      "value": "MIN",
+      "cohort_value": 0.04090909090909091,
+      "reference_value": 0.03299414122725871,
+      "enrichment": 1.2398895497026339
+    },
+    {
+      "kind": "categorical",
+      "feature": "home_team",
+      "value": "ATL",
+      "cohort_value": 0.04,
+      "reference_value": 0.03330249768732655,
+      "enrichment": 1.201111111111111
+    },
+    {
+      "kind": "categorical",
+      "feature": "home_team",
+      "value": "COL",
+      "cohort_value": 0.04,
+      "reference_value": 0.034381745297563986,
+      "enrichment": 1.1634080717488788
+    },
+    {
+      "kind": "categorical",
+      "feature": "home_team",
+      "value": "MIL",
+      "cohort_value": 0.038181818181818185,
+      "reference_value": 0.03361085414739439,
+      "enrichment": 1.1359966638865722
+    },
+    {
+      "kind": "categorical",
+      "feature": "moneyline_role",
+      "value": "home_favorite",
+      "cohort_value": 0.7154545454545455,
+      "reference_value": 0.631668208448967,
+      "enrichment": 1.1326429538243061
+    },
+    {
+      "kind": "categorical",
+      "feature": "month",
+      "value": "6",
+      "cohort_value": 0.1290909090909091,
+      "reference_value": 0.11748381128584644,
+      "enrichment": 1.0987974230493915
+    },
+    {
+      "kind": "categorical",
+      "feature": "home_team",
+      "value": "DET",
+      "cohort_value": 0.03636363636363636,
+      "reference_value": 0.03314831945729263,
+      "enrichment": 1.096997885835095
+    }
+  ],
+  "cutoff_sensitivity": [
+    {
+      "quantile": 0.75,
+      "mean_cutoff": 0.02274374426143893,
+      "n": 1429,
+      "over_rate": 0.483554933519944,
+      "mean_signed_disagreement": -0.01544193316571349,
+      "mean_absolute_disagreement": 0.03212516606296429,
+      "base_log_loss": 0.6930623686988575,
+      "market_log_loss": 0.693917945391475,
+      "base_advantage": 0.0008555766926174879,
+      "base_brier": 0.249949270918348,
+      "market_brier": 0.2503857042373016
+    },
+    {
+      "quantile": 0.8,
+      "mean_cutoff": 0.025450120163781512,
+      "n": 1100,
+      "over_rate": 0.47909090909090907,
+      "mean_signed_disagreement": -0.016433719867591002,
+      "mean_absolute_disagreement": 0.03453180116714785,
+      "base_log_loss": 0.6932385480270831,
+      "market_log_loss": 0.6937435727255866,
+      "base_advantage": 0.0005050246985035534,
+      "base_brier": 0.2500347699993845,
+      "market_brier": 0.25029925801865305
+    },
+    {
+      "quantile": 0.9,
+      "mean_cutoff": 0.03274016320132915,
+      "n": 492,
+      "over_rate": 0.44715447154471544,
+      "mean_signed_disagreement": -0.019901484039014972,
+      "mean_absolute_disagreement": 0.041691563550773185,
+      "base_log_loss": 0.6972325072139702,
+      "market_log_loss": 0.6954694424622672,
+      "base_advantage": -0.0017630647517030695,
+      "base_brier": 0.25201652864192337,
+      "market_brier": 0.251160954596762
+    }
+  ],
+  "unavailable": {
+    "temperature": "not present in the 2012-2021 market platform",
+    "wind": "not present in the 2012-2021 market platform",
+    "starter_quality": "not present in the platform feature table",
+    "lineup_quality": "no timestamped historical pregame lineups",
+    "pitcher_handedness": "not present in the platform feature table",
+    "division_game": "league/division membership is not stored",
+    "interleague": "league membership is not stored",
+    "park": "venue metadata covers only 404 games; home_team is used explicitly as a park/team context, not claimed as venue identity",
+    "bullpen_quality": "only the accepted away bullpen ER over 14 games is available"
+  }
+}

@@ -1,0 +1,91 @@
+{
+  "model_name": "totals",
+  "version": "20260810_191432",
+  "trained_at": "2026-08-10T19:14:33.790470+00:00",
+  "feature_schema_version": "v2.1",
+  "feature_list": [
+    "home_k_rate",
+    "home_bb_rate",
+    "home_hr_rate",
+    "home_hard_hit_pct",
+    "home_fb_velo",
+    "home_xwoba_against",
+    "home_fip",
+    "home_days_rest",
+    "away_k_rate",
+    "away_bb_rate",
+    "away_hr_rate",
+    "away_hard_hit_pct",
+    "away_fb_velo",
+    "away_xwoba_against",
+    "away_fip",
+    "away_days_rest",
+    "home_bat_k_rate",
+    "home_bat_hard_hit_pct",
+    "home_bat_iso",
+    "home_bat_woba",
+    "away_bat_k_rate",
+    "away_bat_hard_hit_pct",
+    "away_bat_iso",
+    "away_bat_woba",
+    "home_L10_rs",
+    "home_L10_ra",
+    "away_L10_rs",
+    "away_L10_ra",
+    "park_factor",
+    "is_dome",
+    "is_coors",
+    "temp_f",
+    "wind_mph",
+    "wind_out_factor"
+  ],
+  "dataset_path": "data/games_v2_features_final.csv",
+  "dataset_hash": "f1e080f856f4d601146aae11526d5c379cd61aeb2dd439785b0ac160a9cfa7bc",
+  "metrics": {
+    "n": 814,
+    "accuracy": 0.5294840294840295,
+    "auc": 0.5291182170542635,
+    "log_loss": 0.7349773498823121,
+    "brier": 0.24979750712305074,
+    "ece": 0.02404110169306597
+  },
+  "calibration_metrics": {
+    "raw": {
+      "n": 814,
+      "accuracy": 0.5294840294840295,
+      "auc": 0.5411518895348837,
+      "log_loss": 0.688587517774646,
+      "brier": 0.24773613568245476,
+      "ece": 0.01097769181547994
+    },
+    "calibrated": {
+      "n": 814,
+      "accuracy": 0.5294840294840295,
+      "auc": 0.5291182170542635,
+      "log_loss": 0.7349773498823121,
+      "brier": 0.24979750712305074,
+      "ece": 0.02404110169306597
+    }
+  },
+  "hyperparameters": {
+    "num_leaves": 56,
+    "max_depth": 8,
+    "learning_rate": 0.010057604452149963,
+    "n_estimators": 52,
+    "min_child_samples": 31,
+    "subsample": 0.8845944479441114,
+    "colsample_bytree": 0.822980204700543,
+    "reg_alpha": 0.0009331141498758144,
+    "reg_lambda": 1.9777510127047196e-08
+  },
+  "git_commit": "c108de24e2cc7c72beac3105fa214ded48e5b794",
+  "model_path": "models/registry/totals/20260810_191432/model.pkl",
+  "extra": {
+    "walk_forward_best_log_loss": 0.6893720612053899,
+    "median_total": 8.0,
+    "avg_degraded_features_per_row": 0.00018443378827001107,
+    "calibration_method": "isotonic",
+    "rfe_reduced_feature_set_rejected_reason": "improved auc/log_loss/brier but ece regressed from 0.0120 to 0.0246"
+  },
+  "calibration_method": "isotonic"
+}

@@ -1,0 +1,58 @@
+{
+  "created_at": "2026-08-11T08:36:38.427684+00:00",
+  "method": "4 expanding walk-forward folds; Extra Trees; permutation, LOFO, SHAP, stability, correlation, redundancy",
+  "targets": {
+    "home_win": {
+      "features": 49,
+      "verdict_counts": {
+        "INVESTIGATE": 27,
+        "KEEP": 19,
+        "REMOVE": 3
+      },
+      "walk_forward": [
+        {
+          "auc": 0.5991424257988203,
+          "log_loss": 0.6746625905201292
+        },
+        {
+          "auc": 0.6119228557663916,
+          "log_loss": 0.6716908786494921
+        },
+        {
+          "auc": 0.6127992347057818,
+          "log_loss": 0.6712141767731724
+        },
+        {
+          "auc": 0.6274055786542303,
+          "log_loss": 0.6658805099297985
+        }
+      ]
+    },
+    "over": {
+      "features": 50,
+      "verdict_counts": {
+        "INVESTIGATE": 34,
+        "KEEP": 10,
+        "REMOVE": 6
+      },
+      "walk_forward": [
+        {
+          "auc": 0.500794634994236,
+          "log_loss": 0.6941356314917213
+        },
+        {
+          "auc": 0.5106942657698419,
+          "log_loss": 0.6923871922441778
+        },
+        {
+          "auc": 0.5144570507702011,
+          "log_loss": 0.6935608426950336
+        },
+        {
+          "auc": 0.5155753196029722,
+          "log_loss": 0.6928711557947917
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,2545 @@
+{
+  "model_name": "moneyline",
+  "version": "20260810_195938",
+  "evaluation_rows": 814,
+  "self_consistency": {
+    "checks": [
+      {
+        "check": "feature_list_matches_trained_model",
+        "status": "PASS",
+        "detail": "champion moneyline/20260810_195938 trained on 38 features; feature_store.get_feature_list('moneyline') returns 38; missing_live=[]; extra_live=[]"
+      },
+      {
+        "check": "feature_order_matches_trained_model",
+        "status": "PASS",
+        "detail": "ordered comparison over 38 names; first divergence index -1"
+      },
+      {
+        "check": "feature_schema_version_consistency",
+        "status": "INFO",
+        "detail": "champion recorded feature_schema_version=v2.1, live feature_store reports v2.3; names+order identical=True (version bump without name/order change is not a functional break)"
+      },
+      {
+        "check": "champion_model_loaded",
+        "status": "PASS",
+        "detail": "get_champion_version('moneyline')=20260810_195938; diagnostics running on 20260810_195938; model object=CalibratedClassifierCV predict_proba=True"
+      },
+      {
+        "check": "calibration_computed_on_full_test_set",
+        "status": "PASS",
+        "detail": "calibration buckets cover 814 rows; evaluation set holds 814 rows"
+      },
+      {
+        "check": "shadow_uses_registered_model_version",
+        "status": "FAIL",
+        "detail": "shadow_v2_predictions holds 14 rows but has no model_version column, so shadow predictions cannot be attributed to a registered model version"
+      },
+      {
+        "check": "no_stale_registry_entries",
+        "status": "PASS",
+        "detail": "all 9 moneyline versions plus every other registry entry carry readable metadata.json and model.pkl"
+      },
+      {
+        "check": "no_duplicated_metric_implementations",
+        "status": "FAIL",
+        "detail": "reimplementations found outside pipeline/calibration_common.py: [{'file': 'projects/pitcher_props/services/pitcher_prop_analytics_service.py', 'function': 'brier_score'}, {'file': 'projects/pitcher_props/services/pitcher_prop_analytics_service.py', 'function': 'expected_calibration_error'}]"
+      }
+    ],
+    "failures": [
+      {
+        "check": "shadow_uses_registered_model_version",
+        "status": "FAIL",
+        "detail": "shadow_v2_predictions holds 14 rows but has no model_version column, so shadow predictions cannot be attributed to a registered model version"
+      },
+      {
+        "check": "no_duplicated_metric_implementations",
+        "status": "FAIL",
+        "detail": "reimplementations found outside pipeline/calibration_common.py: [{'file': 'projects/pitcher_props/services/pitcher_prop_analytics_service.py', 'function': 'brier_score'}, {'file': 'projects/pitcher_props/services/pitcher_prop_analytics_service.py', 'function': 'expected_calibration_error'}]"
+      }
+    ],
+    "failure_count": 2,
+    "passed": false,
+    "recommendation": {
+      "status": "OK",
+      "finding": "2 of 8 self-consistency checks failed: shadow_uses_registered_model_version (shadow_v2_predictions holds 14 rows but has no model_version column, so shadow predictions cannot be attributed to a registered model version); no_duplicated_metric_implementations (reimplementations found outside pipeline/calibration_common.py: [{'file': 'projects/pitcher_props/services/pitcher_prop_analytics_service.py', 'function': 'brier_score'}, {'file': 'projects/pitcher_props/services/pitcher_prop_analytics_service.py', 'function': 'expected_calibration_error'}])",
+      "recommendation": "Resolve the 2 failing invariant(s) before trusting any downstream diagnostics number in this report.",
+      "confidence": "High",
+      "expected_gain": "High",
+      "files": [
+        "pipeline/engineering_audit.py",
+        "pipeline/model_registry.py",
+        "services/shadow_inference_service.py"
+      ],
+      "evidence": {
+        "failed_checks": [
+          "shadow_uses_registered_model_version",
+          "no_duplicated_metric_implementations"
+        ]
+      }
+    }
+  },
+  "feature_engineering": {
+    "rows": [
+      {
+        "feature": "away_fip",
+        "gain": null,
+        "gain_rank": null,
+        "permutation_importance": 0.0133514617645884,
+        "permutation_rank": 1,
+        "mean_abs_shap": 0.0543691466494518,
+        "shap_rank": 1,
+        "lofo_log_loss_delta": 0.0009,
+        "lofo_auc_delta": -0.002595,
+        "lofo_rank": 11,
+        "mean_rank": 4.33,
+        "stability": 0.6455,
+        "rank_std_across_folds": 6.557,
+        "fold_ranks": [
+          23,
+          14,
+          7,
+          14
+        ],
+        "fold_count": 4,
+        "outcome_correlation": 0.0343,
+        "mean_shap": 0.0069086533972621,
+        "value_shap_corr": 0.9987,
+        "direction": "POSITIVE",
+        "method_agreement": 0.6879,
+        "methods_available": 3,
+        "confidence": "Medium",
+        "engineering_verdict": "KEEP",
+        "verdict_reason": "walk-forward ablation over 4 folds regressed log loss by +0.000900 when this feature was dropped, mean_rank 4.33/38, stability 0.6455, agreement Medium"
+      },
+      {
+        "feature": "home_hr_rate",
+        "gain": null,
+        "gain_rank": null,
+        "permutation_importance": 0.0041833385031884,
+        "permutation_rank": 3,
+        "mean_abs_shap": 0.0224797435313955,
+        "shap_rank": 3,
+        "lofo_log_loss_delta": 0.000901,
+        "lofo_auc_delta": -0.000998,
+        "lofo_rank": 10,
+        "mean_rank": 5.33,
+        "stability": 0.6776,
+        "rank_std_across_folds": 5.965,
+        "fold_ranks": [
+          14,
+          2,
+          1,
+          4
+        ],
+        "fold_count": 4,
+        "outcome_correlation": -0.0083,
+        "mean_shap": -0.0019408787730751,
+        "value_shap_corr": 0.9988,
+        "direction": "POSITIVE",
+        "method_agreement": 0.7815,
+        "methods_available": 3,
+        "confidence": "Medium",
+        "engineering_verdict": "KEEP",
+        "verdict_reason": "walk-forward ablation over 4 folds regressed log loss by +0.000901 when this feature was dropped, mean_rank 5.33/38, stability 0.6776, agreement Medium"
+      },
+      {
+        "feature": "home_bat_iso",
+        "gain": null,
+        "gain_rank": null,
+        "permutation_importance": 0.0019180879181113,
+        "permutation_rank": 5,
+        "mean_abs_shap": 0.0083058980167963,
+        "shap_rank": 10,
+        "lofo_log_loss_delta": 0.006313,
+        "lofo_auc_delta": -0.031729,
+        "lofo_rank": 1,
+        "mean_rank": 5.33,
+        "stability": 0.1036,
+        "rank_std_across_folds": 16.583,
+        "fold_ranks": [
+          2,
+          37,
+          2,
+          17
+        ],
+        "fold_count": 4,
+        "outcome_correlation": 0.1198,
+        "mean_shap": -0.0017845351253643,
+        "value_shap_corr": 0.9648,
+        "direction": "POSITIVE",
+        "method_agreement": 0.7563,
+        "methods_available": 3,
+        "confidence": "Medium",
+        "engineering_verdict": "KEEP",
+        "verdict_reason": "walk-forward ablation over 4 folds regressed log loss by +0.006313 when this feature was dropped, mean_rank 5.33/38, stability 0.1036, agreement Medium"
+      },
+      {
+        "feature": "home_L10_ra",
+        "gain": null,
+        "gain_rank": null,
+        "permutation_importance": 0.001036845990191,
+        "permutation_rank": 7,
+        "mean_abs_shap": 0.0095047287715452,
+        "shap_rank": 8,
+        "lofo_log_loss_delta": 0.001554,
+        "lofo_auc_delta": -0.004358,
+        "lofo_rank": 7,
+        "mean_rank": 7.33,
+        "stability": 0.0779,
+        "rank_std_across_folds": 17.059,
+        "fold_ranks": [
+          6,
+          3,
+          3,
+          38
+        ],
+        "fold_count": 4,
+        "outcome_correlation": -0.0963,
+        "mean_shap": -0.0028949754383424,
+        "value_shap_corr": -0.9481,
+        "direction": "NEGATIVE",
+        "method_agreement": 0.9688,
+        "methods_available": 3,
+        "confidence": "High",
+        "engineering_verdict": "KEEP",
+        "verdict_reason": "walk-forward ablation over 4 folds regressed log loss by +0.001554 when this feature was dropped, mean_rank 7.33/38, stability 0.0779, agreement High"
+      },
+      {
+        "feature": "home_bat_k_rate",
+        "gain": null,
+        "gain_rank": null,
+        "permutation_importance": 0.0011063622625171,
+        "permutation_rank": 6,
+        "mean_abs_shap": 0.0123715823216229,
+        "shap_rank": 7,
+        "lofo_log_loss_delta": 0.000842,
+        "lofo_auc_delta": -0.002385,
+        "lofo_rank": 12,
+        "mean_rank": 8.33,
+        "stability": 0.4734,
+        "rank_std_across_folds": 9.743,
+        "fold_ranks": [
+          35,
+          19,
+          19,
+          12
+        ],
+        "fold_count": 4,
+        "outcome_correlation": -0.0529,
+        "mean_shap": 2.502303617721788e-06,
+        "value_shap_corr": -0.9839,
+        "direction": "NEGATIVE",
+        "method_agreement": 0.8262,
+        "methods_available": 3,
+        "confidence": "Medium",
+        "engineering_verdict": "KEEP",
+        "verdict_reason": "walk-forward ablation over 4 folds regressed log loss by +0.000842 when this feature was dropped, mean_rank 8.33/38, stability 0.4734, agreement Medium"
+      },
+      {
+        "feature": "home_k_rate",
+        "gain": null,
+        "gain_rank": null,
+        "permutation_importance": 0.0009829822188117,
+        "permutation_rank": 8,
+        "mean_abs_shap": 0.0085956543016421,
+        "shap_rank": 9,
+        "lofo_log_loss_delta": 0.001098,
+        "lofo_auc_delta": -0.007704,
+        "lofo_rank": 9,
+        "mean_rank": 8.67,
+        "stability": 0.3015,
+        "rank_std_across_folds": 12.923,
+        "fold_ranks": [
+          10,
+          8,
+          31,
+          1
+        ],
+        "fold_count": 4,
+        "outcome_correlation": 0.0112,
+        "mean_shap": -0.001666469171517,
+        "value_shap_corr": -0.9864,
+        "direction": "NEGATIVE",
+        "method_agreement": 0.9688,
+        "methods_available": 3,
+        "confidence": "High",
+        "engineering_verdict": "KEEP",
+        "verdict_reason": "walk-forward ablation over 4 folds regressed log loss by +0.001098 when this feature was dropped, mean_rank 8.67/38, stability 0.3015, agreement High"
+      },
+      {
+        "feature": "away_L10_ra",
+        "gain": null,
+        "gain_rank": null,
+        "permutation_importance": 0.0007284708951272,
+        "permutation_rank": 9,
+        "mean_abs_shap": 0.0059909705060494,
+        "shap_rank": 14,
+        "lofo_log_loss_delta": 0.002614,
+        "lofo_auc_delta": -0.01012,
+        "lofo_rank": 4,
+        "mean_rank": 9.0,
+        "stability": 0.261,
+        "rank_std_across_folds": 13.672,
+        "fold_ranks": [
+          32,
+          4,
+          8,
+          3
+        ],
+        "fold_count": 4,
+        "outcome_correlation": 0.0738,
+        "mean_shap": 0.0008645826727358,
+        "value_shap_corr": 0.9864,
+        "direction": "POSITIVE",
+        "method_agreement": 0.7297,
+        "methods_available": 3,
+        "confidence": "Medium",
+        "engineering_verdict": "KEEP",
+        "verdict_reason": "walk-forward ablation over 4 folds regressed log loss by +0.002614 when this feature was dropped, mean_rank 9.0/38, stability 0.261, agreement Medium"
+      },
+      {
+        "feature": "away_bat_k_rate",
+        "gain": null,
+        "gain_rank": null,
+        "permutation_importance": 0.0001333530131892,
+        "permutation_rank": 13,
+        "mean_abs_shap": 0.00658362130281,
+        "shap_rank": 13,
+        "lofo_log_loss_delta": 0.003027,
+        "lofo_auc_delta": -0.003387,
+        "lofo_rank": 2,
+        "mean_rank": 9.33,
+        "stability": 0.078,
+        "rank_std_across_folds": 17.056,
+        "fold_ranks": [
+          34,
+          35,
+          4,
+          6
+        ],
+        "fold_count": 4,
+        "outcome_correlation": 0.0852,
+        "mean_shap": -0.0004635389581841,
+        "value_shap_corr": 0.984,
+        "direction": "POSITIVE",
+        "method_agreement": 0.6567,
+        "methods_available": 3,
+        "confidence": "Medium",
+        "engineering_verdict": "KEEP",
+        "verdict_reason": "walk-forward ablation over 4 folds regressed log loss by +0.003027 when this feature was dropped, mean_rank 9.33/38, stability 0.078, agreement Medium"
+      },
+      {
+        "feature": "home_fip",
+        "gain": null,
+        "gain_rank": null,
+        "permutation_importance": 0.0029689719762453,
+        "permutation_rank": 4,
+        "mean_abs_shap": 0.0212342350593707,
+        "shap_rank": 4,
+        "lofo_log_loss_delta": -7e-06,
+        "lofo_auc_delta": -0.001308,
+        "lofo_rank": 25,
+        "mean_rank": 11.0,
+        "stability": 0.0,
+        "rank_std_across_folds": 18.52,
+        "fold_ranks": [
+          4,
+          1,
+          35,
+          34
+        ],
+        "fold_count": 4,
+        "outcome_correlation": -0.0392,
+        "mean_shap": 0.0021475532772063,
+        "value_shap_corr": -0.9978,
+        "direction": "NEGATIVE",
+        "method_agreement": 0.3446,
+        "methods_available": 3,
+        "confidence": "Low",
+        "engineering_verdict": "INVESTIGATE",
+        "verdict_reason": "rank stability 0.0 < 0.5 across 4 walk-forward folds (fold ranks [4, 1, 35, 34]), mean_rank 11.0/38, agreement Low"
+      },
+      {
+        "feature": "away_hr_rate",
+        "gain": null,
+        "gain_rank": null,
+        "permutation_importance": 0.0098298372258376,
+        "permutation_rank": 2,
+        "mean_abs_shap": 0.0376901510441418,
+        "shap_rank": 2,
+        "lofo_log_loss_delta": -0.00021,
+        "lofo_auc_delta": 0.004001,
+        "lofo_rank": 30,
+        "mean_rank": 11.33,
+        "stability": 0.7056,
+        "rank_std_across_folds": 5.447,
+        "fold_ranks": [
+          12,
+          23,
+          23,
+          16
+        ],
+        "fold_count": 4,
+        "outcome_correlation": 0.0125,
+        "mean_shap": -0.0005767107852361,
+        "value_shap_corr": -0.9977,
+        "direction": "NEGATIVE",
+        "method_agreement": 0.1262,
+        "methods_available": 3,
+        "confidence": "Low",
+        "engineering_verdict": "KEEP",
+        "verdict_reason": "mean_rank 11.33/38, stability 0.7056, agreement Low, walk-forward ablation delta -0.000210"
+      },
+      {
+        "feature": "home_bat_hard_hit_pct",
+        "gain": null,
+        "gain_rank": null,
+        "permutation_importance": 7.66436223150091e-05,
+        "permutation_rank": 15,
+        "mean_abs_shap": 0.0045251303047555,
+        "shap_rank": 17,
+        "lofo_log_loss_delta": 0.000648,
+        "lofo_auc_delta": 0.001566,
+        "lofo_rank": 13,
+        "mean_rank": 15.0,
+        "stability": 0.5259,
+        "rank_std_across_folds": 8.77,
+        "fold_ranks": [
+          16,
+          30,
+          9,
+          20
+        ],
+        "fold_count": 4,
+        "outcome_correlation": 0.0268,
+        "mean_shap": 7.848525059345112e-05,
+        "value_shap_corr": 0.9556,
+        "direction": "POSITIVE",
+        "method_agreement": 0.8919,
+        "methods_available": 3,
+        "confidence": "High",
+        "engineering_verdict": "KEEP",
+        "verdict_reason": "walk-forward ablation over 4 folds regressed log loss by +0.000648 when this feature was dropped, mean_rank 15.0/38, stability 0.5259, agreement High"
+      },
+      {
+        "feature": "home_fb_velo",
+        "gain": null,
+        "gain_rank": null,
+        "permutation_importance": 0.0001128091512058,
+        "permutation_rank": 14,
+        "mean_abs_shap": 0.0079079113375444,
+        "shap_rank": 11,
+        "lofo_log_loss_delta": 6.2e-05,
+        "lofo_auc_delta": -0.001246,
+        "lofo_rank": 23,
+        "mean_rank": 16.0,
+        "stability": 0.3177,
+        "rank_std_across_folds": 12.623,
+        "fold_ranks": [
+          29,
+          9,
+          14,
+          36
+        ],
+        "fold_count": 4,
+        "outcome_correlation": 0.0171,
+        "mean_shap": -0.0005746749995802,
+        "value_shap_corr": 0.9723,
+        "direction": "POSITIVE",
+        "method_agreement": 0.6624,
+        "methods_available": 3,
+        "confidence": "Medium",
+        "engineering_verdict": "INVESTIGATE",
+        "verdict_reason": "rank stability 0.3177 < 0.5 across 4 walk-forward folds (fold ranks [29, 9, 14, 36]), mean_rank 16.0/38, agreement Medium"
+      },
+      {
+        "feature": "away_xwoba_against",
+        "gain": null,
+        "gain_rank": null,
+        "permutation_importance": -0.0002590823529448,
+        "permutation_rank": 28,
+        "mean_abs_shap": 0.0044320589009476,
+        "shap_rank": 19,
+        "lofo_log_loss_delta": 0.002777,
+        "lofo_auc_delta": -0.008327,
+        "lofo_rank": 3,
+        "mean_rank": 16.67,
+        "stability": 0.1857,
+        "rank_std_across_folds": 15.064,
+        "fold_ranks": [
+          1,
+          7,
+          33,
+          2
+        ],
+        "fold_count": 4,
+        "outcome_correlation": 0.0683,
+        "mean_shap": 0.0004925511305744,
+        "value_shap_corr": -0.9734,
+        "direction": "NEGATIVE",
+        "method_agreement": 0.3156,
+        "methods_available": 3,
+        "confidence": "Low",
+        "engineering_verdict": "KEEP",
+        "verdict_reason": "walk-forward ablation over 4 folds regressed log loss by +0.002777 when this feature was dropped, mean_rank 16.67/38, stability 0.1857, agreement Low"
+      },
+      {
+        "feature": "home_bb_rate",
+        "gain": null,
+        "gain_rank": null,
+        "permutation_importance": -0.0001847070967865,
+        "permutation_rank": 26,
+        "mean_abs_shap": 0.0031946819529413,
+        "shap_rank": 22,
+        "lofo_log_loss_delta": 0.001612,
+        "lofo_auc_delta": -0.005655,
+        "lofo_rank": 5,
+        "mean_rank": 17.67,
+        "stability": 0.4734,
+        "rank_std_across_folds": 9.743,
+        "fold_ranks": [
+          18,
+          22,
+          28,
+          5
+        ],
+        "fold_count": 4,
+        "outcome_correlation": -0.0462,
+        "mean_shap": -0.0006850381491544,
+        "value_shap_corr": 0.9637,
+        "direction": "POSITIVE",
+        "method_agreement": 0.3973,
+        "methods_available": 3,
+        "confidence": "Low",
+        "engineering_verdict": "KEEP",
+        "verdict_reason": "walk-forward ablation over 4 folds regressed log loss by +0.001612 when this feature was dropped, mean_rank 17.67/38, stability 0.4734, agreement Low"
+      },
+      {
+        "feature": "away_bb_rate",
+        "gain": null,
+        "gain_rank": null,
+        "permutation_importance": 0.0006192722118424,
+        "permutation_rank": 10,
+        "mean_abs_shap": 0.0159433459351758,
+        "shap_rank": 6,
+        "lofo_log_loss_delta": -0.00153,
+        "lofo_auc_delta": 0.007747,
+        "lofo_rank": 38,
+        "mean_rank": 18.0,
+        "stability": 0.4062,
+        "rank_std_across_folds": 10.985,
+        "fold_ranks": [
+          33,
+          38,
+          13,
+          24
+        ],
+        "fold_count": 4,
+        "outcome_correlation": 0.0294,
+        "mean_shap": -0.0018093039282283,
+        "value_shap_corr": -0.9976,
+        "direction": "NEGATIVE",
+        "method_agreement": 0.0575,
+        "methods_available": 3,
+        "confidence": "Low",
+        "engineering_verdict": "INVESTIGATE",
+        "verdict_reason": "rank stability 0.4062 < 0.5 across 4 walk-forward folds (fold ranks [33, 38, 13, 24]), mean_rank 18.0/38, agreement Low"
+      },
+      {
+        "feature": "home_L10_wr",
+        "gain": null,
+        "gain_rank": null,
+        "permutation_importance": 4.3755604869011314e-05,
+        "permutation_rank": 18,
+        "mean_abs_shap": 0.0016582744672946,
+        "shap_rank": 30,
+        "lofo_log_loss_delta": 0.001588,
+        "lofo_auc_delta": -0.004509,
+        "lofo_rank": 6,
+        "mean_rank": 18.0,
+        "stability": 0.6245,
+        "rank_std_across_folds": 6.946,
+        "fold_ranks": [
+          19,
+          27,
+          16,
+          31
+        ],
+        "fold_count": 4,
+        "outcome_correlation": 0.0614,
+        "mean_shap": -0.0008866640869742,
+        "value_shap_corr": 0.8461,
+        "direction": "POSITIVE",
+        "method_agreement": 0.3514,
+        "methods_available": 3,
+        "confidence": "Low",
+        "engineering_verdict": "KEEP",
+        "verdict_reason": "walk-forward ablation over 4 folds regressed log loss by +0.001588 when this feature was dropped, mean_rank 18.0/38, stability 0.6245, agreement Low"
+      },
+      {
+        "feature": "home_xwoba_against",
+        "gain": null,
+        "gain_rank": null,
+        "permutation_importance": 0.0003031839957972,
+        "permutation_rank": 12,
+        "mean_abs_shap": 0.0044566637259783,
+        "shap_rank": 18,
+        "lofo_log_loss_delta": -2.9e-05,
+        "lofo_auc_delta": -0.000892,
+        "lofo_rank": 26,
+        "mean_rank": 18.67,
+        "stability": 0.7623,
+        "rank_std_across_folds": 4.397,
+        "fold_ranks": [
+          25,
+          32,
+          22,
+          29
+        ],
+        "fold_count": 4,
+        "outcome_correlation": -0.041,
+        "mean_shap": 0.0005825175567067,
+        "value_shap_corr": -0.9894,
+        "direction": "NEGATIVE",
+        "method_agreement": 0.6203,
+        "methods_available": 3,
+        "confidence": "Low",
+        "engineering_verdict": "KEEP",
+        "verdict_reason": "mean_rank 18.67/38, stability 0.7623, agreement Low, walk-forward ablation delta -0.000029"
+      },
+      {
+        "feature": "away_hard_hit_pct",
+        "gain": null,
+        "gain_rank": null,
+        "permutation_importance": 5.6666564326346425e-05,
+        "permutation_rank": 16,
+        "mean_abs_shap": 0.0031864211051207,
+        "shap_rank": 23,
+        "lofo_log_loss_delta": 0.000352,
+        "lofo_auc_delta": 0.0019,
+        "lofo_rank": 18,
+        "mean_rank": 19.0,
+        "stability": 0.7261,
+        "rank_std_across_folds": 5.066,
+        "fold_ranks": [
+          24,
+          15,
+          26,
+          25
+        ],
+        "fold_count": 4,
+        "outcome_correlation": 0.0083,
+        "mean_shap": 0.0029787970518243,
+        "value_shap_corr": 0.6636,
+        "direction": "POSITIVE",
+        "method_agreement": 0.8051,
+        "methods_available": 3,
+        "confidence": "Medium",
+        "engineering_verdict": "KEEP",
+        "verdict_reason": "walk-forward ablation over 4 folds regressed log loss by +0.000352 when this feature was dropped, mean_rank 19.0/38, stability 0.7261, agreement Medium"
+      },
+      {
+        "feature": "away_is_lefty",
+        "gain": null,
+        "gain_rank": null,
+        "permutation_importance": -0.0002189848700165,
+        "permutation_rank": 27,
+        "mean_abs_shap": 0.0026824277554365,
+        "shap_rank": 24,
+        "lofo_log_loss_delta": 0.001172,
+        "lofo_auc_delta": -0.002654,
+        "lofo_rank": 8,
+        "mean_rank": 19.67,
+        "stability": 0.8875,
+        "rank_std_across_folds": 2.082,
+        "fold_ranks": [
+          22,
+          24,
+          25,
+          27
+        ],
+        "fold_count": 4,
+        "outcome_correlation": 0.0166,
+        "mean_shap": -0.0026824277554365,
+        "value_shap_corr": -0.9975,
+        "direction": "NEGATIVE",
+        "method_agreement": 0.4479,
+        "methods_available": 3,
+        "confidence": "Low",
+        "engineering_verdict": "KEEP",
+        "verdict_reason": "walk-forward ablation over 4 folds regressed log loss by +0.001172 when this feature was dropped, mean_rank 19.67/38, stability 0.8875, agreement Low"
+      },
+      {
+        "feature": "away_fb_velo",
+        "gain": null,
+        "gain_rank": null,
+        "permutation_importance": -0.0005575631168451,
+        "permutation_rank": 35,
+        "mean_abs_shap": 0.0066538772810634,
+        "shap_rank": 12,
+        "lofo_log_loss_delta": 0.00058,
+        "lofo_auc_delta": -0.002941,
+        "lofo_rank": 14,
+        "mean_rank": 20.33,
+        "stability": 0.466,
+        "rank_std_across_folds": 9.878,
+        "fold_ranks": [
+          27,
+          29,
+          27,
+          8
+        ],
+        "fold_count": 4,
+        "outcome_correlation": -0.0184,
+        "mean_shap": 0.0002859394692586,
+        "value_shap_corr": -0.9621,
+        "direction": "NEGATIVE",
+        "method_agreement": 0.3113,
+        "methods_available": 3,
+        "confidence": "Low",
+        "engineering_verdict": "KEEP",
+        "verdict_reason": "walk-forward ablation over 4 folds regressed log loss by +0.000580 when this feature was dropped, mean_rank 20.33/38, stability 0.466, agreement Low"
+      },
+      {
+        "feature": "away_bat_iso",
+        "gain": null,
+        "gain_rank": null,
+        "permutation_importance": -0.0003037364501577,
+        "permutation_rank": 30,
+        "mean_abs_shap": 0.0039398290464311,
+        "shap_rank": 21,
+        "lofo_log_loss_delta": 0.000366,
+        "lofo_auc_delta": -0.00157,
+        "lofo_rank": 16,
+        "mean_rank": 22.33,
+        "stability": 0.844,
+        "rank_std_across_folds": 2.887,
+        "fold_ranks": [
+          13,
+          13,
+          18,
+          18
+        ],
+        "fold_count": 4,
+        "outcome_correlation": -0.0334,
+        "mean_shap": 0.0011578593729508,
+        "value_shap_corr": -0.9469,
+        "direction": "NEGATIVE",
+        "method_agreement": 0.6165,
+        "methods_available": 3,
+        "confidence": "Low",
+        "engineering_verdict": "KEEP",
+        "verdict_reason": "walk-forward ablation over 4 folds regressed log loss by +0.000366 when this feature was dropped, mean_rank 22.33/38, stability 0.844, agreement Low"
+      },
+      {
+        "feature": "away_bat_woba",
+        "gain": null,
+        "gain_rank": null,
+        "permutation_importance": -0.0014210822981323,
+        "permutation_rank": 38,
+        "mean_abs_shap": 0.0187280031659615,
+        "shap_rank": 5,
+        "lofo_log_loss_delta": 2.6e-05,
+        "lofo_auc_delta": 0.006227,
+        "lofo_rank": 24,
+        "mean_rank": 22.33,
+        "stability": 0.2187,
+        "rank_std_across_folds": 14.454,
+        "fold_ranks": [
+          38,
+          28,
+          6,
+          35
+        ],
+        "fold_count": 4,
+        "outcome_correlation": -0.0461,
+        "mean_shap": -0.0009079139041591,
+        "value_shap_corr": -0.9917,
+        "direction": "NEGATIVE",
+        "method_agreement": 0.1047,
+        "methods_available": 3,
+        "confidence": "Low",
+        "engineering_verdict": "INVESTIGATE",
+        "verdict_reason": "rank stability 0.2187 < 0.5 across 4 walk-forward folds (fold ranks [38, 28, 6, 35]), mean_rank 22.33/38, agreement Low"
+      },
+      {
+        "feature": "away_bat_hard_hit_pct",
+        "gain": null,
+        "gain_rank": null,
+        "permutation_importance": 4.7896982237738414e-05,
+        "permutation_rank": 17,
+        "mean_abs_shap": 0.0013434130568221,
+        "shap_rank": 33,
+        "lofo_log_loss_delta": 0.000284,
+        "lofo_auc_delta": -0.001004,
+        "lofo_rank": 19,
+        "mean_rank": 23.0,
+        "stability": 0.5556,
+        "rank_std_across_folds": 8.221,
+        "fold_ranks": [
+          17,
+          17,
+          34,
+          19
+        ],
+        "fold_count": 4,
+        "outcome_correlation": -0.023,
+        "mean_shap": -0.0009147826814196,
+        "value_shap_corr": -0.3505,
+        "direction": "NEGATIVE",
+        "method_agreement": 0.5288,
+        "methods_available": 3,
+        "confidence": "Low",
+        "engineering_verdict": "KEEP",
+        "verdict_reason": "walk-forward ablation over 4 folds regressed log loss by +0.000284 when this feature was dropped, mean_rank 23.0/38, stability 0.5556, agreement Low"
+      },
+      {
+        "feature": "away_L10_wr",
+        "gain": null,
+        "gain_rank": null,
+        "permutation_importance": -0.000328343615325,
+        "permutation_rank": 31,
+        "mean_abs_shap": 0.0023188115138533,
+        "shap_rank": 27,
+        "lofo_log_loss_delta": 0.000563,
+        "lofo_auc_delta": -0.003003,
+        "lofo_rank": 15,
+        "mean_rank": 24.33,
+        "stability": 0.1206,
+        "rank_std_across_folds": 16.269,
+        "fold_ranks": [
+          3,
+          6,
+          37,
+          26
+        ],
+        "fold_count": 4,
+        "outcome_correlation": -0.0316,
+        "mean_shap": 1.3250105617292896e-05,
+        "value_shap_corr": -0.8897,
+        "direction": "NEGATIVE",
+        "method_agreement": 0.5499,
+        "methods_available": 3,
+        "confidence": "Low",
+        "engineering_verdict": "KEEP",
+        "verdict_reason": "walk-forward ablation over 4 folds regressed log loss by +0.000563 when this feature was dropped, mean_rank 24.33/38, stability 0.1206, agreement Low"
+      },
+      {
+        "feature": "away_k_rate",
+        "gain": null,
+        "gain_rank": null,
+        "permutation_importance": -0.0002644578062907,
+        "permutation_rank": 29,
+        "mean_abs_shap": 0.0024083243316447,
+        "shap_rank": 26,
+        "lofo_log_loss_delta": 0.000257,
+        "lofo_auc_delta": -0.001551,
+        "lofo_rank": 20,
+        "mean_rank": 25.0,
+        "stability": 0.3583,
+        "rank_std_across_folds": 11.871,
+        "fold_ranks": [
+          37,
+          18,
+          17,
+          9
+        ],
+        "fold_count": 4,
+        "outcome_correlation": -0.0421,
+        "mean_shap": -0.000122864430902,
+        "value_shap_corr": 0.1391,
+        "direction": "POSITIVE",
+        "method_agreement": 0.7523,
+        "methods_available": 3,
+        "confidence": "Medium",
+        "engineering_verdict": "KEEP",
+        "verdict_reason": "walk-forward ablation over 4 folds regressed log loss by +0.000257 when this feature was dropped, mean_rank 25.0/38, stability 0.3583, agreement Medium"
+      },
+      {
+        "feature": "away_L10_rs",
+        "gain": null,
+        "gain_rank": null,
+        "permutation_importance": -0.0010870311731499,
+        "permutation_rank": 37,
+        "mean_abs_shap": 0.0050206738685663,
+        "shap_rank": 16,
+        "lofo_log_loss_delta": 0.000138,
+        "lofo_auc_delta": 0.002568,
+        "lofo_rank": 22,
+        "mean_rank": 25.0,
+        "stability": 0.2453,
+        "rank_std_across_folds": 13.961,
+        "fold_ranks": [
+          7,
+          11,
+          36,
+          7
+        ],
+        "fold_count": 4,
+        "outcome_correlation": -0.021,
+        "mean_shap": 0.0002529604372162,
+        "value_shap_corr": -0.9383,
+        "direction": "NEGATIVE",
+        "method_agreement": 0.4153,
+        "methods_available": 3,
+        "confidence": "Low",
+        "engineering_verdict": "KEEP",
+        "verdict_reason": "walk-forward ablation over 4 folds regressed log loss by +0.000138 when this feature was dropped, mean_rank 25.0/38, stability 0.2453, agreement Low"
+      },
+      {
+        "feature": "away_days_rest",
+        "gain": null,
+        "gain_rank": null,
+        "permutation_importance": -8.502990209842131e-05,
+        "permutation_rank": 25,
+        "mean_abs_shap": 0.0008501862843698,
+        "shap_rank": 34,
+        "lofo_log_loss_delta": 0.000357,
+        "lofo_auc_delta": -0.001377,
+        "lofo_rank": 17,
+        "mean_rank": 25.33,
+        "stability": 0.6716,
+        "rank_std_across_folds": 6.076,
+        "fold_ranks": [
+          31,
+          20,
+          20,
+          30
+        ],
+        "fold_count": 4,
+        "outcome_correlation": 0.0084,
+        "mean_shap": 0.0001284842770677,
+        "value_shap_corr": -0.9662,
+        "direction": "NEGATIVE",
+        "method_agreement": 0.5403,
+        "methods_available": 3,
+        "confidence": "Low",
+        "engineering_verdict": "KEEP",
+        "verdict_reason": "walk-forward ablation over 4 folds regressed log loss by +0.000357 when this feature was dropped, mean_rank 25.33/38, stability 0.6716, agreement Low"
+      },
+      {
+        "feature": "home_days_rest",
+        "gain": null,
+        "gain_rank": null,
+        "permutation_importance": -0.0008159009358345,
+        "permutation_rank": 36,
+        "mean_abs_shap": 0.005540978143378,
+        "shap_rank": 15,
+        "lofo_log_loss_delta": -0.000124,
+        "lofo_auc_delta": 0.000817,
+        "lofo_rank": 28,
+        "mean_rank": 26.33,
+        "stability": 0.7543,
+        "rank_std_across_folds": 4.546,
+        "fold_ranks": [
+          26,
+          31,
+          30,
+          21
+        ],
+        "fold_count": 4,
+        "outcome_correlation": 0.0067,
+        "mean_shap": -0.0013076819216283,
+        "value_shap_corr": -0.9814,
+        "direction": "NEGATIVE",
+        "method_agreement": 0.4271,
+        "methods_available": 3,
+        "confidence": "Low",
+        "engineering_verdict": "KEEP",
+        "verdict_reason": "mean_rank 26.33/38, stability 0.7543, agreement Low, walk-forward ablation delta -0.000124"
+      },
+      {
+        "feature": "home_bat_woba",
+        "gain": null,
+        "gain_rank": null,
+        "permutation_importance": -1.3019511512646354e-05,
+        "permutation_rank": 24,
+        "mean_abs_shap": 0.0021796685915517,
+        "shap_rank": 29,
+        "lofo_log_loss_delta": -9.1e-05,
+        "lofo_auc_delta": -0.000207,
+        "lofo_rank": 27,
+        "mean_rank": 26.67,
+        "stability": 0.4203,
+        "rank_std_across_folds": 10.724,
+        "fold_ranks": [
+          36,
+          25,
+          12,
+          33
+        ],
+        "fold_count": 4,
+        "outcome_correlation": 0.0714,
+        "mean_shap": -0.0007687403994771,
+        "value_shap_corr": -0.8801,
+        "direction": "NEGATIVE",
+        "method_agreement": 0.864,
+        "methods_available": 3,
+        "confidence": "High",
+        "engineering_verdict": "RE-ENCODE",
+        "verdict_reason": "point-biserial correlation with outcome +0.0714 exceeds 0.05 but mean_rank 26.67/38 sits below the median, so the raw encoding carries signal the model is not extracting (ablation delta -0.000091)"
+      },
+      {
+        "feature": "is_coors",
+        "gain": null,
+        "gain_rank": null,
+        "permutation_importance": 0.0003689581506419,
+        "permutation_rank": 11,
+        "mean_abs_shap": 0.000769280290606,
+        "shap_rank": 35,
+        "lofo_log_loss_delta": -0.000485,
+        "lofo_auc_delta": 0.005133,
+        "lofo_rank": 34,
+        "mean_rank": 26.67,
+        "stability": 0.3949,
+        "rank_std_across_folds": 11.195,
+        "fold_ranks": [
+          8,
+          10,
+          32,
+          22
+        ],
+        "fold_count": 4,
+        "outcome_correlation": -0.0713,
+        "mean_shap": -0.000769280290606,
+        "value_shap_corr": -0.9965,
+        "direction": "NEGATIVE",
+        "method_agreement": 0.2661,
+        "methods_available": 3,
+        "confidence": "Low",
+        "engineering_verdict": "RE-ENCODE",
+        "verdict_reason": "point-biserial correlation with outcome -0.0713 exceeds 0.05 but mean_rank 26.67/38 sits below the median, so the raw encoding carries signal the model is not extracting (ablation delta -0.000485)"
+      },
+      {
+        "feature": "home_L10_rs",
+        "gain": null,
+        "gain_rank": null,
+        "permutation_importance": 3.453407989032486e-05,
+        "permutation_rank": 20,
+        "mean_abs_shap": 0.0014722681493343,
+        "shap_rank": 32,
+        "lofo_log_loss_delta": -0.000214,
+        "lofo_auc_delta": 0.005266,
+        "lofo_rank": 31,
+        "mean_rank": 27.67,
+        "stability": 0.7838,
+        "rank_std_across_folds": 4.0,
+        "fold_ranks": [
+          5,
+          5,
+          5,
+          13
+        ],
+        "fold_count": 4,
+        "outcome_correlation": 0.0395,
+        "mean_shap": -0.000169619695211,
+        "value_shap_corr": -0.9274,
+        "direction": "NEGATIVE",
+        "method_agreement": 0.6401,
+        "methods_available": 3,
+        "confidence": "Low",
+        "engineering_verdict": "KEEP",
+        "verdict_reason": "mean_rank 27.67/38, stability 0.7838, agreement Low, walk-forward ablation delta -0.000214"
+      },
+      {
+        "feature": "wind_out_factor",
+        "gain": null,
+        "gain_rank": null,
+        "permutation_importance": -0.0005286431978253,
+        "permutation_rank": 34,
+        "mean_abs_shap": 0.0022501221226351,
+        "shap_rank": 28,
+        "lofo_log_loss_delta": 0.000159,
+        "lofo_auc_delta": 0.002268,
+        "lofo_rank": 21,
+        "mean_rank": 27.67,
+        "stability": 0.3568,
+        "rank_std_across_folds": 11.899,
+        "fold_ranks": [
+          28,
+          36,
+          15,
+          10
+        ],
+        "fold_count": 4,
+        "outcome_correlation": -0.0696,
+        "mean_shap": -0.0002778382738985,
+        "value_shap_corr": 0.9362,
+        "direction": "POSITIVE",
+        "method_agreement": 0.6483,
+        "methods_available": 3,
+        "confidence": "Low",
+        "engineering_verdict": "KEEP",
+        "verdict_reason": "walk-forward ablation over 4 folds regressed log loss by +0.000159 when this feature was dropped, mean_rank 27.67/38, stability 0.3568, agreement Low"
+      },
+      {
+        "feature": "temp_f",
+        "gain": null,
+        "gain_rank": null,
+        "permutation_importance": -0.0003895818093549,
+        "permutation_rank": 33,
+        "mean_abs_shap": 0.0043014701691613,
+        "shap_rank": 20,
+        "lofo_log_loss_delta": -0.000296,
+        "lofo_auc_delta": -0.002372,
+        "lofo_rank": 32,
+        "mean_rank": 28.33,
+        "stability": 0.5118,
+        "rank_std_across_folds": 9.032,
+        "fold_ranks": [
+          30,
+          21,
+          10,
+          28
+        ],
+        "fold_count": 4,
+        "outcome_correlation": 0.0109,
+        "mean_shap": -0.0003058428369876,
+        "value_shap_corr": -0.9923,
+        "direction": "NEGATIVE",
+        "method_agreement": 0.609,
+        "methods_available": 3,
+        "confidence": "Low",
+        "engineering_verdict": "KEEP",
+        "verdict_reason": "mean_rank 28.33/38, stability 0.5118, agreement Low, walk-forward ablation delta -0.000296"
+      },
+      {
+        "feature": "home_hard_hit_pct",
+        "gain": null,
+        "gain_rank": null,
+        "permutation_importance": 1.1418756502190596e-05,
+        "permutation_rank": 21,
+        "mean_abs_shap": 0.0006599570094734,
+        "shap_rank": 36,
+        "lofo_log_loss_delta": -0.000136,
+        "lofo_auc_delta": 0.002198,
+        "lofo_rank": 29,
+        "mean_rank": 28.67,
+        "stability": 0.4246,
+        "rank_std_across_folds": 10.646,
+        "fold_ranks": [
+          15,
+          33,
+          29,
+          11
+        ],
+        "fold_count": 4,
+        "outcome_correlation": 0.0022,
+        "mean_shap": -9.18334269503285e-05,
+        "value_shap_corr": 0.5723,
+        "direction": "POSITIVE",
+        "method_agreement": 0.5943,
+        "methods_available": 3,
+        "confidence": "Low",
+        "engineering_verdict": "INVESTIGATE",
+        "verdict_reason": "rank stability 0.4246 < 0.5 across 4 walk-forward folds (fold ranks [15, 33, 29, 11]), mean_rank 28.67/38, agreement Low"
+      },
+      {
+        "feature": "wind_mph",
+        "gain": null,
+        "gain_rank": null,
+        "permutation_importance": -5.881683320307918e-06,
+        "permutation_rank": 23,
+        "mean_abs_shap": 0.0015943116656353,
+        "shap_rank": 31,
+        "lofo_log_loss_delta": -0.000392,
+        "lofo_auc_delta": -0.001275,
+        "lofo_rank": 33,
+        "mean_rank": 29.0,
+        "stability": 0.3127,
+        "rank_std_across_folds": 12.715,
+        "fold_ranks": [
+          9,
+          16,
+          38,
+          15
+        ],
+        "fold_count": 4,
+        "outcome_correlation": 0.0259,
+        "mean_shap": -6.866352144027688e-06,
+        "value_shap_corr": 0.963,
+        "direction": "POSITIVE",
+        "method_agreement": 0.714,
+        "methods_available": 3,
+        "confidence": "Medium",
+        "engineering_verdict": "INVESTIGATE",
+        "verdict_reason": "rank stability 0.3127 < 0.5 across 4 walk-forward folds (fold ranks [9, 16, 38, 15]), mean_rank 29.0/38, agreement Medium"
+      },
+      {
+        "feature": "home_is_lefty",
+        "gain": null,
+        "gain_rank": null,
+        "permutation_importance": 3.690710268480224e-05,
+        "permutation_rank": 19,
+        "mean_abs_shap": 0.0006505144224191,
+        "shap_rank": 37,
+        "lofo_log_loss_delta": -0.001337,
+        "lofo_auc_delta": 0.009137,
+        "lofo_rank": 36,
+        "mean_rank": 30.67,
+        "stability": 0.4155,
+        "rank_std_across_folds": 10.813,
+        "fold_ranks": [
+          21,
+          26,
+          11,
+          37
+        ],
+        "fold_count": 4,
+        "outcome_correlation": 0.0182,
+        "mean_shap": 0.0006505144224191,
+        "value_shap_corr": 0.9367,
+        "direction": "POSITIVE",
+        "method_agreement": 0.4532,
+        "methods_available": 3,
+        "confidence": "Low",
+        "engineering_verdict": "INVESTIGATE",
+        "verdict_reason": "rank stability 0.4155 < 0.5 across 4 walk-forward folds (fold ranks [21, 26, 11, 37]), mean_rank 30.67/38, agreement Low"
+      },
+      {
+        "feature": "park_factor",
+        "gain": null,
+        "gain_rank": null,
+        "permutation_importance": -0.0003688623285826,
+        "permutation_rank": 32,
+        "mean_abs_shap": 0.0025769922294477,
+        "shap_rank": 25,
+        "lofo_log_loss_delta": -0.001284,
+        "lofo_auc_delta": 0.005329,
+        "lofo_rank": 35,
+        "mean_rank": 30.67,
+        "stability": 0.4722,
+        "rank_std_across_folds": 9.764,
+        "fold_ranks": [
+          11,
+          12,
+          21,
+          32
+        ],
+        "fold_count": 4,
+        "outcome_correlation": -0.0668,
+        "mean_shap": -0.000980525462551,
+        "value_shap_corr": 0.9382,
+        "direction": "POSITIVE",
+        "method_agreement": 0.7226,
+        "methods_available": 3,
+        "confidence": "Medium",
+        "engineering_verdict": "RE-ENCODE",
+        "verdict_reason": "point-biserial correlation with outcome -0.0668 exceeds 0.05 but mean_rank 30.67/38 sits below the median, so the raw encoding carries signal the model is not extracting (ablation delta -0.001284)"
+      },
+      {
+        "feature": "is_dome",
+        "gain": null,
+        "gain_rank": null,
+        "permutation_importance": -3.769176920831452e-06,
+        "permutation_rank": 22,
+        "mean_abs_shap": 0.000297739161149,
+        "shap_rank": 38,
+        "lofo_log_loss_delta": -0.001423,
+        "lofo_auc_delta": 0.009607,
+        "lofo_rank": 37,
+        "mean_rank": 32.33,
+        "stability": 0.6716,
+        "rank_std_across_folds": 6.076,
+        "fold_ranks": [
+          20,
+          34,
+          24,
+          23
+        ],
+        "fold_count": 4,
+        "outcome_correlation": 0.0427,
+        "mean_shap": 9.370437835129124e-05,
+        "value_shap_corr": 0.7439,
+        "direction": "POSITIVE",
+        "method_agreement": 0.5155,
+        "methods_available": 3,
+        "confidence": "Low",
+        "engineering_verdict": "KEEP",
+        "verdict_reason": "mean_rank 32.33/38, stability 0.6716, agreement Low, walk-forward ablation delta -0.001423"
+      }
+    ],
+    "stability": {
+      "fold_count": 4,
+      "mean_pairwise_spearman": -0.0018,
+      "n_repeats": 5
+    },
+    "decision_rule": {
+      "min_rows_for_verdict": 200,
+      "min_folds_for_stability": 3,
+      "bottom_tier_fraction": 0.75,
+      "mid_tier_fraction": 0.5,
+      "stability_stable": 0.7,
+      "stability_unstable": 0.5,
+      "lofo_keep_delta": 0.0001,
+      "lofo_remove_delta": 0.0,
+      "outcome_correlation_signal": 0.05,
+      "agreement_high": 0.85,
+      "agreement_medium": 0.65
+    },
+    "recommendation": {
+      "status": "OK",
+      "finding": "Across 38 features over 4 walk-forward folds (mean pairwise Spearman -0.0018, mean stability 0.453), verdicts are INVESTIGATE=7, KEEP=28, RE-ENCODE=3; 23 features fall below stability 0.5.",
+      "recommendation": "Action the 10 non-KEEP features first: home_fip \u2192 INVESTIGATE (rank stability 0.0 < 0.5 across 4 walk-forward folds (fold ranks [4, 1, 35, 34]), mean_rank 11.0/38, agreement Low); home_fb_velo \u2192 INVESTIGATE (rank stability 0.3177 < 0.5 across 4 walk-forward folds (fold ranks [29, 9, 14, 36]), mean_rank 16.0/38, agreement Medium); away_bb_rate \u2192 INVESTIGATE (rank stability 0.4062 < 0.5 across 4 walk-forward folds (fold ranks [33, 38, 13, 24]), mean_rank 18.0/38, agreement Low); away_bat_woba \u2192 INVESTIGATE (rank stability 0.2187 < 0.5 across 4 walk-forward folds (fold ranks [38, 28, 6, 35]), mean_rank 22.33/38, agreement Low); home_bat_woba \u2192 RE-ENCODE (point-biserial correlation with outcome +0.0714 exceeds 0.05 but mean_rank 26.67/38 sits below the median, so the raw encoding carries signal the model is not extracting (ablation delta -0.000091))",
+      "confidence": "Medium",
+      "expected_gain": "Low",
+      "files": [
+        "pipeline/train_common.py",
+        "pipeline/engineering_audit.py",
+        "pipeline/feature_store.py"
+      ],
+      "evidence": {
+        "verdict_counts": {
+          "KEEP": 28,
+          "INVESTIGATE": 7,
+          "RE-ENCODE": 3
+        },
+        "mean_stability": 0.4535,
+        "mean_pairwise_spearman": -0.0018
+      }
+    }
+  },
+  "calibration": {
+    "buckets": [
+      {
+        "bin": "0.20-0.40",
+        "bin_lower": 0.2,
+        "bin_upper": 0.4,
+        "n": 222,
+        "successes": 81,
+        "predicted_sum": 78.83442,
+        "avg_predicted": 0.3551,
+        "actual_rate": 0.3649,
+        "actual_ci_lower": 0.3043,
+        "actual_ci_upper": 0.43,
+        "ci_width": 0.1257,
+        "reliable": true,
+        "outcome_variance": 0.231738,
+        "bernoulli_variance": 0.231738,
+        "predicted_variance": 0.001051,
+        "gap": -0.0098,
+        "abs_gap": 0.0098,
+        "weight": 0.2727,
+        "weighted_gap": 0.002673,
+        "outside_ci": false
+      },
+      {
+        "bin": "0.40-0.50",
+        "bin_lower": 0.4,
+        "bin_upper": 0.5,
+        "n": 427,
+        "successes": 205,
+        "predicted_sum": 191.820001,
+        "avg_predicted": 0.4492,
+        "actual_rate": 0.4801,
+        "actual_ci_lower": 0.4331,
+        "actual_ci_upper": 0.5274,
+        "ci_width": 0.0944,
+        "reliable": true,
+        "outcome_variance": 0.249604,
+        "bernoulli_variance": 0.249604,
+        "predicted_variance": 0.000829,
+        "gap": -0.0309,
+        "abs_gap": 0.0309,
+        "weight": 0.5246,
+        "weighted_gap": 0.016209,
+        "outside_ci": false
+      },
+      {
+        "bin": "0.50-0.70",
+        "bin_lower": 0.5,
+        "bin_upper": 0.7,
+        "n": 165,
+        "successes": 81,
+        "predicted_sum": 88.74363,
+        "avg_predicted": 0.5378,
+        "actual_rate": 0.4909,
+        "actual_ci_lower": 0.4157,
+        "actual_ci_upper": 0.5665,
+        "ci_width": 0.1508,
+        "reliable": true,
+        "outcome_variance": 0.249917,
+        "bernoulli_variance": 0.249917,
+        "predicted_variance": 0.000992,
+        "gap": 0.0469,
+        "abs_gap": 0.0469,
+        "weight": 0.2027,
+        "weighted_gap": 0.009507,
+        "outside_ci": false
+      }
+    ],
+    "field_audit": {
+      "required_fields_present": true,
+      "missing_fields": [],
+      "min_bucket_n": 25,
+      "raw_unreliable_buckets": [
+        "0.20-0.30",
+        "0.60-0.70"
+      ],
+      "merged_unreliable_buckets": [],
+      "auto_merge_applied": true,
+      "auto_merge_resolved_all": true
+    },
+    "top_issues": [
+      {
+        "bin": "0.40-0.50",
+        "bin_lower": 0.4,
+        "bin_upper": 0.5,
+        "n": 427,
+        "successes": 205,
+        "predicted_sum": 191.820001,
+        "avg_predicted": 0.4492,
+        "actual_rate": 0.4801,
+        "actual_ci_lower": 0.4331,
+        "actual_ci_upper": 0.5274,
+        "ci_width": 0.0944,
+        "reliable": true,
+        "outcome_variance": 0.249604,
+        "bernoulli_variance": 0.249604,
+        "predicted_variance": 0.000829,
+        "gap": -0.0309,
+        "abs_gap": 0.0309,
+        "weight": 0.5246,
+        "weighted_gap": 0.016209,
+        "outside_ci": false
+      },
+      {
+        "bin": "0.50-0.70",
+        "bin_lower": 0.5,
+        "bin_upper": 0.7,
+        "n": 165,
+        "successes": 81,
+        "predicted_sum": 88.74363,
+        "avg_predicted": 0.5378,
+        "actual_rate": 0.4909,
+        "actual_ci_lower": 0.4157,
+        "actual_ci_upper": 0.5665,
+        "ci_width": 0.1508,
+        "reliable": true,
+        "outcome_variance": 0.249917,
+        "bernoulli_variance": 0.249917,
+        "predicted_variance": 0.000992,
+        "gap": 0.0469,
+        "abs_gap": 0.0469,
+        "weight": 0.2027,
+        "weighted_gap": 0.009507,
+        "outside_ci": false
+      },
+      {
+        "bin": "0.20-0.40",
+        "bin_lower": 0.2,
+        "bin_upper": 0.4,
+        "n": 222,
+        "successes": 81,
+        "predicted_sum": 78.83442,
+        "avg_predicted": 0.3551,
+        "actual_rate": 0.3649,
+        "actual_ci_lower": 0.3043,
+        "actual_ci_upper": 0.43,
+        "ci_width": 0.1257,
+        "reliable": true,
+        "outcome_variance": 0.231738,
+        "bernoulli_variance": 0.231738,
+        "predicted_variance": 0.001051,
+        "gap": -0.0098,
+        "abs_gap": 0.0098,
+        "weight": 0.2727,
+        "weighted_gap": 0.002673,
+        "outside_ci": false
+      }
+    ],
+    "null_test": {
+      "observed_ece": 0.028365,
+      "null_mean_ece": 0.025871,
+      "null_p95_ece": 0.042997,
+      "simulations": 400,
+      "p_value": 0.371571,
+      "method": "parametric bootstrap: outcomes redrawn from the model's own predicted probabilities, so the null distribution is the calibration error a perfectly calibrated model of this size would still show"
+    },
+    "root_causes": [
+      {
+        "pattern": "weighted miscalibration mass centres at predicted probability 0.486 versus a mean prediction of 0.442",
+        "cause": "the miscalibration centre sits 0.0446 above the mean prediction, which is 18.22 standard errors of the mean prediction (0.00245) and therefore separable from the prediction distribution at the 95% level",
+        "corroborated": true,
+        "evidence": {
+          "weighted_gap_centre": 0.4861,
+          "mean_prediction": 0.4415,
+          "mean_prediction_standard_error": 0.002448,
+          "separation_z": 18.216,
+          "z_threshold": 1.96
+        }
+      },
+      {
+        "pattern": "ECE on the earlier half of the evaluation window is 0.0172 versus 0.0459 on the later half (814 rows split chronologically)",
+        "cause": "the chronological split changes ECE by +0.0287, which random splits of the same rows reproduce with probability 0.264, so no time-dependent pattern is established by this evaluation set",
+        "corroborated": false,
+        "evidence": {
+          "ece_first_half": 0.0172,
+          "ece_second_half": 0.0459,
+          "permutation_p_value": 0.264339,
+          "random_split_p95_delta": 0.046922,
+          "permutations": 400
+        }
+      }
+    ],
+    "suggested_fixes": [
+      {
+        "bucket": "0.40-0.50",
+        "fix": "Refit the probability calibrator with additional resolution in 0.40-0.50: predicted 0.4492 versus actual 0.4801 over n=427 (Wilson 95% CI 0.4331\u20130.5274, predicted rate stays inside the CI)",
+        "justifying_metric": {
+          "abs_gap": 0.0309,
+          "n": 427,
+          "weight": 0.5246,
+          "weighted_gap": 0.016209,
+          "outside_ci": false
+        },
+        "expected_impact_ece_points": 0.016209
+      },
+      {
+        "bucket": "0.50-0.70",
+        "fix": "Refit the probability calibrator with additional resolution in 0.50-0.70: predicted 0.5378 versus actual 0.4909 over n=165 (Wilson 95% CI 0.4157\u20130.5665, predicted rate stays inside the CI)",
+        "justifying_metric": {
+          "abs_gap": 0.0469,
+          "n": 165,
+          "weight": 0.2027,
+          "weighted_gap": 0.009507,
+          "outside_ci": false
+        },
+        "expected_impact_ece_points": 0.009507
+      },
+      {
+        "bucket": "0.20-0.40",
+        "fix": "Refit the probability calibrator with additional resolution in 0.20-0.40: predicted 0.3551 versus actual 0.3649 over n=222 (Wilson 95% CI 0.3043\u20130.4300, predicted rate stays inside the CI)",
+        "justifying_metric": {
+          "abs_gap": 0.0098,
+          "n": 222,
+          "weight": 0.2727,
+          "weighted_gap": 0.002673,
+          "outside_ci": false
+        },
+        "expected_impact_ece_points": 0.002673
+      }
+    ],
+    "expected_impact_ece_points": 0.0,
+    "recommendation": {
+      "status": "OK",
+      "finding": "Overall ECE is 0.0284 across 3 merged buckets covering 814 rows; the largest weighted miscalibration is 0.40-0.50 (predicted 0.4492 vs actual 0.4801, n=427, weighted gap 0.016209); 0 bucket(s) place the predicted rate outside their Wilson 95% CI.",
+      "recommendation": "No bucket is miscalibrated beyond its Wilson 95% CI at n\u226525; leave the calibrator as-is.",
+      "confidence": "Medium",
+      "expected_gain": "Low",
+      "files": [
+        "pipeline/calibration_common.py",
+        "pipeline/train_moneyline.py",
+        "pipeline/diagnostics.py"
+      ],
+      "evidence": {
+        "ece": 0.028365,
+        "expected_ece_reduction": 0.0,
+        "significant_buckets": []
+      }
+    }
+  },
+  "residuals": {
+    "n": 814,
+    "mean_residual": 0.00934,
+    "std_residual": 0.49606,
+    "standard_error": 0.01739,
+    "bias_z": 0.537,
+    "bias_p_value": 0.591178,
+    "bias_z_threshold": 1.96,
+    "biased": false,
+    "deciles": [
+      {
+        "range": "0.2376-0.3489",
+        "n": 82,
+        "mean_residual": 0.05836,
+        "abs_mean_residual": 0.05836,
+        "standard_error": 0.053924,
+        "z": 1.082,
+        "p_value": 0.279127,
+        "significant": false,
+        "bonferroni_alpha": 0.005
+      },
+      {
+        "range": "0.3489-0.3806",
+        "n": 81,
+        "mean_residual": 0.00463,
+        "abs_mean_residual": 0.00463,
+        "standard_error": 0.053988,
+        "z": 0.086,
+        "p_value": 0.931697,
+        "significant": false,
+        "bonferroni_alpha": 0.005
+      },
+      {
+        "range": "0.3806-0.4055",
+        "n": 81,
+        "mean_residual": -0.01044,
+        "abs_mean_residual": 0.01044,
+        "standard_error": 0.054163,
+        "z": -0.193,
+        "p_value": 0.847166,
+        "significant": false,
+        "bonferroni_alpha": 0.005
+      },
+      {
+        "range": "0.4055-0.4236",
+        "n": 82,
+        "mean_residual": 0.01198,
+        "abs_mean_residual": 0.01198,
+        "standard_error": 0.054892,
+        "z": 0.218,
+        "p_value": 0.827267,
+        "significant": false,
+        "bonferroni_alpha": 0.005
+      },
+      {
+        "range": "0.4236-0.4402",
+        "n": 81,
+        "mean_residual": 0.01141,
+        "abs_mean_residual": 0.01141,
+        "standard_error": 0.055598,
+        "z": 0.205,
+        "p_value": 0.837457,
+        "significant": false,
+        "bonferroni_alpha": 0.005
+      },
+      {
+        "range": "0.4402-0.4596",
+        "n": 81,
+        "mean_residual": 0.04316,
+        "abs_mean_residual": 0.04316,
+        "standard_error": 0.055977,
+        "z": 0.771,
+        "p_value": 0.440716,
+        "significant": false,
+        "bonferroni_alpha": 0.005
+      },
+      {
+        "range": "0.4596-0.4810",
+        "n": 82,
+        "mean_residual": 0.09045,
+        "abs_mean_residual": 0.09045,
+        "standard_error": 0.055117,
+        "z": 1.641,
+        "p_value": 0.100781,
+        "significant": false,
+        "bonferroni_alpha": 0.005
+      },
+      {
+        "range": "0.4810-0.5001",
+        "n": 81,
+        "mean_residual": -0.03442,
+        "abs_mean_residual": 0.03442,
+        "standard_error": 0.055711,
+        "z": -0.618,
+        "p_value": 0.53667,
+        "significant": false,
+        "bonferroni_alpha": 0.005
+      },
+      {
+        "range": "0.5001-0.5307",
+        "n": 81,
+        "mean_residual": -0.05715,
+        "abs_mean_residual": 0.05715,
+        "standard_error": 0.05572,
+        "z": -1.026,
+        "p_value": 0.305059,
+        "significant": false,
+        "bonferroni_alpha": 0.005
+      },
+      {
+        "range": "0.5307-0.6448",
+        "n": 82,
+        "mean_residual": -0.02579,
+        "abs_mean_residual": 0.02579,
+        "standard_error": 0.05571,
+        "z": -0.463,
+        "p_value": 0.643456,
+        "significant": false,
+        "bonferroni_alpha": 0.005
+      }
+    ],
+    "worst_decile": {
+      "range": "0.4596-0.4810",
+      "n": 82,
+      "mean_residual": 0.09045,
+      "abs_mean_residual": 0.09045,
+      "standard_error": 0.055117,
+      "z": 1.641,
+      "p_value": 0.100781,
+      "significant": false,
+      "bonferroni_alpha": 0.005
+    },
+    "current_log_loss": 0.684874,
+    "bias_correction_log_loss_gain": 0.000199,
+    "decile_correction_log_loss_gain": 0.003929,
+    "significant_deciles": [],
+    "bonferroni_alpha": 0.005,
+    "decile_test_method": "two-sided z-test of each probability decile's mean residual against zero, Bonferroni-corrected across the deciles actually tested"
+  },
+  "prediction_distribution": {
+    "n": 814,
+    "mean": 0.44152,
+    "std": 0.06983,
+    "min": 0.23758,
+    "max": 0.64484,
+    "p05": 0.32713,
+    "p95": 0.55451,
+    "range": 0.40726
+  },
+  "segments": {
+    "results": [
+      {
+        "available": false,
+        "reason": "no value of 'home_team' reached the 40-row minimum needed for a statistically meaningful segment estimate across 814 evaluation rows",
+        "column": "home_team",
+        "min_n": 40,
+        "rows": [],
+        "significant": []
+      },
+      {
+        "available": false,
+        "reason": "no value of 'away_team' reached the 40-row minimum needed for a statistically meaningful segment estimate across 814 evaluation rows",
+        "column": "away_team",
+        "min_n": 40,
+        "rows": [],
+        "significant": []
+      },
+      {
+        "available": false,
+        "reason": "no value of 'home_sp_name' reached the 40-row minimum needed for a statistically meaningful segment estimate across 814 evaluation rows",
+        "column": "home_sp_name",
+        "min_n": 40,
+        "rows": [],
+        "significant": []
+      },
+      {
+        "available": false,
+        "reason": "no value of 'away_sp_name' reached the 40-row minimum needed for a statistically meaningful segment estimate across 814 evaluation rows",
+        "column": "away_sp_name",
+        "min_n": 40,
+        "rows": [],
+        "significant": []
+      }
+    ],
+    "recommendation": {
+      "status": "Insufficient evidence",
+      "finding": "Insufficient evidence",
+      "recommendation": "Insufficient evidence",
+      "confidence": "Insufficient evidence",
+      "expected_gain": "Insufficient evidence",
+      "files": [
+        "pipeline/feature_store.py"
+      ],
+      "evidence": {
+        "reason": "home_team: no value of 'home_team' reached the 40-row minimum needed for a statistically meaningful segment estimate across 814 evaluation rows; away_team: no value of 'away_team' reached the 40-row minimum needed for a statistically meaningful segment estimate across 814 evaluation rows; home_sp_name: no value of 'home_sp_name' reached the 40-row minimum needed for a statistically meaningful segment estimate across 814 evaluation rows; away_sp_name: no value of 'away_sp_name' reached the 40-row minimum needed for a statistically meaningful segment estimate across 814 evaluation rows"
+      }
+    }
+  },
+  "clv": {
+    "summary": {
+      "n": 173,
+      "avg_clv": 1.657,
+      "beat_close_pct": 88.4,
+      "ml_avg_clv": 1.741,
+      "tot_avg_clv": 1.571
+    },
+    "recommendation": {
+      "status": "OK",
+      "finding": "CLV is recorded on 173 graded picks with average +1.657 and 88.4% beating the close (moneyline +1.741, totals +1.571).",
+      "recommendation": "The 88.4% beat-close rate over 173 picks sits 38.4 points above the 50% a price-neutral entry produces; its 95% Wilson interval 0.8282\u20130.9239 excludes 0.5, so entry timing is separable from a coin flip against the close on this sample.",
+      "confidence": "High",
+      "expected_gain": "High",
+      "files": [
+        "services/clv_service.py",
+        "poll_odds.py"
+      ],
+      "evidence": {
+        "n": 173,
+        "avg_clv": 1.657,
+        "beat_close_pct": 88.4,
+        "ml_avg_clv": 1.741,
+        "tot_avg_clv": 1.571
+      }
+    }
+  },
+  "root_causes": {
+    "causes": [
+      {
+        "id": "unstable_feature_importance",
+        "title": "Importance rankings do not reproduce across the 4 walk-forward folds: mean pairwise Spearman -0.0018 over 38 ranked features is -0.01 standard errors above zero (standard error 0.1644, one-sided p=0.5044), which does not reach alpha 0.05; least stable is home_fip at stability 0.0 with fold ranks [4, 1, 35, 34].",
+        "evidence": {
+          "mean_pairwise_spearman": -0.0018,
+          "spearman_standard_error": 0.1644,
+          "p_value": 0.504368,
+          "ranked_features": 38,
+          "least_stable": [
+            {
+              "feature": "home_fip",
+              "stability": 0.0,
+              "fold_ranks": [
+                4,
+                1,
+                35,
+                34
+              ]
+            },
+            {
+              "feature": "home_L10_ra",
+              "stability": 0.0779,
+              "fold_ranks": [
+                6,
+                3,
+                3,
+                38
+              ]
+            },
+            {
+              "feature": "away_bat_k_rate",
+              "stability": 0.078,
+              "fold_ranks": [
+                34,
+                35,
+                4,
+                6
+              ]
+            },
+            {
+              "feature": "home_bat_iso",
+              "stability": 0.1036,
+              "fold_ranks": [
+                2,
+                37,
+                2,
+                17
+              ]
+            },
+            {
+              "feature": "away_L10_wr",
+              "stability": 0.1206,
+              "fold_ranks": [
+                3,
+                6,
+                37,
+                26
+              ]
+            },
+            {
+              "feature": "away_xwoba_against",
+              "stability": 0.1857,
+              "fold_ranks": [
+                1,
+                7,
+                33,
+                2
+              ]
+            },
+            {
+              "feature": "away_bat_woba",
+              "stability": 0.2187,
+              "fold_ranks": [
+                38,
+                28,
+                6,
+                35
+              ]
+            },
+            {
+              "feature": "away_L10_rs",
+              "stability": 0.2453,
+              "fold_ranks": [
+                7,
+                11,
+                36,
+                7
+              ]
+            },
+            {
+              "feature": "away_L10_ra",
+              "stability": 0.261,
+              "fold_ranks": [
+                32,
+                4,
+                8,
+                3
+              ]
+            },
+            {
+              "feature": "home_k_rate",
+              "stability": 0.3015,
+              "fold_ranks": [
+                10,
+                8,
+                31,
+                1
+              ]
+            }
+          ]
+        },
+        "evidence_probability": 0.504368,
+        "confidence": "Low",
+        "gain_metric": "rate",
+        "estimated_gain_value": 0.6052631578947368,
+        "estimated_gain_score": 0.6053,
+        "estimated_gain_band": "Medium",
+        "effort_kloc": 0.356,
+        "effort_measured_lines": {
+          "pipeline/train_moneyline.py": 101,
+          "pipeline/train_common.py": 255
+        },
+        "expected_value_per_kloc": 0.8575,
+        "suggested_fix": "Fold-to-fold rank agreement of -0.0018 means the per-feature importances in this report describe the fold they were fitted on; only the 7 features at stability \u2265 0.7 carry an ordering that repeated across folds.",
+        "related_files": [
+          "pipeline/train_moneyline.py",
+          "pipeline/train_common.py"
+        ],
+        "remediation_class": "retrain"
+      },
+      {
+        "id": "insufficient_evaluation_power",
+        "title": "On 814 held-out rows the model's log-loss improvement over a base-rate constant predictor is +0.003436 with a bootstrap 95% interval of -0.008078\u2013+0.012980 over 400 resamples, an interval that contains zero (p=0.2530); no finding in this report that depends on that skill is separable from resampling noise at this sample size.",
+        "evidence": {
+          "log_loss_skill": 0.003436,
+          "bootstrap_standard_error": 0.005165,
+          "ci_lower": -0.008078,
+          "ci_upper": 0.01298,
+          "resamples": 400,
+          "z": 0.665,
+          "p_value": 0.252957,
+          "method": "non-parametric bootstrap over evaluation rows of the log-loss improvement over a base-rate constant predictor; the evaluation set is underpowered when this improvement is not separable from zero at the 95% level"
+        },
+        "evidence_probability": 0.252957,
+        "confidence": "Low",
+        "gain_metric": "rate",
+        "estimated_gain_value": 0.6605821030023018,
+        "estimated_gain_score": 0.6606,
+        "estimated_gain_band": "Medium",
+        "effort_kloc": 0.611,
+        "effort_measured_lines": {
+          "pipeline/build_features_v2.py": 410,
+          "pipeline/dataset_append.py": 201
+        },
+        "expected_value_per_kloc": 0.2735,
+        "suggested_fix": "The measured skill of +0.003436 would need to reach 0.010123 at the current bootstrap standard error of 0.005165 before it clears zero; that gap is a property of the 814-row evaluation set, not of any single component.",
+        "related_files": [
+          "pipeline/build_features_v2.py",
+          "pipeline/dataset_append.py"
+        ],
+        "remediation_class": "new_data_acquisition"
+      },
+      {
+        "id": "feature_set_quality",
+        "title": "3 of 38 features carry a non-KEEP engineering verdict: home_bat_woba=RE-ENCODE; is_coors=RE-ENCODE; park_factor=RE-ENCODE.",
+        "evidence": {
+          "features": [
+            {
+              "feature": "home_bat_woba",
+              "verdict": "RE-ENCODE",
+              "mean_rank": 26.67,
+              "stability": 0.4203,
+              "outcome_correlation": 0.0714,
+              "method_agreement": 0.864,
+              "lofo_log_loss_delta": -9.1e-05
+            },
+            {
+              "feature": "is_coors",
+              "verdict": "RE-ENCODE",
+              "mean_rank": 26.67,
+              "stability": 0.3949,
+              "outcome_correlation": -0.0713,
+              "method_agreement": 0.2661,
+              "lofo_log_loss_delta": -0.000485
+            },
+            {
+              "feature": "park_factor",
+              "verdict": "RE-ENCODE",
+              "mean_rank": 30.67,
+              "stability": 0.4722,
+              "outcome_correlation": -0.0668,
+              "method_agreement": 0.7226,
+              "lofo_log_loss_delta": -0.001284
+            }
+          ]
+        },
+        "evidence_probability": 0.617567,
+        "confidence": "Low",
+        "gain_metric": "rate",
+        "estimated_gain_value": 0.07894736842105263,
+        "estimated_gain_score": 0.0789,
+        "estimated_gain_band": "Low",
+        "effort_kloc": 0.952,
+        "effort_measured_lines": {
+          "pipeline/feature_store.py": 596,
+          "pipeline/train_common.py": 255,
+          "pipeline/train_moneyline.py": 101
+        },
+        "expected_value_per_kloc": 0.0512,
+        "suggested_fix": "home_bat_woba: point-biserial correlation with outcome +0.0714 exceeds 0.05 but mean_rank 26.67/38 sits below the median, so the raw encoding carries signal the model is not extracting (ablation delta -0.000091); is_coors: point-biserial correlation with outcome -0.0713 exceeds 0.05 but mean_rank 26.67/38 sits below the median, so the raw encoding carries signal the model is not extracting (ablation delta -0.000485); park_factor: point-biserial correlation with outcome -0.0668 exceeds 0.05 but mean_rank 30.67/38 sits below the median, so the raw encoding carries signal the model is not extracting (ablation delta -0.001284)",
+        "related_files": [
+          "pipeline/feature_store.py",
+          "pipeline/train_common.py",
+          "pipeline/train_moneyline.py"
+        ],
+        "remediation_class": "feature_engineering"
+      }
+    ],
+    "suppressed": [],
+    "recommendation": {
+      "status": "OK",
+      "finding": "3 evidence-backed root causes were derived from this run; the highest-ranked is Importance rankings do not reproduce across the 4 walk-forward folds: mean pairwise Spearman -0.0018 over 38 ranked features is -0.01 standard errors above zero (standard error 0.1644, one-sided p=0.5044), which does not reach alpha 0.05; least stable is home_fip at stability 0.0 with fold ranks [4, 1, 35, 34].",
+      "recommendation": "Fold-to-fold rank agreement of -0.0018 means the per-feature importances in this report describe the fold they were fitted on; only the 7 features at stability \u2265 0.7 carry an ordering that repeated across folds. (measured effect 0.605263 rate, 0.6053 of that metric's current value, evidence probability 0.504368, effort 0.356 kLOC)",
+      "confidence": "Low",
+      "expected_gain": "Medium",
+      "files": [
+        "pipeline/train_moneyline.py",
+        "pipeline/train_common.py"
+      ],
+      "evidence": {
+        "cause_ids": [
+          "unstable_feature_importance",
+          "insufficient_evaluation_power",
+          "feature_set_quality"
+        ]
+      }
+    }
+  },
+  "backlog": {
+    "items": [
+      {
+        "id": "root_cause::unstable_feature_importance",
+        "issue": "Importance rankings do not reproduce across the 4 walk-forward folds: mean pairwise Spearman -0.0018 over 38 ranked features is -0.01 standard errors above zero (standard error 0.1644, one-sided p=0.5044), which does not reach alpha 0.05; least stable is home_fip at stability 0.0 with fold ranks [4, 1, 35, 34].",
+        "evidence": "{\"mean_pairwise_spearman\": -0.0018, \"spearman_standard_error\": 0.1644, \"p_value\": 0.504368, \"ranked_features\": 38, \"least_stable\": [{\"feature\": \"home_fip\", \"stability\": 0.0, \"fold_ranks\": [4, 1, 35, 34]}, {\"feature\": \"home_L10_ra\", \"stability\": 0.0779, \"fold_ranks\": [6, 3, 3, 38]}, {\"feature\": \"away_bat_k_rate\", \"stability\": 0.078, \"fold_ranks\": [34, 35, 4, 6]}, {\"feature\": \"home_bat_iso\", \"stability\": 0.1036, \"fold_ranks\": [2, 37, 2, 17]}, {\"feature\": \"away_L10_wr\", \"stability\": 0.1206, \"fold_ranks\": [3, 6, 37, 26]}, {\"feature\": \"away_xwoba_against\", \"stability\": 0.1857, \"fold_ranks\": [1, 7, ",
+        "evidence_probability": 0.504368,
+        "gain_metric": "rate",
+        "estimated_gain_value": 0.6052631578947368,
+        "remediation_class": "retrain",
+        "affected_files": [
+          "pipeline/train_moneyline.py",
+          "pipeline/train_common.py"
+        ],
+        "confidence": "Low",
+        "estimated_gain_score": 0.6053,
+        "estimated_gain": "Medium",
+        "effort_kloc": 0.356,
+        "priority": 85.75,
+        "priority_formula": "priority = 100 * relative_impact * evidence_probability / effort_kloc, where relative_impact is this run's measured gain as a share of the affected metric's current value, evidence_probability is 1 - p of the test that produced the finding, and effort_kloc is the measured non-blank source lines of the files the fix touches",
+        "difficulty_basis": "356 non-blank source lines measured across 2 file(s): pipeline/train_moneyline.py (101 lines), pipeline/train_common.py (255 lines); ranked against this run's 18 backlog items, whose measured effort splits at 0.851 and 0.851 kLOC",
+        "status": "IN_PROGRESS",
+        "difficulty": "Low"
+      },
+      {
+        "id": "consistency::shadow_uses_registered_model_version",
+        "issue": "Self-consistency check 'shadow_uses_registered_model_version' failed",
+        "evidence": "shadow_v2_predictions holds 14 rows but has no model_version column, so shadow predictions cannot be attributed to a registered model version",
+        "evidence_probability": 1.0,
+        "gain_metric": "rate",
+        "estimated_gain_value": 1.0,
+        "remediation_class": "code_fix",
+        "affected_files": [
+          "pipeline/engineering_audit.py",
+          "services/shadow_inference_service.py",
+          "pipeline/model_registry.py"
+        ],
+        "confidence": "High",
+        "estimated_gain_score": 1.0,
+        "estimated_gain": "High",
+        "effort_kloc": 1.918,
+        "priority": 52.14,
+        "priority_formula": "priority = 100 * relative_impact * evidence_probability / effort_kloc, where relative_impact is this run's measured gain as a share of the affected metric's current value, evidence_probability is 1 - p of the test that produced the finding, and effort_kloc is the measured non-blank source lines of the files the fix touches",
+        "difficulty_basis": "1918 non-blank source lines measured across 3 file(s): pipeline/engineering_audit.py (1635 lines), services/shadow_inference_service.py (127 lines), pipeline/model_registry.py (156 lines); ranked against this run's 18 backlog items, whose measured effort splits at 0.851 and 0.851 kLOC",
+        "status": "IN_PROGRESS",
+        "difficulty": "High"
+      },
+      {
+        "id": "consistency::no_duplicated_metric_implementations",
+        "issue": "Self-consistency check 'no_duplicated_metric_implementations' failed",
+        "evidence": "reimplementations found outside pipeline/calibration_common.py: [{'file': 'projects/pitcher_props/services/pitcher_prop_analytics_service.py', 'function': 'brier_score'}, {'file': 'projects/pitcher_props/services/pitcher_prop_analytics_service.py', 'function': 'expected_calibration_error'}]",
+        "evidence_probability": 1.0,
+        "gain_metric": "rate",
+        "estimated_gain_value": 1.0,
+        "remediation_class": "code_fix",
+        "affected_files": [
+          "pipeline/engineering_audit.py",
+          "services/shadow_inference_service.py",
+          "pipeline/model_registry.py"
+        ],
+        "confidence": "High",
+        "estimated_gain_score": 1.0,
+        "estimated_gain": "High",
+        "effort_kloc": 1.918,
+        "priority": 52.14,
+        "priority_formula": "priority = 100 * relative_impact * evidence_probability / effort_kloc, where relative_impact is this run's measured gain as a share of the affected metric's current value, evidence_probability is 1 - p of the test that produced the finding, and effort_kloc is the measured non-blank source lines of the files the fix touches",
+        "difficulty_basis": "1918 non-blank source lines measured across 3 file(s): pipeline/engineering_audit.py (1635 lines), services/shadow_inference_service.py (127 lines), pipeline/model_registry.py (156 lines); ranked against this run's 18 backlog items, whose measured effort splits at 0.851 and 0.851 kLOC",
+        "status": "IN_PROGRESS",
+        "difficulty": "High"
+      },
+      {
+        "id": "root_cause::insufficient_evaluation_power",
+        "issue": "On 814 held-out rows the model's log-loss improvement over a base-rate constant predictor is +0.003436 with a bootstrap 95% interval of -0.008078\u2013+0.012980 over 400 resamples, an interval that contains zero (p=0.2530); no finding in this report that depends on that skill is separable from resampling noise at this sample size.",
+        "evidence": "{\"log_loss_skill\": 0.003436, \"bootstrap_standard_error\": 0.005165, \"ci_lower\": -0.008078, \"ci_upper\": 0.01298, \"resamples\": 400, \"z\": 0.665, \"p_value\": 0.252957, \"method\": \"non-parametric bootstrap over evaluation rows of the log-loss improvement over a base-rate constant predictor; the evaluation set is underpowered when this improvement is not separable from zero at the 95% level\"}",
+        "evidence_probability": 0.252957,
+        "gain_metric": "rate",
+        "estimated_gain_value": 0.6605821030023018,
+        "remediation_class": "new_data_acquisition",
+        "affected_files": [
+          "pipeline/build_features_v2.py",
+          "pipeline/dataset_append.py"
+        ],
+        "confidence": "Low",
+        "estimated_gain_score": 0.6606,
+        "estimated_gain": "Medium",
+        "effort_kloc": 0.611,
+        "priority": 27.35,
+        "priority_formula": "priority = 100 * relative_impact * evidence_probability / effort_kloc, where relative_impact is this run's measured gain as a share of the affected metric's current value, evidence_probability is 1 - p of the test that produced the finding, and effort_kloc is the measured non-blank source lines of the files the fix touches",
+        "difficulty_basis": "611 non-blank source lines measured across 2 file(s): pipeline/build_features_v2.py (410 lines), pipeline/dataset_append.py (201 lines); ranked against this run's 18 backlog items, whose measured effort splits at 0.851 and 0.851 kLOC",
+        "status": "BLOCKED",
+        "difficulty": "Low"
+      },
+      {
+        "id": "root_cause::feature_set_quality",
+        "issue": "3 of 38 features carry a non-KEEP engineering verdict: home_bat_woba=RE-ENCODE; is_coors=RE-ENCODE; park_factor=RE-ENCODE.",
+        "evidence": "{\"features\": [{\"feature\": \"home_bat_woba\", \"verdict\": \"RE-ENCODE\", \"mean_rank\": 26.67, \"stability\": 0.4203, \"outcome_correlation\": 0.0714, \"method_agreement\": 0.864, \"lofo_log_loss_delta\": -9.1e-05}, {\"feature\": \"is_coors\", \"verdict\": \"RE-ENCODE\", \"mean_rank\": 26.67, \"stability\": 0.3949, \"outcome_correlation\": -0.0713, \"method_agreement\": 0.2661, \"lofo_log_loss_delta\": -0.000485}, {\"feature\": \"park_factor\", \"verdict\": \"RE-ENCODE\", \"mean_rank\": 30.67, \"stability\": 0.4722, \"outcome_correlation\": -0.0668, \"method_agreement\": 0.7226, \"lofo_log_loss_delta\": -0.001284}]}",
+        "evidence_probability": 0.617567,
+        "gain_metric": "rate",
+        "estimated_gain_value": 0.07894736842105263,
+        "remediation_class": "feature_engineering",
+        "affected_files": [
+          "pipeline/feature_store.py",
+          "pipeline/train_common.py",
+          "pipeline/train_moneyline.py"
+        ],
+        "confidence": "Low",
+        "estimated_gain_score": 0.0789,
+        "estimated_gain": "Low",
+        "effort_kloc": 0.952,
+        "priority": 5.12,
+        "priority_formula": "priority = 100 * relative_impact * evidence_probability / effort_kloc, where relative_impact is this run's measured gain as a share of the affected metric's current value, evidence_probability is 1 - p of the test that produced the finding, and effort_kloc is the measured non-blank source lines of the files the fix touches",
+        "difficulty_basis": "952 non-blank source lines measured across 3 file(s): pipeline/feature_store.py (596 lines), pipeline/train_common.py (255 lines), pipeline/train_moneyline.py (101 lines); ranked against this run's 18 backlog items, whose measured effort splits at 0.851 and 0.851 kLOC",
+        "status": "IN_PROGRESS",
+        "difficulty": "High"
+      },
+      {
+        "id": "feature_verdict::park_factor",
+        "issue": "Feature 'park_factor' verdict RE-ENCODE",
+        "evidence": "point-biserial correlation with outcome -0.0668 exceeds 0.05 but mean_rank 30.67/38 sits below the median, so the raw encoding carries signal the model is not extracting (ablation delta -0.001284)",
+        "evidence_probability": 0.7226,
+        "gain_metric": "log_loss",
+        "estimated_gain_value": 0.001284,
+        "remediation_class": "feature_engineering",
+        "affected_files": [
+          "pipeline/feature_store.py",
+          "pipeline/train_common.py"
+        ],
+        "confidence": "Low",
+        "estimated_gain_score": 0.0019,
+        "estimated_gain": "Low",
+        "effort_kloc": 0.851,
+        "priority": 0.16,
+        "priority_formula": "priority = 100 * relative_impact * evidence_probability / effort_kloc, where relative_impact is this run's measured gain as a share of the affected metric's current value, evidence_probability is 1 - p of the test that produced the finding, and effort_kloc is the measured non-blank source lines of the files the fix touches",
+        "difficulty_basis": "851 non-blank source lines measured across 2 file(s): pipeline/feature_store.py (596 lines), pipeline/train_common.py (255 lines); ranked against this run's 18 backlog items, whose measured effort splits at 0.851 and 0.851 kLOC",
+        "status": "IN_PROGRESS",
+        "difficulty": "Low"
+      },
+      {
+        "id": "feature_verdict::home_is_lefty",
+        "issue": "Feature 'home_is_lefty' verdict INVESTIGATE",
+        "evidence": "rank stability 0.4155 < 0.5 across 4 walk-forward folds (fold ranks [21, 26, 11, 37]), mean_rank 30.67/38, agreement Low",
+        "evidence_probability": 0.4532,
+        "gain_metric": "log_loss",
+        "estimated_gain_value": 0.001337,
+        "remediation_class": "retrain",
+        "affected_files": [
+          "pipeline/feature_store.py",
+          "pipeline/train_common.py"
+        ],
+        "confidence": "Low",
+        "estimated_gain_score": 0.002,
+        "estimated_gain": "Low",
+        "effort_kloc": 0.851,
+        "priority": 0.1,
+        "priority_formula": "priority = 100 * relative_impact * evidence_probability / effort_kloc, where relative_impact is this run's measured gain as a share of the affected metric's current value, evidence_probability is 1 - p of the test that produced the finding, and effort_kloc is the measured non-blank source lines of the files the fix touches",
+        "difficulty_basis": "851 non-blank source lines measured across 2 file(s): pipeline/feature_store.py (596 lines), pipeline/train_common.py (255 lines); ranked against this run's 18 backlog items, whose measured effort splits at 0.851 and 0.851 kLOC",
+        "status": "IN_PROGRESS",
+        "difficulty": "Low"
+      },
+      {
+        "id": "feature_verdict::wind_mph",
+        "issue": "Feature 'wind_mph' verdict INVESTIGATE",
+        "evidence": "rank stability 0.3127 < 0.5 across 4 walk-forward folds (fold ranks [9, 16, 38, 15]), mean_rank 29.0/38, agreement Medium",
+        "evidence_probability": 0.714,
+        "gain_metric": "log_loss",
+        "estimated_gain_value": 0.000392,
+        "remediation_class": "retrain",
+        "affected_files": [
+          "pipeline/feature_store.py",
+          "pipeline/train_common.py"
+        ],
+        "confidence": "Low",
+        "estimated_gain_score": 0.0006,
+        "estimated_gain": "Low",
+        "effort_kloc": 0.851,
+        "priority": 0.05,
+        "priority_formula": "priority = 100 * relative_impact * evidence_probability / effort_kloc, where relative_impact is this run's measured gain as a share of the affected metric's current value, evidence_probability is 1 - p of the test that produced the finding, and effort_kloc is the measured non-blank source lines of the files the fix touches",
+        "difficulty_basis": "851 non-blank source lines measured across 2 file(s): pipeline/feature_store.py (596 lines), pipeline/train_common.py (255 lines); ranked against this run's 18 backlog items, whose measured effort splits at 0.851 and 0.851 kLOC",
+        "status": "IN_PROGRESS",
+        "difficulty": "Low"
+      },
+      {
+        "id": "feature_verdict::away_bb_rate",
+        "issue": "Feature 'away_bb_rate' verdict INVESTIGATE",
+        "evidence": "rank stability 0.4062 < 0.5 across 4 walk-forward folds (fold ranks [33, 38, 13, 24]), mean_rank 18.0/38, agreement Low",
+        "evidence_probability": 0.0575,
+        "gain_metric": "log_loss",
+        "estimated_gain_value": 0.00153,
+        "remediation_class": "retrain",
+        "affected_files": [
+          "pipeline/feature_store.py",
+          "pipeline/train_common.py"
+        ],
+        "confidence": "Low",
+        "estimated_gain_score": 0.0022,
+        "estimated_gain": "Low",
+        "effort_kloc": 0.851,
+        "priority": 0.02,
+        "priority_formula": "priority = 100 * relative_impact * evidence_probability / effort_kloc, where relative_impact is this run's measured gain as a share of the affected metric's current value, evidence_probability is 1 - p of the test that produced the finding, and effort_kloc is the measured non-blank source lines of the files the fix touches",
+        "difficulty_basis": "851 non-blank source lines measured across 2 file(s): pipeline/feature_store.py (596 lines), pipeline/train_common.py (255 lines); ranked against this run's 18 backlog items, whose measured effort splits at 0.851 and 0.851 kLOC",
+        "status": "IN_PROGRESS",
+        "difficulty": "Low"
+      },
+      {
+        "id": "feature_verdict::is_coors",
+        "issue": "Feature 'is_coors' verdict RE-ENCODE",
+        "evidence": "point-biserial correlation with outcome -0.0713 exceeds 0.05 but mean_rank 26.67/38 sits below the median, so the raw encoding carries signal the model is not extracting (ablation delta -0.000485)",
+        "evidence_probability": 0.2661,
+        "gain_metric": "log_loss",
+        "estimated_gain_value": 0.000485,
+        "remediation_class": "feature_engineering",
+        "affected_files": [
+          "pipeline/feature_store.py",
+          "pipeline/train_common.py"
+        ],
+        "confidence": "Low",
+        "estimated_gain_score": 0.0007,
+        "estimated_gain": "Low",
+        "effort_kloc": 0.851,
+        "priority": 0.02,
+        "priority_formula": "priority = 100 * relative_impact * evidence_probability / effort_kloc, where relative_impact is this run's measured gain as a share of the affected metric's current value, evidence_probability is 1 - p of the test that produced the finding, and effort_kloc is the measured non-blank source lines of the files the fix touches",
+        "difficulty_basis": "851 non-blank source lines measured across 2 file(s): pipeline/feature_store.py (596 lines), pipeline/train_common.py (255 lines); ranked against this run's 18 backlog items, whose measured effort splits at 0.851 and 0.851 kLOC",
+        "status": "IN_PROGRESS",
+        "difficulty": "Low"
+      },
+      {
+        "id": "feature_verdict::home_fb_velo",
+        "issue": "Feature 'home_fb_velo' verdict INVESTIGATE",
+        "evidence": "rank stability 0.3177 < 0.5 across 4 walk-forward folds (fold ranks [29, 9, 14, 36]), mean_rank 16.0/38, agreement Medium",
+        "evidence_probability": 0.6624,
+        "gain_metric": "log_loss",
+        "estimated_gain_value": 6.2e-05,
+        "remediation_class": "retrain",
+        "affected_files": [
+          "pipeline/feature_store.py",
+          "pipeline/train_common.py"
+        ],
+        "confidence": "Low",
+        "estimated_gain_score": 0.0001,
+        "estimated_gain": "Low",
+        "effort_kloc": 0.851,
+        "priority": 0.01,
+        "priority_formula": "priority = 100 * relative_impact * evidence_probability / effort_kloc, where relative_impact is this run's measured gain as a share of the affected metric's current value, evidence_probability is 1 - p of the test that produced the finding, and effort_kloc is the measured non-blank source lines of the files the fix touches",
+        "difficulty_basis": "851 non-blank source lines measured across 2 file(s): pipeline/feature_store.py (596 lines), pipeline/train_common.py (255 lines); ranked against this run's 18 backlog items, whose measured effort splits at 0.851 and 0.851 kLOC",
+        "status": "IN_PROGRESS",
+        "difficulty": "Low"
+      },
+      {
+        "id": "feature_verdict::home_bat_woba",
+        "issue": "Feature 'home_bat_woba' verdict RE-ENCODE",
+        "evidence": "point-biserial correlation with outcome +0.0714 exceeds 0.05 but mean_rank 26.67/38 sits below the median, so the raw encoding carries signal the model is not extracting (ablation delta -0.000091)",
+        "evidence_probability": 0.864,
+        "gain_metric": "log_loss",
+        "estimated_gain_value": 9.1e-05,
+        "remediation_class": "feature_engineering",
+        "affected_files": [
+          "pipeline/feature_store.py",
+          "pipeline/train_common.py"
+        ],
+        "confidence": "Low",
+        "estimated_gain_score": 0.0001,
+        "estimated_gain": "Low",
+        "effort_kloc": 0.851,
+        "priority": 0.01,
+        "priority_formula": "priority = 100 * relative_impact * evidence_probability / effort_kloc, where relative_impact is this run's measured gain as a share of the affected metric's current value, evidence_probability is 1 - p of the test that produced the finding, and effort_kloc is the measured non-blank source lines of the files the fix touches",
+        "difficulty_basis": "851 non-blank source lines measured across 2 file(s): pipeline/feature_store.py (596 lines), pipeline/train_common.py (255 lines); ranked against this run's 18 backlog items, whose measured effort splits at 0.851 and 0.851 kLOC",
+        "status": "IN_PROGRESS",
+        "difficulty": "Low"
+      },
+      {
+        "id": "feature_verdict::home_hard_hit_pct",
+        "issue": "Feature 'home_hard_hit_pct' verdict INVESTIGATE",
+        "evidence": "rank stability 0.4246 < 0.5 across 4 walk-forward folds (fold ranks [15, 33, 29, 11]), mean_rank 28.67/38, agreement Low",
+        "evidence_probability": 0.5943,
+        "gain_metric": "log_loss",
+        "estimated_gain_value": 0.000136,
+        "remediation_class": "retrain",
+        "affected_files": [
+          "pipeline/feature_store.py",
+          "pipeline/train_common.py"
+        ],
+        "confidence": "Low",
+        "estimated_gain_score": 0.0002,
+        "estimated_gain": "Low",
+        "effort_kloc": 0.851,
+        "priority": 0.01,
+        "priority_formula": "priority = 100 * relative_impact * evidence_probability / effort_kloc, where relative_impact is this run's measured gain as a share of the affected metric's current value, evidence_probability is 1 - p of the test that produced the finding, and effort_kloc is the measured non-blank source lines of the files the fix touches",
+        "difficulty_basis": "851 non-blank source lines measured across 2 file(s): pipeline/feature_store.py (596 lines), pipeline/train_common.py (255 lines); ranked against this run's 18 backlog items, whose measured effort splits at 0.851 and 0.851 kLOC",
+        "status": "IN_PROGRESS",
+        "difficulty": "Low"
+      },
+      {
+        "id": "feature_verdict::home_fip",
+        "issue": "Feature 'home_fip' verdict INVESTIGATE",
+        "evidence": "rank stability 0.0 < 0.5 across 4 walk-forward folds (fold ranks [4, 1, 35, 34]), mean_rank 11.0/38, agreement Low",
+        "evidence_probability": 0.3446,
+        "gain_metric": "log_loss",
+        "estimated_gain_value": 7e-06,
+        "remediation_class": "retrain",
+        "affected_files": [
+          "pipeline/feature_store.py",
+          "pipeline/train_common.py"
+        ],
+        "confidence": "Low",
+        "estimated_gain_score": 0.0,
+        "estimated_gain": "Low",
+        "effort_kloc": 0.851,
+        "priority": 0.0,
+        "priority_formula": "priority = 100 * relative_impact * evidence_probability / effort_kloc, where relative_impact is this run's measured gain as a share of the affected metric's current value, evidence_probability is 1 - p of the test that produced the finding, and effort_kloc is the measured non-blank source lines of the files the fix touches",
+        "difficulty_basis": "851 non-blank source lines measured across 2 file(s): pipeline/feature_store.py (596 lines), pipeline/train_common.py (255 lines); ranked against this run's 18 backlog items, whose measured effort splits at 0.851 and 0.851 kLOC",
+        "status": "IN_PROGRESS",
+        "difficulty": "Low"
+      },
+      {
+        "id": "feature_verdict::away_bat_woba",
+        "issue": "Feature 'away_bat_woba' verdict INVESTIGATE",
+        "evidence": "rank stability 0.2187 < 0.5 across 4 walk-forward folds (fold ranks [38, 28, 6, 35]), mean_rank 22.33/38, agreement Low",
+        "evidence_probability": 0.1047,
+        "gain_metric": "log_loss",
+        "estimated_gain_value": 2.6e-05,
+        "remediation_class": "retrain",
+        "affected_files": [
+          "pipeline/feature_store.py",
+          "pipeline/train_common.py"
+        ],
+        "confidence": "Low",
+        "estimated_gain_score": 0.0,
+        "estimated_gain": "Low",
+        "effort_kloc": 0.851,
+        "priority": 0.0,
+        "priority_formula": "priority = 100 * relative_impact * evidence_probability / effort_kloc, where relative_impact is this run's measured gain as a share of the affected metric's current value, evidence_probability is 1 - p of the test that produced the finding, and effort_kloc is the measured non-blank source lines of the files the fix touches",
+        "difficulty_basis": "851 non-blank source lines measured across 2 file(s): pipeline/feature_store.py (596 lines), pipeline/train_common.py (255 lines); ranked against this run's 18 backlog items, whose measured effort splits at 0.851 and 0.851 kLOC",
+        "status": "IN_PROGRESS",
+        "difficulty": "Low"
+      },
+      {
+        "id": "calibration::0.40-0.50",
+        "issue": "Calibration bucket 0.40-0.50 miscalibrated",
+        "evidence": "Refit the probability calibrator with additional resolution in 0.40-0.50: predicted 0.4492 versus actual 0.4801 over n=427 (Wilson 95% CI 0.4331\u20130.5274, predicted rate stays inside the CI)",
+        "evidence_probability": 0.0,
+        "gain_metric": "ece",
+        "estimated_gain_value": 0.016209,
+        "remediation_class": "retrain",
+        "affected_files": [
+          "pipeline/calibration_common.py",
+          "pipeline/train_moneyline.py"
+        ],
+        "confidence": "Low",
+        "estimated_gain_score": 0.5714,
+        "estimated_gain": "Medium",
+        "effort_kloc": 0.221,
+        "priority": 0.0,
+        "priority_formula": "priority = 100 * relative_impact * evidence_probability / effort_kloc, where relative_impact is this run's measured gain as a share of the affected metric's current value, evidence_probability is 1 - p of the test that produced the finding, and effort_kloc is the measured non-blank source lines of the files the fix touches",
+        "difficulty_basis": "221 non-blank source lines measured across 2 file(s): pipeline/calibration_common.py (120 lines), pipeline/train_moneyline.py (101 lines); ranked against this run's 18 backlog items, whose measured effort splits at 0.851 and 0.851 kLOC",
+        "status": "IN_PROGRESS",
+        "difficulty": "Low"
+      },
+      {
+        "id": "calibration::0.50-0.70",
+        "issue": "Calibration bucket 0.50-0.70 miscalibrated",
+        "evidence": "Refit the probability calibrator with additional resolution in 0.50-0.70: predicted 0.5378 versus actual 0.4909 over n=165 (Wilson 95% CI 0.4157\u20130.5665, predicted rate stays inside the CI)",
+        "evidence_probability": 0.0,
+        "gain_metric": "ece",
+        "estimated_gain_value": 0.009507,
+        "remediation_class": "retrain",
+        "affected_files": [
+          "pipeline/calibration_common.py",
+          "pipeline/train_moneyline.py"
+        ],
+        "confidence": "Low",
+        "estimated_gain_score": 0.3352,
+        "estimated_gain": "Medium",
+        "effort_kloc": 0.221,
+        "priority": 0.0,
+        "priority_formula": "priority = 100 * relative_impact * evidence_probability / effort_kloc, where relative_impact is this run's measured gain as a share of the affected metric's current value, evidence_probability is 1 - p of the test that produced the finding, and effort_kloc is the measured non-blank source lines of the files the fix touches",
+        "difficulty_basis": "221 non-blank source lines measured across 2 file(s): pipeline/calibration_common.py (120 lines), pipeline/train_moneyline.py (101 lines); ranked against this run's 18 backlog items, whose measured effort splits at 0.851 and 0.851 kLOC",
+        "status": "IN_PROGRESS",
+        "difficulty": "Low"
+      },
+      {
+        "id": "calibration::0.20-0.40",
+        "issue": "Calibration bucket 0.20-0.40 miscalibrated",
+        "evidence": "Refit the probability calibrator with additional resolution in 0.20-0.40: predicted 0.3551 versus actual 0.3649 over n=222 (Wilson 95% CI 0.3043\u20130.4300, predicted rate stays inside the CI)",
+        "evidence_probability": 0.0,
+        "gain_metric": "ece",
+        "estimated_gain_value": 0.002673,
+        "remediation_class": "retrain",
+        "affected_files": [
+          "pipeline/calibration_common.py",
+          "pipeline/train_moneyline.py"
+        ],
+        "confidence": "Low",
+        "estimated_gain_score": 0.0942,
+        "estimated_gain": "Low",
+        "effort_kloc": 0.221,
+        "priority": 0.0,
+        "priority_formula": "priority = 100 * relative_impact * evidence_probability / effort_kloc, where relative_impact is this run's measured gain as a share of the affected metric's current value, evidence_probability is 1 - p of the test that produced the finding, and effort_kloc is the measured non-blank source lines of the files the fix touches",
+        "difficulty_basis": "221 non-blank source lines measured across 2 file(s): pipeline/calibration_common.py (120 lines), pipeline/train_moneyline.py (101 lines); ranked against this run's 18 backlog items, whose measured effort splits at 0.851 and 0.851 kLOC",
+        "status": "IN_PROGRESS",
+        "difficulty": "Low"
+      }
+    ],
+    "suppressed": [],
+    "recommendation": {
+      "status": "OK",
+      "finding": "18 evidence-backed backlog items were aggregated from 2 consistency failures, 3 root causes, 10 feature verdicts and 3 calibration fixes; 1 are BLOCKED, 17 recur from a prior run and 0 were suppressed as already resolved.",
+      "recommendation": "Start with 'Importance rankings do not reproduce across the 4 walk-forward folds: mean pairwise Spearman -0.0018 over 38 ranked features is -0.01 standard errors above zero (standard error 0.1644, one-sided p=0.5044), which does not reach alpha 0.05; least stable is home_fip at stability 0.0 with fold ranks [4, 1, 35, 34].' (priority 85.75, relative impact 0.6053 of the affected metric, evidence probability 0.504368, effort 0.356 kLOC, files pipeline/train_moneyline.py, pipeline/train_common.py).",
+      "confidence": "Low",
+      "expected_gain": "Medium",
+      "files": [
+        "pipeline/train_moneyline.py",
+        "pipeline/train_common.py"
+      ],
+      "evidence": {
+        "items": 18,
+        "top_priority": 85.75,
+        "suppressed": 0
+      }
+    },
+    "priority_definition": "expected value per unit of implementation effort: 100 * relative_impact * evidence_probability / effort_kloc"
+  },
+  "health": {
+    "score": 47.5,
+    "formula": "health = 100 * (0.2*clamp01((auc - 0.5) / 0.10) + 0.15*clamp01((base_rate_brier - brier) / (0.05 * base_rate_brier)) + 0.2*clamp01(1 - ece/0.10) + 0.05*clamp01((avg_clv + 2.0) / 4.0) + 0.05*clamp01(1 - degraded_feature_rate over schema-applicable features only) + 0.1*clamp01(mean per-feature walk-forward rank stability) + 0.2*clamp01((base_rate_log_loss - log_loss) / (0.05 * base_rate_log_loss)) + 0.05*clamp01(std(predicted_probability) / 0.10))",
+    "components": {
+      "calibration_ece": {
+        "raw_weight": 0.2,
+        "normalized_weight": 0.2,
+        "component_score": 0.7163,
+        "scale": "1 - ece/0.10",
+        "points": 14.33
+      },
+      "log_loss_skill": {
+        "raw_weight": 0.2,
+        "normalized_weight": 0.2,
+        "component_score": 0.0998,
+        "scale": "(base_rate_log_loss - log_loss) / (0.05 * base_rate_log_loss)",
+        "points": 2.0
+      },
+      "brier_skill": {
+        "raw_weight": 0.15,
+        "normalized_weight": 0.15,
+        "component_score": 0.1394,
+        "scale": "(base_rate_brier - brier) / (0.05 * base_rate_brier)",
+        "points": 2.09
+      },
+      "auc": {
+        "raw_weight": 0.2,
+        "normalized_weight": 0.2,
+        "component_score": 0.5766,
+        "scale": "(auc - 0.5) / 0.10",
+        "points": 11.53
+      },
+      "feature_stability": {
+        "raw_weight": 0.1,
+        "normalized_weight": 0.1,
+        "component_score": 0.4535,
+        "scale": "mean per-feature walk-forward rank stability",
+        "points": 4.53
+      },
+      "prediction_variance": {
+        "raw_weight": 0.05,
+        "normalized_weight": 0.05,
+        "component_score": 0.6983,
+        "scale": "std(predicted_probability) / 0.10",
+        "points": 3.49
+      },
+      "data_quality": {
+        "raw_weight": 0.05,
+        "normalized_weight": 0.05,
+        "component_score": 1.0,
+        "scale": "1 - degraded_feature_rate over schema-applicable features only",
+        "points": 5.0
+      },
+      "clv": {
+        "raw_weight": 0.05,
+        "normalized_weight": 0.05,
+        "component_score": 0.9143,
+        "scale": "(avg_clv + 2.0) / 4.0",
+        "points": 4.57
+      }
+    },
+    "excluded": {
+      "roi": "the registry champion has no graded production picks of its own; live ROI belongs to the hand-tuned production formula, not this model, so including it would misattribute results",
+      "concept_drift": "no drift-detection module exists in this codebase (services/model_lab.py exposes feature_drift_available=False and nothing computes a drift statistic), and building one is out of scope for this audit"
+    },
+    "reference_values": {
+      "base_rate": 0.4509,
+      "base_rate_log_loss": 0.68831,
+      "base_rate_brier": 0.247585
+    },
+    "recommendation": {
+      "status": "OK",
+      "finding": "Model health scores 47.5/100 from 8 measured components calibration_ece=0.7163 (14.33 pts), auc=0.5766 (11.53 pts), data_quality=1.0 (5.0 pts), clv=0.9143 (4.57 pts), feature_stability=0.4535 (4.53 pts), prediction_variance=0.6983 (3.49 pts), brier_skill=0.1394 (2.09 pts), log_loss_skill=0.0998 (2.0 pts); 2 component(s) excluded (concept_drift, roi).",
+      "recommendation": "Attack the lowest-scoring component first: log_loss_skill at 0.0998 on scale '(base_rate_log_loss - log_loss) / (0.05 * base_rate_log_loss)'.",
+      "confidence": "High",
+      "expected_gain": "Medium",
+      "files": [
+        "pipeline/engineering_audit.py",
+        "pipeline/train_moneyline.py",
+        "pipeline/feature_store.py"
+      ],
+      "evidence": {
+        "score": 47.5,
+        "components_included": [
+          "auc",
+          "brier_skill",
+          "calibration_ece",
+          "clv",
+          "data_quality",
+          "feature_stability",
+          "log_loss_skill",
+          "prediction_variance"
+        ],
+        "components_excluded": [
+          "concept_drift",
+          "roi"
+        ]
+      }
+    }
+  },
+  "impact_scales": {
+    "ece": 0.028365122191063477,
+    "log_loss": 0.6848741020552248,
+    "auc": 0.05765655383452506,
+    "rate": 1.0,
+    "base_rate": 0.45085995085995084
+  },
+  "threshold_provenance": {
+    "ALPHA": "two-sided significance level 0.05, the conventional statistical standard used for every hypothesis test in this module",
+    "STRONG_ALPHA": "0.01, used only to separate a High from a Medium confidence label once a p-value already exists",
+    "WILSON_Z_95": "normal quantile for a two-sided 95% interval, imported from pipeline/calibration_common.py",
+    "MIN_SEGMENT_N": "minimum rows before a segment estimate is reported at all; significance itself is decided by the Wilson interval, not by this floor",
+    "MIN_CLV_N": "minimum graded picks before a CLV proportion test is attempted; significance itself is decided by the Wilson interval",
+    "REDUNDANCY_THRESHOLD": "inherited from pipeline/train_common.feature_redundancy_report; a pair is only reported when the Fisher-z 95% interval for |r| also excludes this value",
+    "MIN_ROWS_FOR_VERDICT": "evidence floor for per-feature verdicts; below it every feature resolves to NOT ENOUGH DATA rather than a guess",
+    "MIN_FOLDS_FOR_STABILITY": "minimum walk-forward folds before a rank-stability statistic is defined"
+  }
+}

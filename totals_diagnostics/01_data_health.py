@@ -33,6 +33,28 @@ plt.rcParams.update(
 PALETTE = {"OVER": "#f85149", "UNDER": "#3fb950", "neutral": "#58a6ff", "warn": "#d29922"}
 
 
+def _is_snapshot_metadata(col):
+    """Return True for persisted audit/provenance fields, not model inputs."""
+    name = col.removeprefix("snap_")
+    exact = {
+        "schema_version",
+        "model_version",
+        "snapshot_created_at",
+        "recommendation_tier",
+        "weather_error",
+        "weather_source",
+        "fip_formula_version",
+        "totals_input_version",
+    }
+    tokens = ("_fetch_status", "_data_source", "_source", "_role", "_available")
+    return name in exact or name.startswith("qualification_checklist_") or name.endswith(tokens)
+
+
+def _is_rate_feature(col):
+    name = col.lower()
+    return name.endswith(("_pct", "_rate", "_prob")) or "percentage" in name
+
+
 def section_header(title):
     print("\n" + "═" * 70)
     print(f"  {title}")
@@ -60,11 +82,12 @@ def _section1_body():
     print(f"  Total columns:                {len(df.columns)}")
 
     snap_cols = [c for c in snp.columns if c.startswith("snap_")]
+    feature_cols = [c for c in snap_cols if not _is_snapshot_metadata(c)]
     print(f"  Snapshot-derived features:    {len(snap_cols)}")
 
     section_header("1B — CONSTANT & NEAR-CONSTANT FEATURES")
     issues = []
-    for col in snap_cols:
+    for col in feature_cols:
         s = snp[col].dropna()
         if len(s) < 3:
             continue
@@ -73,9 +96,17 @@ def _section1_body():
         cv = s.std() / (abs(s.mean()) + 1e-9)
         unique_ratio = s.nunique() / len(s)
         if s.nunique() == 1:
-            flag(f"CONSTANT: {col} = {s.iloc[0]:.4f} (all {len(s)} rows identical)", "CRIT")
+            if col == "snap_context_travel_timezone_adv":
+                flag(
+                    f"HISTORICAL PIPELINE FAILURE: {col} = {s.iloc[0]:.4f} in all {len(s)} rows; "
+                    "stored advanced travel payloads report unavailable venue coordinates. "
+                    "The venue request now hydrates location and timezone; existing snapshots remain immutable.",
+                    "WARN",
+                )
+            else:
+                flag(f"CONSTANT: {col} = {s.iloc[0]:.4f} (all {len(s)} rows identical)", "CRIT")
             issues.append((col, "CONSTANT", s.iloc[0], len(s)))
-        elif cv < 0.01:
+        elif cv < 0.01 and not _is_rate_feature(col):
             flag(f"NEAR-CONSTANT: {col}  CV={cv:.4f}  unique={s.nunique()}", "WARN")
             issues.append((col, "NEAR-CONSTANT", s.mean(), len(s)))
         elif unique_ratio < 0.05:
@@ -106,7 +137,10 @@ def _section1_body():
         )
 
     cataloged_cols = {f"snap_{k}" for k in FEATURE_CATALOG}
-    uncataloged = [c for c in snap_cols if c not in cataloged_cols]
+    uncataloged = [
+        c for c in feature_cols
+        if c not in cataloged_cols
+    ]
     miss_uncat = (
         (snp[uncataloged].isna().mean() * 100).sort_values(ascending=False)
         if uncataloged
@@ -114,10 +148,58 @@ def _section1_body():
     )
     high_miss_uncat = miss_uncat[miss_uncat > 20]
     if len(high_miss_uncat):
+        from feature_catalog import _PROVENANCE
+
+        cohorts = _PROVENANCE.snapshot_cohorts(all_records)
+        skip_index = _PROVENANCE.context_skip_index()
+        flat_to_dotted = {}
+        for signature in cohorts:
+            for dotted in signature:
+                flat_to_dotted.setdefault(dotted.replace(".", "_"), dotted)
         for col, pct in high_miss_uncat.items():
+            flat_name = col[len("snap_"):] if col.startswith("snap_") else col
+            snapshot_key = flat_to_dotted.get(flat_name, flat_name)
+            buckets = {}
+            not_applicable = 0
+            scored = 0
+            for record in all_records:
+                # Missing snapshots are a dataset-level coverage issue reported
+                # in 1A, not one failure repeated for every individual field.
+                if not record.get("has_snapshot"):
+                    continue
+                cursor = record.get("snap") or {}
+                flat_name = col.removeprefix("snap_")
+                if flat_name in {
+                    "home_starter_usage_avg_pitches",
+                    "away_starter_usage_avg_pitches",
+                }:
+                    side = flat_name.split("_", 1)[0]
+                    usage = cursor.get(f"{side}_starter_usage", {})
+                    if usage.get("available") is False:
+                        not_applicable += 1
+                        continue
+                for part in snapshot_key.split("."):
+                    cursor = cursor.get(part) if isinstance(cursor, dict) else None
+                provenance = _PROVENANCE.reconstruct_snapshot_provenance(
+                    record, col, snapshot_key, cursor, cohorts, skip_index=skip_index
+                )
+                if provenance.applicability == _PROVENANCE.APPLICABILITY_NOT_APPLICABLE:
+                    not_applicable += 1
+                    continue
+                scored += 1
+                if provenance.snapshot_status == _PROVENANCE.SNAPSHOT_PRESENT:
+                    continue
+                buckets[provenance.snapshot_status] = buckets.get(provenance.snapshot_status, 0) + 1
+            missing_scored = sum(buckets.values())
+            adjusted = round(missing_scored / scored * 100, 0) if scored else 0.0
+            summary = ", ".join(f"{count} {status}" for status, count in sorted(buckets.items()))
+            if scored == 0 or missing_scored == 0:
+                continue
             flag(
-                f"{pct:.0f}% missing: {col} — reason: Unknown (not yet root-caused)",
-                "WARN" if pct < 50 else "CRIT",
+                f"{pct:.0f}% raw / {adjusted:.0f}% schema-aware missing: {col} — "
+                f"{not_applicable} rows not applicable (key never emitted by that writer cohort)"
+                f"{'; ' + summary if summary else '; no remaining rows are missing this column'}",
+                "WARN" if adjusted < 50 else "CRIT",
             )
 
     miss = (snp[snap_cols].isna().mean() * 100).sort_values(ascending=False)

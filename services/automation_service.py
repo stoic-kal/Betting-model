@@ -13,10 +13,12 @@ CLV_WINDOW_MINUTES = 20
 
 def _claim(key, retry_after_seconds):
     now = datetime.now(timezone.utc)
-    conn = sqlite3.connect(DB_PATH)
+    conn = sqlite3.connect(DB_PATH, timeout=30)
     conn.execute("""CREATE TABLE IF NOT EXISTS automation_state (
         task_key TEXT PRIMARY KEY, claimed_at TEXT NOT NULL, completed_at TEXT,
         status TEXT NOT NULL, detail TEXT)""")
+    conn.commit()
+    conn.execute("BEGIN IMMEDIATE")
     row = conn.execute(
         "SELECT claimed_at,status FROM automation_state WHERE task_key=?", (key,)
     ).fetchone()
@@ -26,6 +28,7 @@ def _claim(key, retry_after_seconds):
         except ValueError:
             age = 0
         if row[1] == "complete" or age < retry_after_seconds:
+            conn.rollback()
             conn.close()
             return False
         conn.execute(

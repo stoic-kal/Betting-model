@@ -136,7 +136,7 @@ def game_detail(slug):
             pick["recommendation_tier"] = (
                 pick.get("recommendation_tier")
                 or saved_snapshot.get("recommendation_tier")
-                or "legacy_unclassified"
+                or "historical_only"
             )
             pick["qualification_checklist"] = saved_snapshot.get("qualification_checklist", {})
     except Exception:

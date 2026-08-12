@@ -1,0 +1,37 @@
+{
+  "protocol": "meta train on prior OOF blocks; test on next OOF block",
+  "meta_test_folds": [
+    2,
+    3,
+    4
+  ],
+  "promotion_gate": "mean Log Loss/Brier/ECE improve; Log Loss and Brier improve 3/3 folds; ECE improves >=2/3",
+  "best_method": {
+    "method": "market_blend",
+    "mean_log_loss": 0.6926500248217785,
+    "std_log_loss": 0.0005954845367227737,
+    "mean_brier": 0.24975101981713563,
+    "std_brier": 0.0002969580120444727,
+    "mean_ece": 0.018533067424920474,
+    "std_ece": 0.008808036609240177,
+    "folds_better_log_loss": 1.0,
+    "folds_better_brier": 1.0,
+    "folds_better_ece": 1.0,
+    "promotion_gate": false
+  },
+  "promotable_methods": [],
+  "market_blend_weights": [
+    {
+      "test_fold": 2,
+      "alpha": 0.54
+    },
+    {
+      "test_fold": 3,
+      "alpha": 0.27
+    },
+    {
+      "test_fold": 4,
+      "alpha": 0.53
+    }
+  ]
+}

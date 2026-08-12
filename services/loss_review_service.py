@@ -82,6 +82,8 @@ def _groups(rows, key):
 
 
 def get_loss_review(version="v3", date_str=None):
+    from services.model_learning_service import record_loss_review_lesson
+
     rows = [
         r
         for r in get_record_tracker(version)["rows"]
@@ -106,6 +108,9 @@ def get_loss_review(version="v3", date_str=None):
             and r.get("away_lineup_confirmed")
             and r.get("clv") is not None
             else "incomplete"
+        )
+        item["learning_record"] = record_loss_review_lesson(
+            r["id"], r["type"], item["reason_codes"], quality_score=None,
         )
         detailed.append(item)
 
@@ -145,7 +150,7 @@ def get_loss_review(version="v3", date_str=None):
     ul = sum(r["type"] == "totals" and str(r["pick"]).upper().startswith("UNDER") for r in losses)
     if hev:
         warnings.append(
-            f"{hev} loss(es) carried projected EV of 15% or more; confidence calibration needs monitoring."
+            f"{hev} of {len(losses)} loss(es) carried a projected EV of 15% or more at pick time."
         )
     if ul >= 3:
         warnings.append(
@@ -153,7 +158,8 @@ def get_loss_review(version="v3", date_str=None):
         )
     if incomplete:
         warnings.append(
-            f"{incomplete} loss(es) had incomplete lineup or closing-price data and should not drive weight changes."
+            f"{incomplete} of {len(losses)} loss(es) are missing lineup or closing-price data, so their feature "
+            f"snapshots are incomplete."
         )
     return {
 "filters": {"version": version, "date": date_str},
@@ -180,7 +186,10 @@ def get_loss_review(version="v3", date_str=None):
 "clv_buckets": _groups(rows, cb),
 "daily": daily,
 "total_errors": errors,
-"methodology": "Deterministic diagnostic tags; no automatic live-model weight changes.",
+"methodology": (
+            "Deterministic diagnostic tags are persisted as audit metadata. Eligible official outcomes "
+            "enter chronological model training or holdout, but postgame reason codes never become live inputs."
+        ),
     }
 
 
@@ -519,9 +528,10 @@ def _root_causes_totals(row, snap, quality):
 "confidence": "Medium" if small_miss else "Low",
 "evidence": f"Total missed by {error:+.1f} run(s)."
                 + (
-" A sub-1-run miss is within typical game-to-game scoring variance."
+f" That is within 1.0 run of the projection, the smallest error band this debrief distinguishes."
                     if small_miss
-                    else " A miss this size is larger than typical single-game noise, so other causes above are more likely primary."
+                    else f" That is {abs(error) - 1.0:+.1f} run(s) beyond the 1.0-run band; no error distribution "
+                    f"is computed here, so the size cannot be ranked against other games."
                 ),
             }
         )
@@ -574,9 +584,10 @@ def _root_causes_moneyline(row, snap, quality):
 "confidence": "Medium" if close else "Low",
 "evidence": f"Final margin was {margin} run(s)."
                 + (
-" A one-run margin is consistent with normal game variance."
+" That is the narrowest margin a baseball game can end on."
                     if close
-                    else " A multi-run margin suggests the miss is less likely to be pure variance."
+                    else f" That is {margin - 1} run(s) wider than a one-run game; no margin distribution is "
+                    f"computed here, so the size cannot be ranked against other games."
                 ),
             }
         )
@@ -855,7 +866,8 @@ def _suggested_action(quality, root_causes, learning):
             return {
 "action": "Consider changing a feature",
 "why": learning["pattern_check"]["verdict"]
-                + " Sample size is large enough (n>=30) to warrant a targeted change, not just monitoring.",
+                + f" Bucket sample size n={learning['pattern_check']['bucket_sample_n']} clears the 30-pick minimum, "
+                f"so a targeted change is warranted rather than monitoring.",
             }
         return {
 "action": "Run an experiment",
@@ -882,7 +894,13 @@ def _suggested_action(quality, root_causes, learning):
         }
     return {
 "action": "Monitor",
-"why": "No single high-confidence cause or established pattern was found; keep tracking this bucket/reason code going forward.",
+"why": (
+            f"No high-confidence cause emerged from {len(root_causes)} candidate cause(s) and bucket "
+            f"{learning['pattern_check']['probability_bucket']} shows n="
+            f"{learning['pattern_check']['bucket_sample_n']} at "
+            f"{learning['pattern_check']['bucket_win_rate']}% win rate, which does not establish a pattern; "
+            f"keep tracking this bucket going forward."
+        ),
     }
 
 
@@ -932,6 +950,10 @@ def get_loss_debrief(pick_id):
     )
     reason_codes = [t[0] for t in tags]
 
+    from services.model_learning_service import record_loss_review_lesson
+    learning_record = record_loss_review_lesson(
+        int(pick_id), pick_type, reason_codes, quality_score=quality.get("score")
+    )
     learning = _model_learning(row, pick_type, reason_codes)
     action = _suggested_action(quality, causes, learning)
 
@@ -954,6 +976,7 @@ def get_loss_debrief(pick_id):
 "counterfactual_analysis": counterfactuals,
 "feature_review": features,
 "model_learning": learning,
+"loss_review_learning_record": learning_record,
 "suggested_action": action,
 "diagnostic_tags": [t[1] for t in tags],
 "disclaimer": (

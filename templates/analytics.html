@@ -311,6 +311,48 @@
     <div class="sec">METRIC LEADERS</div>
     <div class="card" id="lab-winners"></div>
 
+    <div class="sep"></div>
+
+    <!-- Model candidates -->
+    <div class="sec">MODEL CANDIDATES — PRODUCTION, SHADOW, REGISTRY</div>
+    <div class="card" style="padding:14px">
+      <div style="font-size:11px;color:var(--text-muted);margin-bottom:10px">
+        Click a row to drill down. Select two rows to compare directly.
+      </div>
+      <div class="lab-wrap">
+        <table class="lab-t" id="cand-table">
+          <thead>
+            <tr>
+              <th style="text-align:left">Cmp</th>
+              <th style="text-align:left">Model</th>
+              <th style="text-align:left">Family</th>
+              <th style="text-align:left">Status</th>
+              <th>AUC</th>
+              <th>LogLoss</th>
+              <th>Brier</th>
+              <th>ECE</th>
+              <th>WF Score</th>
+              <th>N</th>
+              <th style="text-align:left">Trained</th>
+              <th style="text-align:left">Dataset</th>
+              <th style="text-align:left">Schema</th>
+              <th>Feats</th>
+              <th>SampleN</th>
+              <th style="text-align:left">HyperVer</th>
+            </tr>
+          </thead>
+          <tbody id="cand-tbody"></tbody>
+        </table>
+      </div>
+      <div style="margin-top:10px;display:flex;gap:8px;align-items:center">
+        <button class="an-refresh" onclick="runCandidateCompare()" style="background:var(--violet)">Compare selected</button>
+        <span id="cand-cmp-hint" style="font-size:11px;color:var(--text-dim)">Select exactly 2 rows above</span>
+      </div>
+    </div>
+
+    <div class="card" id="cand-detail" style="display:none"></div>
+    <div class="card" id="cand-compare" style="display:none"></div>
+
   </div>
 </div>
 
@@ -802,6 +844,8 @@ function renderLab() {
   }).join('');
   el('lab-winners').innerHTML = `<div class="card-title">BEST MODEL PER METRIC</div>${winnerHtml}`;
 
+  renderCandidates();
+
   show('lab');
 }
 
@@ -809,6 +853,300 @@ function labSort(col) {
   if (_labSortCol===col) _labSortDir *= -1;
   else { _labSortCol=col; _labSortDir=-1; }
   renderLab();
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// Model candidates (production, shadow, registry) — extends Model Lab
+// ════════════════════════════════════════════════════════════════════════════
+let _candSelected = [];
+
+const STATUS_BADGE = {
+  production: 'bg', shadow: 'bpu', candidate: 'by', experimental: 'dim', rejected: 'br',
+};
+
+function fmtMetric(v, digits) {
+  return v==null ? '—' : Number(v).toFixed(digits==null?4:digits);
+}
+
+function renderCandidates() {
+  if (!_lab || !_lab.candidates) return;
+  const rows = _lab.candidates.slice().sort((a,b)=>{
+    const order = {production:0, shadow:1, candidate:2, experimental:3, rejected:4};
+    return (order[a.status]??9) - (order[b.status]??9);
+  });
+  el('cand-tbody').innerHTML = rows.map(c=>{
+    const checked = _candSelected.includes(c.id) ? 'checked' : '';
+    const badgeCls = STATUS_BADGE[c.status] || 'dim';
+    return `<tr onclick="showCandidateDetail('${c.id}')" style="cursor:pointer">
+      <td onclick="event.stopPropagation()"><input type="checkbox" ${checked} onchange="toggleCandSelect('${c.id}',this.checked)"></td>
+      <td style="font-weight:700">${c.name}</td>
+      <td class="dim">${c.model_family||'—'}</td>
+      <td><span class="badge ${badgeCls}">${c.status}</span></td>
+      <td class="tr">${fmtMetric(c.auc,4)}</td>
+      <td class="tr">${fmtMetric(c.log_loss,4)}</td>
+      <td class="tr">${fmtMetric(c.brier,4)}</td>
+      <td class="tr">${fmtMetric(c.ece,4)}</td>
+      <td class="tr">${fmtMetric(c.walk_forward_score,4)}</td>
+      <td class="tc">${c.n==null?'—':c.n}</td>
+      <td class="dim">${(c.training_date||'').slice(0,19).replace('T',' ')||'—'}</td>
+      <td class="dim">${c.dataset_version||'—'}</td>
+      <td class="dim">${c.feature_schema_version||'—'}</td>
+      <td class="tc">${c.feature_count==null?'—':c.feature_count}</td>
+      <td class="tc">${c.training_sample_size==null?'—':c.training_sample_size}</td>
+      <td class="dim">${c.hyperparameter_version||'—'}</td>
+    </tr>`;
+  }).join('');
+}
+
+function toggleCandSelect(id, checked) {
+  if (checked) {
+    if (_candSelected.length>=2) _candSelected.shift();
+    _candSelected.push(id);
+  } else {
+    _candSelected = _candSelected.filter(x=>x!==id);
+  }
+  el('cand-cmp-hint').textContent = _candSelected.length===2
+    ? 'Ready to compare' : `Select exactly 2 rows above (${_candSelected.length}/2)`;
+}
+
+function recBlock(label, rec) {
+  if (!rec) return '';
+  const insufficient = rec.status !== 'OK';
+  return `<div class="card" style="padding:10px;margin-top:8px">
+    <div style="font-size:11px;font-weight:700;margin-bottom:4px">ENGINEERING RECOMMENDATION — ${label}</div>
+    <div style="font-size:11px;color:var(--text-muted)">${insufficient ? '<span class="gl">Insufficient evidence</span>' : rec.finding}</div>
+    <div style="font-size:11px;margin-top:4px">${insufficient ? 'Insufficient evidence' : rec.recommendation}</div>
+    <div style="font-size:10px;color:var(--text-dim);margin-top:4px">
+      Confidence: ${rec.confidence} · Expected Gain: ${rec.expected_gain} · Files: ${(rec.files||[]).join(', ') || '—'}
+      ${insufficient && rec.evidence && rec.evidence.reason ? '<br>Reason: ' + rec.evidence.reason : ''}
+    </div>
+  </div>`;
+}
+
+function renderAuditConsistency(a) {
+  const sc = a.self_consistency || {};
+  const checks = sc.checks || [];
+  let h = `<div style="font-size:11px;font-weight:700;margin:14px 0 6px">Self-consistency checks (${checks.length - (sc.failure_count||0)}/${checks.length} passed)</div>`;
+  if (sc.failure_count) {
+    h += `<div class="card" style="padding:10px;border:1px solid var(--r,#c33)">
+      <div class="r" style="font-size:12px;font-weight:700">${sc.failure_count} SELF-CONSISTENCY FAILURE(S) — diagnostics below are suspect</div>
+      ${sc.failures.map(f=>`<div class="ks" style="margin-top:4px"><b>${f.check}</b>: ${f.detail}</div>`).join('')}
+    </div>`;
+  }
+  h += '<table class="lab-t"><thead><tr><th style="text-align:left">Check</th><th style="text-align:left">Status</th><th style="text-align:left">Detail</th></tr></thead><tbody>';
+  h += checks.map(ch=>`<tr><td style="text-align:left">${ch.check}</td>
+    <td style="text-align:left" class="${ch.status==='PASS'?'g':(ch.status==='FAIL'?'r':'dim')}">${ch.status}</td>
+    <td style="text-align:left;font-size:10px">${ch.detail}</td></tr>`).join('');
+  h += '</tbody></table>';
+  return h + recBlock('Self-consistency', sc.recommendation);
+}
+
+function renderAuditHealth(a) {
+  const hs = a.health || {};
+  const comps = hs.components || {};
+  let h = `<div style="font-size:11px;font-weight:700;margin:14px 0 6px">Model health score — ${hs.score}/100</div>`;
+  h += `<div class="ks" style="font-size:10px">${hs.formula || ''}</div>`;
+  h += '<table class="lab-t"><thead><tr><th style="text-align:left">Component</th><th>Score</th><th>Weight</th><th>Points</th><th style="text-align:left">Scale</th></tr></thead><tbody>';
+  h += Object.keys(comps).map(k=>`<tr><td style="text-align:left">${k}</td><td class="tr">${comps[k].component_score}</td>
+    <td class="tr">${comps[k].normalized_weight}</td><td class="tr">${comps[k].points}</td>
+    <td style="text-align:left;font-size:10px">${comps[k].scale}</td></tr>`).join('');
+  h += '</tbody></table>';
+  const excl = hs.excluded || {};
+  h += Object.keys(excl).map(k=>`<div class="ks" style="font-size:10px">Excluded — ${k}: ${excl[k]}</div>`).join('');
+  return h + recBlock('Model health', hs.recommendation);
+}
+
+function renderAuditFeatures(a) {
+  const fe = a.feature_engineering || {};
+  const rows = fe.rows || [];
+  if (!rows.length) return '';
+  let h = `<div style="font-size:11px;font-weight:700;margin:14px 0 6px">Feature engineering verdicts (${rows.length} features)</div>`;
+  h += `<div class="ks" style="font-size:10px">Walk-forward folds: ${(fe.stability||{}).fold_count} · mean pairwise Spearman: ${(fe.stability||{}).mean_pairwise_spearman} · decision thresholds: ${JSON.stringify(fe.decision_rule)}</div>`;
+  h += '<table class="lab-t"><thead><tr><th style="text-align:left">Feature</th><th>MeanRank</th><th>Stability</th><th>OutcomeCorr</th><th style="text-align:left">Direction</th><th style="text-align:left">Confidence</th><th style="text-align:left">Verdict</th><th style="text-align:left">Reason</th></tr></thead><tbody>';
+  h += rows.map(r=>`<tr><td style="text-align:left">${r.feature}</td><td class="tr">${r.mean_rank}</td>
+    <td class="tr">${r.stability}</td><td class="tr">${r.outcome_correlation}</td>
+    <td style="text-align:left">${r.direction}</td><td style="text-align:left">${r.confidence}</td>
+    <td style="text-align:left" class="${r.engineering_verdict==='KEEP'?'g':'by'}">${r.engineering_verdict}</td>
+    <td style="text-align:left;font-size:10px">${r.verdict_reason}</td></tr>`).join('');
+  h += '</tbody></table>';
+  return h + recBlock('Feature importance', fe.recommendation);
+}
+
+function renderAuditCalibration(a) {
+  const cal = a.calibration || {};
+  const buckets = cal.buckets || [];
+  let h = `<div style="font-size:11px;font-weight:700;margin:14px 0 6px">Calibration buckets (merged, min N=${(cal.field_audit||{}).min_bucket_n})</div>`;
+  h += `<div class="ks" style="font-size:10px">Required fields present: ${(cal.field_audit||{}).required_fields_present} · auto-merge applied: ${(cal.field_audit||{}).auto_merge_applied} · unreliable after merge: ${JSON.stringify((cal.field_audit||{}).merged_unreliable_buckets)}</div>`;
+  h += '<table class="lab-t"><thead><tr><th style="text-align:left">Bin</th><th>N</th><th>Pred</th><th>Actual</th><th>Gap</th><th>WeightedGap</th><th>OutcomeVar</th><th>PredVar</th><th style="text-align:left">CI</th><th style="text-align:left">Outside CI</th></tr></thead><tbody>';
+  h += buckets.map(b=>`<tr><td style="text-align:left">${b.bin}</td><td class="tr">${b.n}</td><td class="tr">${b.avg_predicted}</td>
+    <td class="tr">${b.actual_rate}</td><td class="tr">${b.gap}</td><td class="tr">${b.weighted_gap}</td>
+    <td class="tr">${b.outcome_variance}</td><td class="tr">${b.predicted_variance}</td>
+    <td style="text-align:left">${b.actual_ci_lower}–${b.actual_ci_upper}</td>
+    <td style="text-align:left" class="${b.outside_ci?'r':'g'}">${b.outside_ci}</td></tr>`).join('');
+  h += '</tbody></table>';
+  (cal.root_causes||[]).forEach(rc=>{
+    h += `<div class="ks" style="font-size:10px">Pattern: ${rc.pattern} — ${rc.cause}</div>`;
+  });
+  (cal.suggested_fixes||[]).forEach(f=>{
+    h += `<div class="ks" style="font-size:10px">Fix ${f.bucket}: ${f.fix} · expected impact ${f.expected_impact_ece_points} ECE points</div>`;
+  });
+  return h + recBlock('Calibration', cal.recommendation);
+}
+
+function renderAuditRootCauses(a) {
+  const rc = a.root_causes || {};
+  const causes = rc.causes || [];
+  let h = `<div style="font-size:11px;font-weight:700;margin:14px 0 6px">Root causes (${causes.length})</div>`;
+  if (!causes.length) h += '<div class="ks">Insufficient evidence — no root-cause threshold was crossed on this run.</div>';
+  h += causes.map((c,i)=>`<div class="card" style="padding:10px;margin-top:6px">
+    <div style="font-size:11px;font-weight:700">${i+1}. ${c.title}</div>
+    <div style="font-size:10px;color:var(--text-muted);margin-top:4px">Fix: ${c.suggested_fix}</div>
+    <div style="font-size:10px;color:var(--text-dim);margin-top:4px">Confidence ${c.confidence} · Estimated gain ${c.estimated_gain_value} ${c.gain_metric} (${c.estimated_gain_band}) · Files: ${c.related_files.join(', ')}</div>
+    <div style="font-size:10px;color:var(--text-dim);margin-top:4px">Evidence: ${JSON.stringify(c.evidence).slice(0,500)}</div>
+  </div>`).join('');
+  return h + recBlock('Root causes', rc.recommendation);
+}
+
+function renderAuditBacklog(a) {
+  const bl = a.backlog || {};
+  const items = bl.items || [];
+  const suppressed = bl.suppressed || [];
+  let h = `<div style="font-size:11px;font-weight:700;margin:14px 0 6px">Engineering backlog (${items.length} items, ranked by ${bl.priority_definition || 'priority'})</div>`;
+  h += '<table class="lab-t"><thead><tr><th>Priority</th><th style="text-align:left">Issue</th><th style="text-align:left">Evidence</th><th style="text-align:left">Confidence</th><th style="text-align:left">Est. Gain</th><th style="text-align:left">Difficulty</th><th style="text-align:left">Affected Files</th><th style="text-align:left">Status</th></tr></thead><tbody>';
+  h += items.map(it=>`<tr><td class="tr">${it.priority}</td><td style="text-align:left">${it.issue}</td>
+    <td style="text-align:left;font-size:10px">${it.evidence}</td><td style="text-align:left">${it.confidence}</td>
+    <td style="text-align:left">${it.estimated_gain} (${it.estimated_gain_value} ${it.gain_metric})</td>
+    <td style="text-align:left">${it.difficulty} — ${it.difficulty_basis}</td>
+    <td style="text-align:left;font-size:10px">${it.affected_files.join(', ')}</td>
+    <td style="text-align:left">${it.status}</td></tr>`).join('');
+  h += '</tbody></table>';
+  if (suppressed.length) {
+    h += `<div style="font-size:10px;color:var(--text-dim);margin-top:8px">${suppressed.length} finding(s) suppressed as already resolved: `
+      + suppressed.map(s=>`${s.issue} (${s.resolution}${s.note?': '+s.note:''})`).join(' · ') + '</div>';
+  }
+  return h + recBlock('Engineering backlog', bl.recommendation);
+}
+
+function renderAuditContext(a) {
+  let h = `<div style="font-size:11px;font-weight:700;margin:14px 0 6px">Residuals &amp; prediction distribution</div>`;
+  const r = a.residuals || {}, d = a.prediction_distribution || {};
+  h += `<div class="ks" style="font-size:10px">Mean residual ${r.mean_residual} (z=${r.bias_z}, biased=${r.biased}) over ${r.n} rows · worst decile ${(r.worst_decile||{}).range} residual ${(r.worst_decile||{}).mean_residual} n=${(r.worst_decile||{}).n}</div>`;
+  h += `<div class="ks" style="font-size:10px">Predicted probability: mean ${d.mean}, std ${d.std}, range ${d.min}–${d.max}, p05–p95 ${d.p05}–${d.p95}</div>`;
+  const seg = a.segments || {};
+  (seg.results||[]).forEach(s=>{
+    h += `<div class="ks" style="font-size:10px">Segment ${s.column}: ${s.available ? (s.rows.length + ' segments with n≥' + s.min_n + ', ' + s.significant.length + ' outside CI') : 'Insufficient evidence — ' + s.reason}</div>`;
+  });
+  h += recBlock('Segment analysis', seg.recommendation);
+  h += recBlock('Closing line value', (a.clv||{}).recommendation);
+  return h;
+}
+
+function renderEngineeringAudit(a) {
+  if (!a) return '<div class="ks" style="margin-top:14px">Engineering audit not generated for this model (rerun pipeline/diagnostics.py to produce engineering_audit.json).</div>';
+  return `<div class="sep"></div><div class="sec">ENGINEERING AUDIT — ${a.model_name} ${a.version} · ${a.evaluation_rows} evaluation rows</div>`
+    + renderAuditConsistency(a) + renderAuditHealth(a) + renderAuditFeatures(a)
+    + renderAuditCalibration(a) + renderAuditContext(a) + renderAuditRootCauses(a) + renderAuditBacklog(a);
+}
+
+async function showCandidateDetail(id) {
+  const box = el('cand-detail');
+  box.style.display = 'block';
+  box.innerHTML = '<div class="loading"><div class="spin"></div></div>';
+  try {
+    const r = await fetch('/api/model-lab/candidate/' + encodeURIComponent(id));
+    const data = await r.json();
+    if (data.status !== 'success') { box.innerHTML = '<span class="r">Not found</span>'; return; }
+    const c = data.candidate;
+    let h = `<div class="card-title">MODEL DETAIL — ${c.id}</div>`;
+    if (c.registry) {
+      const reg = c.registry;
+      h += `<div style="font-size:11px;color:var(--text-muted);margin-bottom:10px">
+        Feature schema ${reg.feature_schema_version} · ${reg.feature_list?.length||0} features ·
+        dataset ${(reg.dataset_hash||'').slice(0,12)} · git ${(reg.git_commit||'').slice(0,8)||'—'} ·
+        trained ${(reg.trained_at||'').slice(0,19).replace('T',' ')}
+      </div>`;
+    }
+    if (!c.diagnostics_available) {
+      h += `<div class="dim" style="font-size:12px">No diagnostics artifacts for this model (production/shadow entries, or model families without a saved diagnostics report).</div>`;
+    } else {
+      const d = c.diagnostics || {};
+      if (d.calibration_table && d.calibration_table.length) {
+        h += `<div style="font-size:11px;font-weight:700;margin:10px 0 6px">Calibration table</div>`;
+        h += d.calibration_table.map(row=>`<div class="cb-row"><div class="cb-lbl">${row.bin}</div>
+          <div class="cb-wrap"><div class="cb-pred" style="width:${Math.min(100,row.avg_predicted*100)}%"></div></div>
+          <div class="cb-n">n=${row.n}</div>
+          <div class="cb-gap">${(row.actual_rate*100).toFixed(1)}% actual</div></div>`).join('');
+      }
+      if (d.feature_importance_gain && d.feature_importance_gain.length) {
+        h += `<div style="font-size:11px;font-weight:700;margin:14px 0 6px">Top feature importance (gain)</div>`;
+        h += d.feature_importance_gain.slice(0,10).map(row=>`<div class="cb-row">
+          <div class="cb-lbl">${row.feature}</div>
+          <div class="cb-wrap"><div class="cb-pred" style="width:${Math.min(100,row.gain_pct*4)}%"></div></div>
+          <div class="cb-gap">${row.gain_pct}%</div></div>`).join('');
+      }
+      if (d.shap_summary && d.shap_summary.length) {
+        h += `<div style="font-size:11px;font-weight:700;margin:14px 0 6px">Top SHAP mean |value|</div>`;
+        h += d.shap_summary.slice(0,10).map(row=>`<div class="cb-row">
+          <div class="cb-lbl">${row.feature}</div>
+          <div class="cb-wrap"><div class="cb-pred" style="width:${Math.min(100,row.mean_abs_shap*400)}%"></div></div>
+          <div class="cb-gap">${row.mean_abs_shap.toFixed(4)}</div></div>`).join('');
+      }
+      if (d.feature_redundancy && d.feature_redundancy.length) {
+        h += `<div style="font-size:11px;font-weight:700;margin:14px 0 6px">Redundant feature pairs (≥0.9 correlation)</div>`;
+        h += d.feature_redundancy.map(row=>`<div class="ks">${row.feature_a} ↔ ${row.feature_b}: ${row.correlation}</div>`).join('');
+      } else {
+        h += `<div class="ks" style="margin-top:10px">No feature pairs ≥0.9 correlation.</div>`;
+      }
+      h += renderEngineeringAudit(d.engineering_audit);
+    }
+    h += `<div style="font-size:10px;color:var(--text-dim);margin-top:14px">
+      Learning curve: ${c.learning_curve_available?'available':'not yet computed'} ·
+      Walk-forward history: ${c.walk_forward_history_available?'available':'not yet computed'} ·
+      Feature drift: ${c.feature_drift_available?'available':'not yet computed'}
+    </div>`;
+    box.innerHTML = h;
+  } catch(e) {
+    box.innerHTML = '<span class="r">' + e.message + '</span>';
+  }
+}
+
+async function runCandidateCompare() {
+  const box = el('cand-compare');
+  if (_candSelected.length !== 2) {
+    box.style.display = 'block';
+    box.innerHTML = '<span class="gl">Select exactly 2 rows to compare.</span>';
+    return;
+  }
+  box.style.display = 'block';
+  box.innerHTML = '<div class="loading"><div class="spin"></div></div>';
+  try {
+    const [a, b] = _candSelected;
+    const r = await fetch(`/api/model-lab/compare?a=${encodeURIComponent(a)}&b=${encodeURIComponent(b)}`);
+    const data = await r.json();
+    if (data.status !== 'success') { box.innerHTML = '<span class="r">Compare failed</span>'; return; }
+    let h = `<div class="card-title">COMPARE — ${data.a.name} vs ${data.b.name}</div>`;
+    h += '<table class="lab-t"><thead><tr><th style="text-align:left">Metric</th><th>' + data.a.name + '</th><th>' + data.b.name + '</th><th>Delta (B−A)</th></tr></thead><tbody>';
+    Object.entries(data.deltas).forEach(([metric, info])=>{
+      const cls = info.improved ? 'g' : 'r';
+      h += `<tr><td style="text-align:left">${metric}</td>
+        <td class="tr">${fmtMetric(data.a[metric],4)}</td>
+        <td class="tr">${fmtMetric(data.b[metric],4)}</td>
+        <td class="tr ${cls}">${info.delta>0?'+':''}${info.delta} ${info.improved?'▲ improved':'▼ regressed'}</td></tr>`;
+    });
+    h += '</tbody></table>';
+    if (data.significance) {
+      const s = data.significance;
+      h += `<div style="margin-top:10px;font-size:11px;color:var(--text-muted)">
+        Two-proportion z-test on win rate: z=${s.z}, p=${s.p_value}
+        ${s.significant?'<span class="g">(statistically significant at p<0.05)</span>':'<span class="dim">(not statistically significant)</span>'}
+      </div>`;
+    } else {
+      h += `<div style="margin-top:10px;font-size:11px;color:var(--text-dim)">Statistical significance requires both models to have graded picks with a win rate (not available for registry-only test-set comparisons).</div>`;
+    }
+    box.innerHTML = h;
+  } catch(e) {
+    box.innerHTML = '<span class="r">' + e.message + '</span>';
+  }
 }
 
 // ── Boot on load ─────────────────────────────────────────────────────────────

@@ -14,7 +14,9 @@ from scipy import stats
 from sklearn.calibration import calibration_curve
 from sklearn.metrics import brier_score_loss, log_loss
 
-from loader import load_totals, resolved, snapped, SNAP_NUMERIC, FIG_DIR
+from loader import load_totals, resolved, snapped, SNAP_NUMERIC, FIG_DIR, DB_PATH
+from calibration_attribution import build_attribution, write_reports
+from run_distribution_diagnostics import build_run_distribution_report, write_run_distribution_report
 
 plt.rcParams.update(
     {
@@ -390,12 +392,17 @@ def section5(res):
     bs = brier_score_loss(y_true, y_prob)
     ll = log_loss(y_true, y_prob)
     frac_pos, mean_pred = calibration_curve(y_true, y_prob, n_bins=8, strategy="quantile")
-    ece = np.mean(np.abs(frac_pos - mean_pred))
-    mce = np.max(np.abs(frac_pos - mean_pred))
+    attribution = build_attribution(res, DB_PATH)
+    report_dir = write_reports(attribution)
+    ece = attribution["weighted_ece"]
+    mce = max(
+        abs(row["calibration_gap"])
+        for row in attribution["buckets_ranked_by_ece"]
+    )
 
     print(f"\n  Brier Score:  {bs:.4f}  (lower=better; 0.25=coin flip)")
     print(f"Log Loss:     {ll:.4f}  (lower=better)")
-    print(f"ECE:          {ece:.4f}  (Expected Calibration Error; <0.05=good)")
+    print(f"ECE:          {ece:.4f}  (sample-weighted bucket attribution)")
     print(f"MCE:          {mce:.4f}  (Max Calibration Error)")
     print(f"Baseline BS:  {brier_score_loss(y_true, np.full(len(y_true), y_true.mean())):.4f}")
 
@@ -476,13 +483,54 @@ def section5(res):
     plt.close()
     print("→ Saved: 05_calibration.png")
 
+    print("\n  CALIBRATION ATTRIBUTION — RANKED BY ECE CONTRIBUTION")
+    print(
+        "  Bucket       n   Pred   Actual       Wilson 95%        ECE share  "
+        "Sig  Folds  Persistence"
+    )
+    for row in attribution["buckets_ranked_by_ece"]:
+        wf = row["walk_forward"]
+        print(
+            f"  {row['bucket']:<11} {row['sample_size']:>3}  "
+            f"{row['predicted_probability']:>5.1%}  {row['observed_win_rate']:>6.1%}  "
+            f"{row['wilson_95_low']:>6.1%}–{row['wilson_95_high']:<6.1%}  "
+            f"{row['ece_share']:>8.1%}  "
+            f"{'yes' if row['statistically_significant'] else 'no ':>3}  "
+            f"{wf['same_direction_significant_folds']}/{wf['folds_evaluated']}   "
+            f"{row['persistence_verdict']}"
+        )
+        print(
+            f"    EV={row['average_ev']}  ROI={row['average_roi']}%  CLV={row['average_clv']}  "
+            f"market disagreement={row['average_market_disagreement']}  "
+            f"confidence={row['average_confidence']}"
+        )
+        print(
+            f"    ECE contribution={row['ece_contribution']:.4f}; "
+            f"log-loss contribution={row['log_loss_contribution']:.4f}; "
+            f"Brier contribution={row['brier_contribution']:.4f}; "
+            f"legacy inputs={row['legacy_input_share']:.0%}"
+        )
+        print(f"    {row['engineering_attribution']}")
+
+    eighty = attribution["buckets_responsible_for_80pct"]
+    print(
+        "\n  SMALLEST ≥80% ECE ATTRIBUTION SET: "
+        + (", ".join(eighty) if eighty else "none")
+    )
+    shadow = attribution["live_shadow"]
+    print(
+        f"  LIVE SHADOW: {shadow['resolved_predictions']} resolved / "
+        f"{shadow['total_predictions']} total — {shadow['reason'] or shadow['status']}"
+    )
+    print(f"  REPORTS: {report_dir}")
+
     print(f"""
   INTERPRETATION:
-  ECE of {ece:.3f} means predictions are off by {ece*100:.1f}pp on average.
-  A well-calibrated sports model should have ECE < 0.03.
-  The reliability diagram shows whether high-confidence bets
-  actually win more often — if not, the probability model needs
-  recalibration (Platt scaling or isotonic regression).
+  Weighted ECE of {ece:.3f} is attributed above to specific probability buckets.
+  This is an in-sample descriptive estimate over the currently resolved picks.
+  The reliability diagram identifies buckets worth monitoring, but this sample
+  alone does not justify a calibrator, threshold, or production model change.
+  Any correction must first improve expanding out-of-sample folds.
 """)
 
     return {
@@ -490,6 +538,15 @@ def section5(res):
 "log_loss": round(float(ll), 4),
 "ece": round(float(ece), 4),
 "mce": round(float(mce), 4),
+"ece_80pct_buckets": attribution["buckets_responsible_for_80pct"],
+"statistically_significant_buckets": sum(
+    int(row["statistically_significant"])
+    for row in attribution["buckets_ranked_by_ece"]
+),
+"persistent_live_confirmed_buckets": sum(
+    int(row["persistence_verdict"] == "persistent")
+    for row in attribution["buckets_ranked_by_ece"]
+),
     }
 
 
@@ -505,6 +562,45 @@ def _annotate(ax, text):
         va="bottom",
         bbox=dict(boxstyle="round", facecolor="#0d1117", alpha=0.7),
     )
+
+
+def section5b(res):
+    hdr("SECTION 5B — TOTALS PREDICTION INTERVAL & RUN DISTRIBUTION")
+    report = build_run_distribution_report(res)
+    report_dir = write_run_distribution_report(report)
+    if not report.get("sample_size"):
+        print("  No resolved totals contain both expected and actual run totals.")
+        return report
+    mean = report["mean_diagnostics"]
+    distribution = report["distribution_diagnostics"]
+    print(
+        f"  n={report['sample_size']} | expected mean={mean['mean_expected_runs']:.2f} | "
+        f"actual mean={mean['mean_actual_runs']:.2f} | residual={mean['mean_residual_runs']:+.2f}"
+    )
+    print(
+        f"  Actual variance/mean={distribution['actual_variance_to_mean']:.3f} | "
+        f"mean CRPS={distribution['mean_crps']:.3f} | "
+        f"mean negative log probability={distribution['mean_negative_log_probability']:.3f}"
+    )
+    for level, values in report["prediction_intervals"].items():
+        print(
+            f"  {level}% interval: observed={values['observed_coverage']:.1%}, "
+            f"Wilson={values['wilson_95_low']:.1%}–{values['wilson_95_high']:.1%}, "
+            f"mean width={values['mean_width_runs']:.2f} runs, "
+            f"significant miss={'yes' if values['statistically_misses_nominal'] else 'no'}"
+        )
+    print(
+        f"  Corrected input rows={report['corrected_input_rows']}; legacy input rows={report['legacy_input_rows']}. "
+        f"Current engine verdict: {report['current_engine_verdict']}."
+    )
+    print(f"  REPORTS: {report_dir}")
+    return {
+        "sample_size": report["sample_size"],
+        "corrected_input_rows": report["corrected_input_rows"],
+        "mean_residual_runs": round(mean["mean_residual_runs"], 4),
+        "variance_to_mean": round(distribution["actual_variance_to_mean"], 4),
+        "pi_90_coverage": round(report["prediction_intervals"]["90"]["observed_coverage"], 4),
+    }
 
 
 def run():
@@ -528,6 +624,7 @@ def run():
     run_section("s3", "Residual Analysis", section3, res, snp)
     run_section("s4", "Error Heatmaps", section4, snp)
     run_section("s5", "Calibration", section5, res)
+    run_section("s5b", "Totals Run Distribution", section5b, res)
 
 
 if __name__ == "__main__":

@@ -1,5 +1,7 @@
 from datetime import datetime, timezone
 
+from services.prediction_math import confidence_label as _confidence_label
+
 COLOR_MONEYLINE = 0x22C55E
 COLOR_TOTALS = 0x3B82F6
 COLOR_WIN = 0x22C55E
@@ -12,25 +14,6 @@ COLOR_MODEL_OUTPUT = 0x3B82F6
 COLOR_PUSH = 0x94A3B8
 
 FOOTER_MODEL = "Model v3.3 Advanced"
-
-
-_CONFIDENCE_BANDS = [
-    (0.65, "Very High", "🟢"),
-    (0.60, "High", "🟢"),
-    (0.55, "Moderate", "🟡"),
-    (0.0, "Low", "🔴"),
-]
-
-
-def _confidence_label(model_prob) -> str:
-    try:
-        p = float(model_prob)
-    except (TypeError, ValueError):
-        return "—"
-    for threshold, label, emoji in _CONFIDENCE_BANDS:
-        if p >= threshold:
-            return f"{emoji} {label}"
-    return "—"
 
 
 def _f(value, fmt, default="—"):

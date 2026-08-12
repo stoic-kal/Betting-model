@@ -14,6 +14,11 @@ from pathlib import Path
 
 from loader import load_totals, resolved, snapped, SNAP_NUMERIC, FIG_DIR
 
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from pipeline.calibration_common import wilson_interval
+
+BREAK_EVEN = 0.5238
+
 plt.rcParams.update(
     {
         "figure.facecolor": "#0d1117",
@@ -35,6 +40,10 @@ P = {
     "warn": "#d29922",
     "dim": "#8b949e",
 }
+
+
+LIVE_ISSUES = []
+LIVE_CONTEXT = {}
 
 
 def hdr(t):
@@ -478,10 +487,40 @@ def section24(res, snp):
     wf_const = "snap_weather_factor" in snp.columns and snp["snap_weather_factor"].std() < 0.001
     avg_home_fip = snp["snap_home_fip"].mean() if "snap_home_fip" in snp.columns else 4.1
     fip_suspect = avg_home_fip < 3.6
+    try:
+        from services.totals_model_v3 import FIP_FORMULA_VERSION
+    except (ImportError, AttributeError):
+        FIP_FORMULA_VERSION = 1
 
     ev_wr = (
         res.groupby(pd.cut(res["ev"], bins=[0, 10, 15, 20, 60]), observed=True)["won"].mean() * 100
     )
+    ev_bucket_n = res.groupby(pd.cut(res["ev"], bins=[0, 10, 15, 20, 60]), observed=True)["won"].count()
+    ev_ordered = [(str(k), float(v), int(ev_bucket_n[k])) for k, v in ev_wr.items() if pd.notna(v)]
+    ev_rho = (
+        stats.spearmanr(range(len(ev_ordered)), [w for _, w, _ in ev_ordered]).statistic
+        if len(ev_ordered) >= 3
+        else float("nan")
+    )
+    ev_inverted = pd.notna(ev_rho) and ev_rho <= 0
+
+    over_rows = res[res["direction"] == "OVER"]
+    under_rows = res[res["direction"] == "UNDER"]
+    over_n = int(len(over_rows))
+    under_n = int(len(under_rows))
+    over_ci = wilson_interval(int(over_rows["won"].sum()), over_n)
+    over_roi = (
+        float(over_rows["profit"].sum() / over_rows["wagered"].sum() * 100) if over_n else 0.0
+    )
+
+    prob_wr = res.groupby(pd.cut(res["model_prob"], bins=4), observed=True)["won"].agg(["mean", "count"])
+    prob_ordered = [(str(k), float(r["mean"]) * 100, int(r["count"])) for k, r in prob_wr.iterrows()]
+    prob_rho = (
+        stats.spearmanr(range(len(prob_ordered)), [w for _, w, _ in prob_ordered]).statistic
+        if len(prob_ordered) >= 3
+        else float("nan")
+    )
+    prob_non_monotonic = pd.notna(prob_rho) and prob_rho <= 0
 
     issues = [
         (
@@ -524,30 +563,38 @@ def section24(res, snp):
             if wf_const
             else None
         ),
-        {
+        (
+            {
             "rank": 3,
-            "issue": f"OVER win rate catastrophically low ({over_wr:.1f}%)",
+            "issue": f"OVER win rate {over_wr:.1f}% is below break-even beyond sampling error",
             "severity": "CRITICAL",
-            "evidence": f"OVER: {over_wr:.1f}% WR vs UNDER: {under_wr:.1f}% WR. {len(res[res['direction']=='OVER'])} OVER picks resolved.",
-            "stat_confidence": "High — 18+ OVER sample",
+            "evidence": f"OVER: {over_wr:.1f}% WR over n={over_n} (95% interval {over_ci[0]*100:.1f}–{over_ci[1]*100:.1f}%) vs UNDER: {under_wr:.1f}% WR over n={under_n}. Break-even is {BREAK_EVEN*100:.1f}%.",
+            "stat_confidence": f"Wilson 95% upper bound {over_ci[1]*100:.1f}% is below the {BREAK_EVEN*100:.1f}% break-even rate on n={over_n}",
             "root_cause": "Model systematically underestimates run suppression. Expected totals are too high → model sees OVER value when market is correct. Likely caused by missing park factor + weather adjustments (issues 1+2).",
             "fix": "Fix park factor + weather first. Then re-evaluate OVER calibration. Consider raising OVER threshold to model_prob >= 0.62 until recalibrated.",
-            "impact": "CRITICAL — suspending OVERs immediately would stop bleeding",
+            "impact": f"OVER picks currently return {over_roi:.1f}% ROI over n={over_n}",
             "eng_difficulty": "Medium",
             "priority": 3,
-        },
-        {
+            }
+            if over_ci[1] < BREAK_EVEN
+            else None
+        ),
+        (
+            {
             "rank": 4,
-            "issue": "Probability calibration is non-monotonic",
+            "issue": f"Probability buckets are not monotonic in win rate (Spearman {prob_rho:+.3f})",
             "severity": "HIGH",
-            "evidence": "58-62% confidence bucket wins 17% of the time. Lower confidence buckets outperform higher confidence.",
-            "stat_confidence": "Medium — small n per bucket",
+            "evidence": "; ".join(f"{label}: {wr:.1f}% over n={n}" for label, wr, n in prob_ordered),
+            "stat_confidence": f"Spearman {prob_rho:+.3f} across {len(prob_ordered)} buckets, min n={min(n for _, _, n in prob_ordered)}",
             "root_cause": "Expected_total formula may be correct directionally but wrong in magnitude. The conversion from expected_total to win probability uses assumptions about run distribution variance that may not match MLB reality.",
             "fix": "Apply isotonic regression or Platt scaling to recalibrate probabilities. Use all resolved picks as calibration set.",
             "impact": "HIGH — correct calibration enables accurate Kelly sizing",
             "eng_difficulty": "Low — sklearn has isotonic regression",
             "priority": 4,
-        },
+            }
+            if prob_non_monotonic
+            else None
+        ),
         (
             {
                 "rank": 5,
@@ -561,40 +608,53 @@ def section24(res, snp):
                 "eng_difficulty": "Low — audit data source",
                 "priority": 5,
             }
-            if fip_suspect
+            if fip_suspect and FIP_FORMULA_VERSION < 2
             else None
         ),
-        {
+        (
+            {
             "rank": 6,
-            "issue": "EV does not predict win rate (inverted at high EV)",
+            "issue": f"EV buckets do not rank win rate (Spearman {ev_rho:+.3f})",
             "severity": "HIGH",
-            "evidence": "EV 15-20% bucket: 0% win rate (3 picks). EV 5-10% bucket: 75% win rate.",
-            "stat_confidence": "Low-medium — small n",
+            "evidence": "; ".join(f"EV {label}: {wr:.1f}% over n={n}" for label, wr, n in ev_ordered),
+            "stat_confidence": f"Spearman {ev_rho:+.3f} across {len(ev_ordered)} EV buckets, min n={min(n for _, _, n in ev_ordered)}",
             "root_cause": "EV = f(model_prob, market_odds). If model_prob is miscalibrated, EV is corrupted. High EV picks are cases where model is most wrong about probability.",
             "fix": "Recalibrate probabilities first. Then recompute EV. EV signal should recover.",
             "impact": "MEDIUM",
             "eng_difficulty": "Low after calibration fix",
             "priority": 6,
-        },
-        {
-            "rank": 7,
-            "issue": f"CLV positive (+{avg_clv:.2f}pp) but ROI negative",
-            "severity": "MEDIUM",
-            "evidence": f"Beat close {res.dropna(subset=['clv'])['clv'].gt(0).mean()*100:.0f}% of time. ROI = {res['profit'].sum()/res['wagered'].sum()*100:.1f}%",
-            "stat_confidence": "High for CLV; medium for ROI (59 picks)",
-            "root_cause": "Line-shopping and timing are working (we get good prices). Directional prediction is the failure point. This is a signal quality problem, not a market access problem.",
-            "fix": "Do not change odds-finding. Fix model direction prediction.",
-            "impact": "Informational — confirms problem is model, not market",
-            "eng_difficulty": "N/A — don't fix this",
-            "priority": 7,
-        },
+            }
+            if ev_inverted
+            else None
+        ),
     ]
 
     issues = [i for i in issues if i is not None]
+    LIVE_ISSUES.clear()
+    LIVE_ISSUES.extend(issues)
+    LIVE_CONTEXT["resolved_picks"] = int(len(res))
 
     print("\n  ┌─────────────────────────────────────────────────────────────────────")
     print("  │  ROOT CAUSE REPORT — MLB TOTALS MODEL")
     print("  └─────────────────────────────────────────────────────────────────────\n")
+
+    if fip_suspect and FIP_FORMULA_VERSION >= 2:
+        print(
+            "  ℹ RESOLVED HISTORICAL DEFECT: Old snapshots have depressed FIP because the "
+            "producer read MLB's nonexistent `homeRunsAllowed` key. Formula v2 reads `homeRuns` "
+            "and `hitBatsmen`. Historical snapshots remain immutable; validate the distribution "
+            "again after new formula-v2 picks accumulate.\n"
+        )
+    if (
+        pd.notna(avg_clv)
+        and avg_clv > 0
+        and res["profit"].sum() / res["wagered"].sum() < 0
+    ):
+        print(
+            f"  ℹ OBSERVATION: Average CLV is +{avg_clv:.2f}pp while realized ROI is negative. "
+            "This sample does not distinguish outcome variance from directional model error, "
+            "so no production change is prescribed.\n"
+        )
 
     for issue in issues:
         sev_color = {"CRITICAL": "", "HIGH": "", "MEDIUM": "", "LOW": ""}.get(
@@ -616,129 +676,40 @@ def section24(res, snp):
         "under_wr": round(float(under_wr), 1),
         "overall_wr": round(float(overall_wr), 1),
         "avg_clv": round(float(avg_clv), 3) if pd.notna(avg_clv) else None,
+        "resolved_picks": int(len(res)),
     }
 
 
 def section25():
     hdr("SECTION 25 — RETRAINING ROADMAP")
 
-    print("""
-  ════════════════════════════════════════════════════════════════════════
-  RETRAINING ROADMAP — PRIORITY ORDER
-  ════════════════════════════════════════════════════════════════════════
+    issues = list(LIVE_ISSUES)
+    resolved_picks = LIVE_CONTEXT.get("resolved_picks", 0)
+    if not issues:
+        print(
+            f"\n  No issue in Section 24 crossed its data trigger on {resolved_picks} resolved picks, so this run "
+            f"produces no ordered work list."
+        )
+        return {"items": 0}
 
-  ── PHASE 1: DATA PIPELINE FIXES (1-3 days) ─────────────────────────
-  Priority: IMMEDIATE — do this before any retraining.
-
-  [P1.1] Fix park_factor pipeline
-    - Build venue_id → park factor lookup table (use ESPN/FanGraphs park factors)
-    - Apply to expected_total: expected_total *= park_factor
-    - Validate: Oracle Park should produce ~0.90, Coors ~1.15, avg ~1.00
-    - Expected improvement: May fix OVER bias by 5-10 win rate points
-
-  [P1.2] Fix weather_factor pipeline
-    - Parse wind_info string: extract speed + direction
-    - Build wind_direction → run adjustment map:
-        "Out" (>5mph): +0.15 per mph / 5
-        "In"  (>5mph): -0.15 per mph / 5
-        "Cross":        minimal adjustment
-    - Apply temperature effect: <50°F → -0.25 runs; >85°F → +0.15 runs
-    - Validate: Wrigley wind-out should show weather_factor ~1.08-1.12
-
-  [P1.3] Validate and fix FIP data source
-    - Compare stored FIP against Baseball Reference season averages
-    - If values are uniformly low, check API endpoint parameters
-    - Ensure FIP range spans 2.8 (ace) to 6.0+ (replacement level)
-
-  ── PHASE 2: QUICK WINS (1 day) ──────────────────────────────────────
-
-  [P2.1] Suspend OVER bets immediately
-    - Add rule: if direction == "OVER" and model_prob < 0.62, skip
-    - Evidence: OVER at 38.9% WR is actively losing money
-
-  [P2.2] Apply minimum EV threshold of 5%
-    - Evidence: EV 0-5% bucket shows 50% WR (coin flip)
-    - Filter reduces volume but improves quality
-
-  [P2.3] Raise UNDER minimum probability to 0.54
-    - UNDER at 52.5% WR is breakeven; need margin above juice
-
-  ── PHASE 3: PROBABILITY CALIBRATION (2-3 days) ──────────────────────
-
-  [P3.1] Build calibration dataset from all resolved picks
-    - After Phase 1 fixes, regenerate probabilities using fixed features
-    - Split into train/calibration sets
-
-  [P3.2] Apply isotonic regression calibration
-    - from sklearn.calibration import CalibratedClassifierCV
-    - Fit on historical resolved picks
-    - Save calibration transform for inference
-
-  [P3.3] Rebuild EV calculation on calibrated probabilities
-    - EV = (calibrated_prob × best_odds - 1) × 100
-    - Validate: high EV should now correlate with high WR
-
-  ── PHASE 4: FEATURE ENGINEERING (1-2 weeks) ─────────────────────────
-
-  [P4.1] Add run environment factors
-    - Ballpark dimensions (LF/CF/RF wall heights)
-    - Elevation (Coors at 5280ft = less air resistance)
-    - Grass vs turf (turf increases scoring)
-    - Day vs night differential per park
-
-  [P4.2] Enhance weather features
-    - Air density (temperature + humidity + elevation = actual ball carry)
-    - Dew point vs dry bulb temperature
-    - Game-time forecast (not just current conditions)
-
-  [P4.3] Add recent form momentum
-    - Team last-5-game run scoring (rolling)
-    - Pitcher last-3-start ERA/runs allowed
-    - Bullpen ERA last-7-days (not just season ERA)
-
-  [P4.4] Add matchup handedness adjustment
-    - L-heavy lineup vs RHP: empirical run scoring adjustment
-    - R-heavy lineup vs LHP: empirical run scoring adjustment
-
-  ── PHASE 5: MODEL ARCHITECTURE (2-4 weeks) ──────────────────────────
-
-  [P5.1] Train XGBoost / LightGBM on historical game data
-    - Target: actual runs scored (regression) + over/under (classification)
-    - Features: all Phase 1-4 engineered features
-    - Use 3-year rolling window for training
-
-  [P5.2] Ensemble the expected_total formula with ML model
-    - Weight: 60% current formula / 40% ML model initially
-    - Adjust weights based on rolling 30-game performance
-
-  [P5.3] Separate OVER and UNDER models
-    - Evidence: they have different failure modes
-    - Train separate classifiers, ensemble at output
-
-  ── PHASE 6: VALIDATION & MONITORING (ongoing) ───────────────────────
-
-  [P6.1] Walk-forward validation
-    - Train on games 1-100, validate on 101-110
-    - Roll forward, never look ahead
-
-  [P6.2] Shadow mode for 2 weeks before deployment
-    - Run new model alongside old model
-    - Compare predictions without betting
-
-  [P6.3] Betting metrics dashboard
-    - Rolling 20-game WR, ROI, CLV
-    - Automatic suspension if WR drops below 45% for 10 games
-
-  ════════════════════════════════════════════════════════════════════════
-  EXPECTED IMPACT AFTER ALL PHASES:
-    Current:  48.3% WR, -6.7% ROI
-    Phase 1:  ~51% WR (park + weather fix)
-    Phase 2:  ~52% WR (filter improvement)
-    Phase 3:  ~53% WR + proper bet sizing
-    Phase 4+: ~54-55% WR (target: sustainable +EV)
-  ════════════════════════════════════════════════════════════════════════
-""")
-    return {}
+    ordered = sorted(issues, key=lambda i: i["priority"])
+    print(
+        f"\n  WORK ORDER DERIVED FROM SECTION 24 — {len(ordered)} issue(s) crossed a data trigger on "
+        f"{resolved_picks} resolved picks"
+    )
+    print("  " + "=" * 70)
+    for position, issue in enumerate(ordered, start=1):
+        print(f"\n  [{position}] {issue['issue']}")
+        print(f"      Severity:        {issue['severity']}")
+        print(f"      Measured:        {issue['evidence']}")
+        print(f"      Statistical basis: {issue['stat_confidence']}")
+        print(f"      Work:            {issue['fix']}")
+        print(f"      Engineering cost: {issue['eng_difficulty']}")
+    print(
+        f"\n  Ordering is Section 24's severity ranking; no win-rate or ROI improvement is projected here because "
+        f"this script measures no counterfactual."
+    )
+    return {"items": len(ordered), "severities": [i["severity"] for i in ordered]}
 
 
 def run():

@@ -1,0 +1,14 @@
+{
+  "available": false,
+  "models": {
+    "candidate": {
+      "average_clv": null,
+      "n": 0
+    },
+    "champion": {
+      "average_clv": null,
+      "n": 0
+    }
+  },
+  "reason": "Historical platform contains closing observations only; entry-to-close CLV cannot be reconstructed without fabrication."
+}

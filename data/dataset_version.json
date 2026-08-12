@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "row_count": 4892,
+  "last_updated": "2026-08-11T07:56:16.759991",
+  "dataset_hash": "8d7405705b6363affacccfd38da3068ccd2296e4f87b3435b0c468773a703077",
+  "resolution_report": {
+    "rows_in": 4892,
+    "rows_out": 4892,
+    "duplicate_groups": 0,
+    "duplicate_rows_removed": 0,
+    "duplicates_resolved_by_statcast_starters": 0,
+    "duplicate_groups_unresolved": 0,
+    "unresolved_keys": [],
+    "recovered_game_pks": 0,
+    "exhibition_rows_removed": 0,
+    "rows_with_unknown_game_type": 0
+  }
+}

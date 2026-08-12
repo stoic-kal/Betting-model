@@ -1,0 +1,18 @@
+{
+  "raw": {
+    "buckets": 4,
+    "min_bucket_n": 25,
+    "low_confidence_buckets": [
+      "0.60-0.70"
+    ],
+    "all_buckets_reliable": false,
+    "interval_method": "wilson_score_95"
+  },
+  "merged": {
+    "buckets": 3,
+    "min_bucket_n": 25,
+    "low_confidence_buckets": [],
+    "all_buckets_reliable": true,
+    "interval_method": "wilson_score_95"
+  }
+}

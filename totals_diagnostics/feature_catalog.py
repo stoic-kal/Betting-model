@@ -88,6 +88,7 @@ FEATURE_CATALOG = {
         pipeline="services/advanced_context_service.py: bullpen_availability()",
         recommendation="Now retries once with exponential backoff and no longer caches failures for the day (fixed 2026-08-07).",
         priority="Medium",
+        required_count_path=("context", "home_available_reliever_quality_count"),
     ),
 "context_away_available_recent_reliever_era": dict(
         label="Away Reliever ERA (live availability)",
@@ -98,6 +99,7 @@ FEATURE_CATALOG = {
         pipeline="services/advanced_context_service.py: bullpen_availability()",
         recommendation="Same fix as the home side.",
         priority="Medium",
+        required_count_path=("context", "away_available_reliever_quality_count"),
     ),
 "home_starter_usage_expected_innings": dict(
         label="Home Starter Expected Innings",
@@ -168,7 +170,23 @@ REASON_API_TIMEOUT = "API Timeout"
 REASON_FALLBACK_USED = "Fallback Used"
 REASON_NOT_COLLECTED = "Feature Not Collected"
 REASON_NULL = "Null"
-REASON_UNKNOWN = "Unknown"
+REASON_NOT_APPLICABLE = "Not Applicable (field absent from this writer version)"
+REASON_NO_SNAPSHOT = "No Snapshot Payload Persisted"
+REASON_INSUFFICIENT_EVIDENCE = "Insufficient Evidence To Determine Root Cause"
+
+
+def _provenance():
+    import importlib.util
+    from pathlib import Path
+
+    path = Path(__file__).resolve().parent.parent / "pipeline" / "field_provenance.py"
+    spec = importlib.util.spec_from_file_location("pipeline_field_provenance", path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+_PROVENANCE = _provenance()
 
 
 def _get_path(d, path):
@@ -198,31 +216,63 @@ def get_feature_value(record, feature_key):
     return snap.get(feature_key)
 
 
-def classify_missing_reason(record, feature_key, current_version):
+def field_provenance(record, feature_key, cohorts, skip_index=None):
 
     meta = FEATURE_CATALOG.get(feature_key, {})
-    applies_to = meta.get("applies_to", "totals")
     status_path = meta.get("status_path")
-
-    if applies_to == "totals" and record.get("pick_type") != "totals":
-        return REASON_MONEYLINE_SNAPSHOT
-    if not record.get("has_snapshot"):
-        return REASON_HISTORICAL_SNAPSHOT
-    schema_version = record.get("schema_version")
-    if schema_version is None or schema_version < current_version:
-        return REASON_HISTORICAL_SNAPSHOT
-
     status_value = _get_path(record.get("snap") or {}, status_path) if status_path else None
-    if status_value in ("TIMEOUT", "API_ERROR"):
-        return REASON_API_TIMEOUT
-    if status_value == "FALLBACK" or status_value == "fallback_default":
-        return REASON_FALLBACK_USED
-    if status_value is None and status_path is not None:
+    if status_value is None and feature_key.startswith("context_") and "available_recent_reliever_era" in feature_key:
+        side = "home" if "context_home_" in feature_key else "away"
+        bullpen = _get_path(record.get("snap") or {}, ("context", "advanced", f"{side}_bullpen")) or {}
+        if bullpen.get("available"):
+            status_value = "SUCCESS"
+        elif "timed out" in str(bullpen.get("error", "")).lower():
+            status_value = "TIMEOUT"
+        elif bullpen.get("error"):
+            status_value = "API_ERROR"
+    return _PROVENANCE.reconstruct_snapshot_provenance(
+        record,
+        feature_key,
+        _PROVENANCE.snapshot_key_for(feature_key),
+        get_feature_value(record, feature_key),
+        cohorts,
+        meta=meta,
+        skip_index=skip_index,
+        status_value=status_value,
+        status_path=status_path,
+    )
 
-        return REASON_NOT_COLLECTED
-    if status_path is None:
-        return REASON_NULL
-    return REASON_UNKNOWN
+
+def classify_missing_reason(record, feature_key, current_version, cohorts=None, skip_index=None):
+
+    meta = FEATURE_CATALOG.get(feature_key, {})
+    if meta.get("applies_to", "totals") == "totals" and record.get("pick_type") != "totals":
+        return REASON_MONEYLINE_SNAPSHOT, (
+            "this pick is not a totals pick, and the field is only produced by the totals pipeline"
+        )
+
+    cohorts = cohorts if cohorts is not None else _PROVENANCE.snapshot_cohorts([record])
+    provenance = field_provenance(record, feature_key, cohorts, skip_index=skip_index)
+
+    if provenance.applicability == _PROVENANCE.APPLICABILITY_NOT_APPLICABLE:
+        return REASON_NOT_APPLICABLE, provenance.reason_if_missing
+    if provenance.snapshot_status == _PROVENANCE.SNAPSHOT_ABSENT:
+        return REASON_NO_SNAPSHOT, provenance.reason_if_missing
+    if provenance.fetch_status == _PROVENANCE.FETCH_FAILED and provenance.fallback_status == _PROVENANCE.FALLBACK_APPLIED:
+        label = (
+            REASON_API_TIMEOUT
+            if "TIMEOUT" in provenance.reason_if_missing or "API_ERROR" in provenance.reason_if_missing
+            else REASON_FALLBACK_USED
+        )
+        return label, provenance.reason_if_missing
+    if provenance.fetch_status == _PROVENANCE.FETCH_NOT_ATTEMPTED and provenance.reason_if_missing:
+        return REASON_NOT_COLLECTED, provenance.reason_if_missing
+    if provenance.reason_if_missing.startswith("insufficient information"):
+        return REASON_INSUFFICIENT_EVIDENCE, provenance.reason_if_missing
+    if record.get("schema_version") is None or (current_version is not None
+                                                and record.get("schema_version") < current_version):
+        return REASON_HISTORICAL_SNAPSHOT, provenance.reason_if_missing
+    return REASON_NULL, provenance.reason_if_missing
 
 
 def compute_feature_health(records, feature_key, current_version):
@@ -236,13 +286,33 @@ def compute_feature_health(records, feature_key, current_version):
     if total_n == 0:
         return None
 
-    current_rows = [r for r in applicable if (r.get("schema_version") or 0) >= current_version]
-    older_rows = [r for r in applicable if r not in current_rows]
+    cohorts = _PROVENANCE.snapshot_cohorts(applicable)
+    skip_index = _PROVENANCE.context_skip_index()
+
+    no_snapshot_rows = [r for r in applicable if not r.get("has_snapshot")]
+    snapshot_rows = [r for r in applicable if r.get("has_snapshot")]
+    required_count_path = meta.get("required_count_path")
+    not_applicable_rows = []
+    for r in applicable:
+        if not r.get("has_snapshot") or get_feature_value(r, feature_key) is not None:
+            continue
+        count = _get_path(r.get("snap") or {}, required_count_path) if required_count_path else None
+        provenance = field_provenance(r, feature_key, cohorts, skip_index)
+        if count == 0 and provenance.fetch_status != _PROVENANCE.FETCH_FAILED:
+            not_applicable_rows.append(r)
+        elif provenance.applicability == _PROVENANCE.APPLICABILITY_NOT_APPLICABLE:
+            not_applicable_rows.append(r)
+    scored = [r for r in snapshot_rows if r not in not_applicable_rows]
+    scored_n = len(scored)
+
+    current_rows = [r for r in scored if (r.get("schema_version") or 0) >= current_version]
+    older_rows = [r for r in scored if r not in current_rows]
 
     def _present(rows):
         return [r for r in rows if get_feature_value(r, feature_key) is not None]
 
-    missing_pct = round((1 - len(_present(applicable)) / total_n) * 100, 1)
+    missing_pct = round((1 - len(_present(scored)) / scored_n) * 100, 1) if scored_n else 0.0
+    missing_pct_unfiltered = round((1 - len(_present(applicable)) / total_n) * 100, 1)
     live_coverage = (
         round(len(_present(current_rows)) / len(current_rows) * 100, 1) if current_rows else None
     )
@@ -265,25 +335,69 @@ def compute_feature_health(records, feature_key, current_version):
             )
 
     reasons = {}
-    for r in applicable:
+    explanations = {}
+    for r in scored:
         if get_feature_value(r, feature_key) is None:
-            reason = classify_missing_reason(r, feature_key, current_version)
+            reason, explanation = classify_missing_reason(r, feature_key, current_version, cohorts, skip_index)
             reasons[reason] = reasons.get(reason, 0) + 1
+            explanations.setdefault(reason, explanation)
 
     return {
 "key": feature_key,
 "label": meta.get("label", feature_key),
-"status": meta.get("baseline_status", "Unknown"),
+"status": meta.get("baseline_status", derived_baseline_status(reasons, missing_pct)),
 "missing_pct": missing_pct,
+"missing_pct_unfiltered": missing_pct_unfiltered,
+"not_applicable_rows": len(not_applicable_rows),
+"no_snapshot_rows": len(no_snapshot_rows),
 "live_coverage": live_coverage,
 "historical_coverage": historical_coverage,
 "fallback_rate": fallback_rate,
 "default_rate": default_rate,
-"source": meta.get("source", "Unknown"),
-"pipeline": meta.get("pipeline", "Unknown"),
+"source": meta.get("source") or derived_source(applicable, feature_key, cohorts, skip_index),
+"pipeline": meta.get("pipeline") or derived_pipeline(feature_key),
 "recommendation": meta.get("recommendation", ""),
 "priority": meta.get("priority", "Low"),
 "reasons": reasons,
+"reason_explanations": explanations,
 "n": total_n,
+"n_scored": scored_n,
 "n_current_schema": len(current_rows),
     }
+
+
+def derived_baseline_status(reasons, missing_pct):
+
+    if not reasons:
+        return "Healthy"
+    if REASON_API_TIMEOUT in reasons or REASON_FALLBACK_USED in reasons:
+        return "Partial"
+    if missing_pct >= 50:
+        return "Historical Only"
+    return "Partial"
+
+
+def derived_source(records, feature_key, cohorts, skip_index):
+
+    for record in records:
+        provenance = field_provenance(record, feature_key, cohorts, skip_index)
+        if provenance.snapshot_status == _PROVENANCE.SNAPSHOT_PRESENT:
+            return (
+                f"no source string is catalogued for this field; observed evidence is that a writer at schema "
+                f"version {provenance.schema_version} persists it ({provenance.serialization_status}) — "
+                f"see the code locations reported in the pipeline field"
+            )
+    return _PROVENANCE.insufficient_evidence(
+        feature_key,
+        ["the FEATURE_CATALOG source field", "every stored feature_snapshot payload in database/picks.db"],
+    )
+
+
+def derived_pipeline(feature_key):
+
+    hits = _PROVENANCE.locate_field_code(feature_key)
+    if hits:
+        return "produced or referenced at " + ", ".join(hits)
+    return _PROVENANCE.insufficient_evidence(
+        feature_key, ["a whole-repository source scan for this identifier"]
+    )

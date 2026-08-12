@@ -91,10 +91,13 @@ def send_model_output(data: dict) -> bool:
         return False
 
 
-def send_results(result: dict) -> bool:
+def send_results(result: dict, idempotency_key: str = None) -> bool:
 
     try:
-        return _engine.post_to_channel("results", embed=embeds.build_result_embed(result))
+        return _engine.post_to_channel(
+            "results", embed=embeds.build_result_embed(result),
+            idempotency_key=idempotency_key,
+        )
     except Exception:
         logger.warning("discord_service.send_results failed", exc_info=True)
         return False

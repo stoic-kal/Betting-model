@@ -1,0 +1,17 @@
+method,feature,importance
+gradient_boosting_meta,closing_total,0.2913333366711341
+gradient_boosting_meta,away_bp_er_14g,0.24348322334490594
+gradient_boosting_meta,base_probability,0.18215246502761318
+gradient_boosting_meta,probability_difference,0.14637662886881042
+gradient_boosting_meta,confidence,0.12879086341551466
+gradient_boosting_meta,home_hits_accel_5v10,0.007863482672021653
+gradient_boosting_meta,home_runs_accel_10v30,0.0
+gradient_boosting_meta,market_probability,0.0
+logistic_meta,closing_total,0.09369561868737235
+logistic_meta,away_bp_er_14g,0.05724356861609046
+logistic_meta,confidence,0.03496096808949869
+logistic_meta,base_probability,0.030565656064944557
+logistic_meta,home_hits_accel_5v10,0.027918026973741194
+logistic_meta,market_probability,0.023426780506951853
+logistic_meta,probability_difference,0.006167624624333241
+logistic_meta,home_runs_accel_10v30,0.0034444534214725458

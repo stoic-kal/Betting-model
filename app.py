@@ -1,5 +1,7 @@
 import threading
 import time
+import fcntl
+import os
 
 from flask import Flask, render_template
 from flask.json.provider import DefaultJSONProvider
@@ -32,6 +34,8 @@ from routes.game_routes import game_bp
 from routes.picks_routes import picks_bp
 from routes.results_routes import results_bp
 from routes.stats_routes import stats_bp
+from routes.system_routes import system_bp
+from services import dev_mode
 from services.security_service import init_security, run_security_health_check
 
 
@@ -60,6 +64,15 @@ def _migrate_db():
         ("forecast_stage", "TEXT"),
         ("scheduled_start", "TEXT"),
         ("recommendation_tier", "TEXT"),
+        ("theoretical_kelly_units", "REAL"),
+        ("realized_stake_units", "REAL"),
+        ("wager_status", "TEXT"),
+        ("wager_reason", "TEXT"),
+        ("mlb_game_pk", "INTEGER"),
+        ("graded_at", "TEXT"),
+        ("grade_source", "TEXT"),
+        ("notification_sent", "INTEGER NOT NULL DEFAULT 0"),
+        ("notification_sent_at", "TEXT"),
     ]
     for col, typ in migrations:
         if col not in existing:
@@ -71,7 +84,8 @@ def _migrate_db():
     conn.execute("UPDATE picks SET model_version = 'v2' WHERE model_version IS NULL")
     conn.execute("UPDATE picks SET model_build = model_version WHERE model_build IS NULL")
     conn.execute(
-        "UPDATE picks SET recommendation_tier = 'legacy_unclassified' WHERE recommendation_tier IS NULL"
+        """UPDATE picks SET recommendation_tier='historical_only'
+           WHERE recommendation_tier IS NULL OR recommendation_tier='legacy_unclassified'"""
     )
 
     conn.execute("""CREATE TABLE IF NOT EXISTS results (
@@ -80,6 +94,14 @@ def _migrate_db():
         FOREIGN KEY(pick_id) REFERENCES picks(id)
     )""")
     conn.execute("DELETE FROM results WHERE pick_id NOT IN (SELECT id FROM picks)")
+    conn.execute(
+        """DELETE FROM results WHERE id NOT IN (
+               SELECT MIN(id) FROM results WHERE pick_id IS NOT NULL GROUP BY pick_id
+           ) AND pick_id IS NOT NULL"""
+    )
+    conn.execute(
+        "CREATE UNIQUE INDEX IF NOT EXISTS ux_results_pick_id ON results(pick_id)"
+    )
     conn.execute("""UPDATE results SET
         game_id=(SELECT p.game_id FROM picks p WHERE p.id=results.pick_id),
         actual_result=(SELECT p.status FROM picks p WHERE p.id=results.pick_id),
@@ -113,6 +135,18 @@ def _migrate_db():
     conn.execute("""CREATE TABLE IF NOT EXISTS automation_state (
         task_key TEXT PRIMARY KEY, claimed_at TEXT NOT NULL, completed_at TEXT,
         status TEXT NOT NULL, detail TEXT
+    )""")
+    conn.execute("""CREATE TABLE IF NOT EXISTS notification_outbox (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        pick_id INTEGER NOT NULL,
+        notification_type TEXT NOT NULL,
+        idempotency_key TEXT NOT NULL UNIQUE,
+        payload TEXT NOT NULL,
+        status TEXT NOT NULL DEFAULT 'pending',
+        attempts INTEGER NOT NULL DEFAULT 0,
+        claimed_at TEXT, sent_at TEXT, last_error TEXT,
+        UNIQUE(pick_id, notification_type),
+        FOREIGN KEY(pick_id) REFERENCES picks(id)
     )""")
     conn.execute("""CREATE TABLE IF NOT EXISTS market_snapshots (
         id INTEGER PRIMARY KEY AUTOINCREMENT, captured_at TEXT NOT NULL,
@@ -162,6 +196,14 @@ def _migrate_db():
                 else:
                     k = 1.00
                 conn.execute("UPDATE picks SET kelly_units = ? WHERE id = ?", (k, row_id))
+    conn.execute(
+        "UPDATE picks SET theoretical_kelly_units=kelly_units WHERE theoretical_kelly_units IS NULL"
+    )
+    conn.execute(
+        """UPDATE picks SET wager_status='historical_unknown',
+           wager_reason='realized stake was not recorded by the legacy execution pipeline'
+           WHERE wager_status IS NULL"""
+    )
     conn.commit()
     conn.close()
 
@@ -180,6 +222,8 @@ def create_app(config_class=Config):
     app.register_blueprint(results_bp)
     app.register_blueprint(analytics_bp)
     app.register_blueprint(diagnostics_bp)
+    app.register_blueprint(system_bp)
+    dev_mode.init_app(app)
 
     @app.route("/picks")
     def picks():
@@ -256,6 +300,16 @@ def _start_automation_worker(app):
 
 
 if __name__ == "__main__":
+    # Two historical launchd plists can point at this application.  Hold a
+    # process-wide advisory lock before migrations or the scheduler start so a
+    # second launcher can never create another grading worker.
+    _instance_lock = open("/tmp/jingleez-betting-model.lock", "w")
+    try:
+        fcntl.flock(_instance_lock.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except BlockingIOError:
+        raise SystemExit("Another Jingleez betting-model instance is already running")
+    _instance_lock.write(str(os.getpid()))
+    _instance_lock.flush()
     app = create_app()
     _start_automation_worker(app)
     app.run(

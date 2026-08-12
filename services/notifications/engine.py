@@ -11,7 +11,10 @@ class NotificationEngine:
 
         self._channels.setdefault(channel_key, []).append(transport)
 
-    def post_to_channel(self, channel_key: str, content: str = None, embed: dict = None) -> bool:
+    def post_to_channel(
+        self, channel_key: str, content: str = None, embed: dict = None,
+        idempotency_key: str = None,
+    ) -> bool:
 
         transports = self._channels.get(channel_key)
         if not transports:
@@ -29,11 +32,12 @@ class NotificationEngine:
         any_success = False
         for transport in transports:
             try:
-                ok = (
-                    transport.send_embed(embed)
-                    if embed is not None
-                    else transport.send_message(content)
-                )
+                if embed is not None:
+                    ok = (transport.send_embed(embed, idempotency_key=idempotency_key)
+                          if idempotency_key else transport.send_embed(embed))
+                else:
+                    ok = (transport.send_message(content, idempotency_key=idempotency_key)
+                          if idempotency_key else transport.send_message(content))
                 any_success = any_success or ok
             except Exception:
                 logger.warning(

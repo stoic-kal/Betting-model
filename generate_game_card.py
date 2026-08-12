@@ -7,6 +7,8 @@ import pandas as pd
 from datetime import datetime, timedelta
 from pathlib import Path
 from config import ODDS_API_KEY
+from services.prediction_math import expected_value as ev_pct
+from services.prediction_math import kelly_units as _kelly_units
 
 API_KEY = ODDS_API_KEY
 DB_PATH = "database/picks.db"
@@ -135,22 +137,8 @@ def vig_prob(odds_a: list, odds_b: list) -> tuple:
     return ra / t, rb / t
 
 
-def ev_pct(true_prob: float, fair_decimal: float) -> float:
-    return (true_prob * fair_decimal - 1) * 100
-
-
 def kelly_units(true_prob: float, decimal_odds: float, max_u: float = 1.0) -> float:
-    b = decimal_odds - 1
-    q = 1 - true_prob
-    kelly = (true_prob * b - q) / b
-    half_kelly = kelly * 0.5
-    if half_kelly <= 0:
-        return 0.0
-    if half_kelly < 0.05:
-        return min(0.25, max_u)
-    if half_kelly < 0.10:
-        return min(0.50, max_u)
-    return min(1.00, max_u)
+    return _kelly_units(true_prob, decimal_odds, max_units=max_u)
 
 
 def confidence_label(ev: float) -> str:

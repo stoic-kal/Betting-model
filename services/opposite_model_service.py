@@ -3,6 +3,8 @@ import io
 import re
 import sqlite3
 
+from pipeline.calibration_common import brier_score
+
 DB_PATH = "database/picks.db"
 UNIT_DOLLARS = 20.0
 
@@ -42,14 +44,9 @@ def _summary(rows):
     wins = sum(r["opposite_status"] == "won" for r in resolved)
     profit = sum(r["shadow_profit"] for r in resolved if r["shadow_profit"] is not None)
     wagered = sum(UNIT_DOLLARS for r in resolved if r["shadow_profit"] is not None)
-    brier = (
-        sum(
-            (r["opposite_prob"] - (1 if r["opposite_status"] == "won" else 0)) ** 2
-            for r in resolved
-        )
-        / len(resolved)
-        if resolved
-        else None
+    brier = brier_score(
+        [1 if r["opposite_status"] == "won" else 0 for r in resolved],
+        [r["opposite_prob"] for r in resolved],
     )
     return {
 "picks": len(rows),

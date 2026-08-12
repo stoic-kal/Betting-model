@@ -3,9 +3,17 @@ import sqlite3
 from datetime import datetime
 
 from config import today_et
+from pipeline.calibration_common import (
+    DEFAULT_MIN_BUCKET_N,
+    brier_score,
+    expected_calibration_error,
+    log_loss_score,
+    wilson_interval,
+)
 
 DB_PATH = "database/picks.db"
 UNIT_SIZE = 20.0
+CALIBRATION_ECE_BINS = 5
 
 
 def _conn():
@@ -36,17 +44,6 @@ def _load_pending() -> list:
     ]
     conn.close()
     return rows
-
-
-def _wilson_ci(wins: int, n: int, z: float = 1.96) -> tuple:
-
-    if n == 0:
-        return (0.0, 1.0)
-    p_hat = wins / n
-    denom = 1 + z**2 / n
-    centre = (p_hat + z**2 / (2 * n)) / denom
-    margin = (z * math.sqrt(p_hat * (1 - p_hat) / n + z**2 / (4 * n**2))) / denom
-    return (max(0, centre - margin), min(1, centre + margin))
 
 
 def _binomial_p_value(wins: int, n: int, null_p: float = 0.5238) -> float:
@@ -93,7 +90,7 @@ def significance_analysis(picks: list) -> dict:
     be = _break_even_rate(avg_odds)
     edge = wr - be
 
-    ci_lo, ci_hi = _wilson_ci(wins, n)
+    ci_lo, ci_hi = wilson_interval(wins, n)
     p_val = _binomial_p_value(wins, n, null_p=be)
 
     significant = p_val < 0.10
@@ -132,63 +129,18 @@ def _confidence_label(p: float, n: int) -> str:
     return "NOT SIGNIFICANT"
 
 
-def _brier_score(picks: list) -> float:
-
-    if not picks:
-        return None
-    total = sum((float(p["model_prob"]) - (1 if p["status"] == "won" else 0)) ** 2 for p in picks)
-    return round(total / len(picks), 4)
-
-
-def _log_loss(picks: list) -> float:
-
-    if not picks:
-        return None
-    eps = 1e-9
-    total = 0.0
-    for p in picks:
-        prob = max(eps, min(1 - eps, float(p["model_prob"])))
-        outcome = 1 if p["status"] == "won" else 0
-        total += -(outcome * math.log(prob) + (1 - outcome) * math.log(1 - prob))
-    return round(total / len(picks), 4)
-
-
-def _ece(calibration_curve: list) -> float:
-
-    if not calibration_curve:
-        return None
-    total_n = sum(b["n"] for b in calibration_curve)
-    if total_n == 0:
-        return None
-    ece = sum(b["n"] / total_n * abs(b["predicted"] - b["actual"]) / 100 for b in calibration_curve)
-    return round(ece, 4)
-
-
-def _standard_ece(picks: list, bins: int = 5) -> float:
-
-    if not picks:
-        return None
-    total = len(picks)
-    error = 0.0
-    for index in range(bins):
-        low, high = index / bins, (index + 1) / bins
-        bucket = [
-            p
-            for p in picks
-            if low <= float(p["model_prob"]) < high
-            or (index == bins - 1 and float(p["model_prob"]) == 1.0)
-        ]
-        if bucket:
-            predicted = sum(float(p["model_prob"]) for p in bucket) / len(bucket)
-            actual = sum(p["status"] == "won" for p in bucket) / len(bucket)
-            error += len(bucket) / total * abs(predicted - actual)
-    return round(error, 4)
+def _pick_probs_outcomes(picks: list) -> tuple:
+    return (
+        [float(p["model_prob"]) for p in picks],
+        [1 if p["status"] == "won" else 0 for p in picks],
+    )
 
 
 def calibration_analysis(picks: list) -> dict:
 
-    brier = _brier_score(picks)
-    ll = _log_loss(picks)
+    probs, outcomes = _pick_probs_outcomes(picks)
+    brier = round(brier_score(outcomes, probs), 4) if picks else None
+    ll = round(log_loss_score(outcomes, probs), 4) if picks else None
 
     bucket_edges = [0.45, 0.50, 0.525, 0.55, 0.575, 0.60, 0.625, 0.65, 0.70, 0.75, 1.0]
     curve = []
@@ -201,20 +153,23 @@ def calibration_analysis(picks: list) -> dict:
             predicted = round(sum(float(p["model_prob"]) for p in sub) / len(sub) * 100, 1)
             actual = round(won / len(sub) * 100, 1)
             gap = actual - predicted
+            ci_low, ci_high = wilson_interval(won, len(sub))
             curve.append(
                 {
 "range": f"{lo:.3f}–{hi:.3f}",
 "label": f"{lo*100:.1f}–{hi*100:.1f}%",
 "predicted": predicted,
 "actual": actual,
+"actual_ci_lower": round(ci_low * 100, 1),
+"actual_ci_upper": round(ci_high * 100, 1),
 "gap": round(gap, 1),
 "n": len(sub),
 "won": won,
-"reliable": len(sub) >= 5,
+"reliable": len(sub) >= DEFAULT_MIN_BUCKET_N,
                 }
             )
 
-    ece = _standard_ece(picks, bins=5)
+    ece = round(expected_calibration_error(outcomes, probs, n_bins=CALIBRATION_ECE_BINS), 4) if picks else None
 
     return {
 "brier_score": brier,
@@ -225,7 +180,7 @@ def calibration_analysis(picks: list) -> dict:
 "curve": curve,
 "sample_size": len(picks),
 "provisional": len(picks) < 50,
-"ece_bins": 5,
+"ece_bins": CALIBRATION_ECE_BINS,
 "verdict": _calibration_verdict(ece, brier),
     }
 
@@ -311,21 +266,31 @@ def ev_signal_analysis(picks: list) -> dict:
     return {
 "rho": rho,
 "rho_pct": round(rho * 100, 1) if rho else None,
-"verdict": _ev_verdict(rho),
+"verdict": _ev_verdict(rho, len(picks)),
 "buckets": buckets,
     }
 
 
-def _ev_verdict(rho) -> str:
-    if rho is None:
-        return "Need more data"
-    if rho > 0.20:
-        return "Strong positive signal — EV predicts outcomes"
-    if rho > 0.05:
-        return "Weak positive signal — EV partially predictive"
-    if rho > -0.05:
-        return "No signal — EV is not predicting outcomes"
-    return "Negative signal — high EV picks are LOSING more"
+def _ev_verdict(rho, n) -> str:
+    if rho is None or n < 5:
+        return f"Rank correlation is undefined on {n} resolved picks (5 required)"
+    if abs(rho) >= 1.0:
+        return f"Rank correlation between EV and outcome is {rho:+.4f} across {n} resolved picks"
+    se = math.sqrt((1 - rho**2) / (n - 2))
+    t = rho / se if se > 0 else 0.0
+    p = round(math.erfc(abs(t) / math.sqrt(2)), 4)
+    ci_lo = round(math.tanh(math.atanh(rho) - 1.96 / math.sqrt(n - 3)), 4) if n > 3 else None
+    ci_hi = round(math.tanh(math.atanh(rho) + 1.96 / math.sqrt(n - 3)), 4) if n > 3 else None
+    interval = f", 95% interval {ci_lo:+.4f} to {ci_hi:+.4f}" if ci_lo is not None else ""
+    if p < 0.05:
+        return (
+            f"EV ranks {'with' if rho > 0 else 'against'} outcomes at Spearman {rho:+.4f} across {n} resolved "
+            f"picks (t={t:+.2f}, p={p}{interval}), a relationship this sample separates from zero"
+        )
+    return (
+        f"Spearman between EV and outcome is {rho:+.4f} across {n} resolved picks (t={t:+.2f}, p={p}{interval}), "
+        f"which this sample does not separate from zero"
+    )
 
 
 def odds_analysis(picks: list) -> list:
@@ -512,20 +477,37 @@ def totals_deep_dive(picks: list) -> dict:
 
 def _totals_verdict(over_s, under_s) -> str:
     if over_s["n"] == 0 and under_s["n"] == 0:
-        return "No totals picks"
+        return "No resolved totals picks"
     if over_s["n"] == 0:
-        return "Only UNDER picks taken"
+        return f"Only UNDER picks resolved ({under_s['n']}), so no OVER/UNDER comparison is possible"
     if under_s["n"] == 0:
-        return "Only OVER picks taken"
-    if over_s["win_rate"] > 55 and under_s["win_rate"] < 45:
-        return "Model is directionally biased toward OVERs — investigate"
-    if under_s["win_rate"] > 55 and over_s["win_rate"] < 45:
-        return "Model is directionally biased toward UNDERs — investigate"
-    if over_s["win_rate"] > 55 and under_s["win_rate"] > 55:
-        return "Both sides profitable — rare, keep going"
-    if over_s["win_rate"] < 45 and under_s["win_rate"] < 45:
-        return "Both sides losing — Poisson expected runs needs recalibration"
-    return "Mixed performance"
+        return f"Only OVER picks resolved ({over_s['n']}), so no OVER/UNDER comparison is possible"
+
+    parts = []
+    for side in (over_s, under_s):
+        lo, hi = wilson_interval(side["wins"], side["n"])
+        p = _binomial_p_value(side["wins"], side["n"], null_p=side["break_even"] / 100.0)
+        parts.append(
+            f"{side['label']} {side['win_rate']}% over n={side['n']} (95% interval "
+            f"{lo * 100:.1f}–{hi * 100:.1f}%, break-even {side['break_even']}%, p={p})"
+        )
+    over_lo, over_hi = wilson_interval(over_s["wins"], over_s["n"])
+    under_lo, under_hi = wilson_interval(under_s["wins"], under_s["n"])
+    if over_lo > under_hi:
+        separation = (
+            f"; the OVER interval sits entirely above the UNDER interval, a directional gap this sample resolves"
+        )
+    elif under_lo > over_hi:
+        separation = (
+            f"; the UNDER interval sits entirely above the OVER interval, a directional gap this sample resolves"
+        )
+    else:
+        separation = (
+            f"; the two intervals overlap between "
+            f"{max(over_lo, under_lo) * 100:.1f}% and {min(over_hi, under_hi) * 100:.1f}%, so this sample does not "
+            f"separate the two sides"
+        )
+    return " and ".join(parts) + separation
 
 
 LIVE_BETAS = {

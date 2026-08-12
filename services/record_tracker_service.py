@@ -103,6 +103,10 @@ def get_record_tracker(version="v3"):
 "clv": _num(r.get("clv")),
 "ev": _num(r.get("ev")),
 "kelly_units": _num(r.get("kelly_units"), 0),
+"theoretical_kelly_units": _num(r.get("theoretical_kelly_units"), _num(r.get("kelly_units"), 0)),
+"realized_stake_units": _num(r.get("realized_stake_units")),
+"wager_status": r.get("wager_status"),
+"wager_reason": r.get("wager_reason"),
 "status": status,
 "profit": profit,
 "cumulative_profit": round(cum, 2),
@@ -155,7 +159,7 @@ def get_record_tracker(version="v3"):
         }
         row["forecast_stage"] = r.get("forecast_stage")
         row["scheduled_start"] = r.get("scheduled_start")
-        row["recommendation_tier"] = r.get("recommendation_tier") or "legacy_unclassified"
+        row["recommendation_tier"] = r.get("recommendation_tier") or "historical_only"
         rows.append(row)
     resolved = [r for r in rows if r["status"] in ("won", "lost")]
     wins = sum(r["status"] == "won" for r in resolved)

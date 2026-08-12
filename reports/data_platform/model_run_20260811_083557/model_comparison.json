@@ -1,0 +1,638 @@
+{
+  "created_at": "2026-08-11T08:35:57.560609+00:00",
+  "dataset": "data/platform/historical_features.csv",
+  "dataset_sha256": "983a0f630985445206091adab1a3722779c7ae99e76bcb7bd3406ade423e628e",
+  "chronological_split": [
+    0.7,
+    0.15,
+    0.15
+  ],
+  "calibration_candidates": [
+    "sigmoid",
+    "isotonic"
+  ],
+  "calibration_not_implemented": [
+    "temperature_scaling",
+    "beta_calibration"
+  ],
+  "targets": {
+    "home_win": {
+      "lightgbm": {
+        "family": "lightgbm",
+        "calibration": "isotonic",
+        "validation_calibrations": {
+          "sigmoid": {
+            "n": 3409,
+            "auc": 0.6036665413762416,
+            "log_loss": 0.6747345773025467,
+            "brier": 0.24093903475910788,
+            "ece": 0.015378984298822021,
+            "accuracy": 0.5825755353476093
+          },
+          "isotonic": {
+            "n": 3409,
+            "auc": 0.6110419787411628,
+            "log_loss": 0.6699380733638128,
+            "brier": 0.23878115117965684,
+            "ece": 1.698390458615486e-16,
+            "accuracy": 0.58404224112643
+          }
+        },
+        "test": {
+          "n": 3410,
+          "auc": 0.6017094668966294,
+          "log_loss": 0.6750945346054643,
+          "brier": 0.24103537626901073,
+          "ece": 0.026050644765226182,
+          "accuracy": 0.5844574780058651,
+          "bets": 708,
+          "flat_roi": 0.0024249956234426127,
+          "kelly_profit_per_initial_bankroll": 0.08584484506986957
+        },
+        "split": {
+          "train": 15909,
+          "validation": 3409,
+          "test": 3410,
+          "train_end": "2018-07-08",
+          "validation_end": "2019-09-21"
+        }
+      },
+      "extra_trees": {
+        "family": "extra_trees",
+        "calibration": "isotonic",
+        "validation_calibrations": {
+          "sigmoid": {
+            "n": 3409,
+            "auc": 0.6246711126342496,
+            "log_loss": 0.6672240379023615,
+            "brier": 0.23730854680535937,
+            "ece": 0.011062295500819634,
+            "accuracy": 0.5934291581108829
+          },
+          "isotonic": {
+            "n": 3409,
+            "auc": 0.6291470209437685,
+            "log_loss": 0.6634931683916098,
+            "brier": 0.23568321977053697,
+            "ece": 6.840784579715874e-16,
+            "accuracy": 0.5960692285127603
+          }
+        },
+        "test": {
+          "n": 3410,
+          "auc": 0.6129263916936064,
+          "log_loss": 0.670301978169729,
+          "brier": 0.2387402117934171,
+          "ece": 0.023877802918717956,
+          "accuracy": 0.5853372434017595,
+          "bets": 141,
+          "flat_roi": -0.06922110177492856,
+          "kelly_profit_per_initial_bankroll": -0.4880087675132471
+        },
+        "split": {
+          "train": 15909,
+          "validation": 3409,
+          "test": 3410,
+          "train_end": "2018-07-08",
+          "validation_end": "2019-09-21"
+        }
+      },
+      "random_forest": {
+        "family": "random_forest",
+        "calibration": "isotonic",
+        "validation_calibrations": {
+          "sigmoid": {
+            "n": 3409,
+            "auc": 0.6201067640246969,
+            "log_loss": 0.6686273743092549,
+            "brier": 0.23798927531079916,
+            "ece": 0.00847340575719323,
+            "accuracy": 0.5931358169551189
+          },
+          "isotonic": {
+            "n": 3409,
+            "auc": 0.6259348416089502,
+            "log_loss": 0.6638739978675653,
+            "brier": 0.23598917100654163,
+            "ece": 3.1590388204353235e-17,
+            "accuracy": 0.5940158404224113
+          }
+        },
+        "test": {
+          "n": 3410,
+          "auc": 0.6100756623707542,
+          "log_loss": 0.691361529033848,
+          "brier": 0.23948087232262993,
+          "ece": 0.024943804513337386,
+          "accuracy": 0.5900293255131965,
+          "bets": 489,
+          "flat_roi": -0.03817700416128548,
+          "kelly_profit_per_initial_bankroll": -0.9334277517434303
+        },
+        "split": {
+          "train": 15909,
+          "validation": 3409,
+          "test": 3410,
+          "train_end": "2018-07-08",
+          "validation_end": "2019-09-21"
+        }
+      },
+      "logistic_regression": {
+        "family": "logistic_regression",
+        "calibration": "isotonic",
+        "validation_calibrations": {
+          "sigmoid": {
+            "n": 3409,
+            "auc": 0.615882357818399,
+            "log_loss": 0.6702504979643268,
+            "brier": 0.23875563967582908,
+            "ece": 0.01196000586288849,
+            "accuracy": 0.5831622176591376
+          },
+          "isotonic": {
+            "n": 3409,
+            "auc": 0.6215622288061112,
+            "log_loss": 0.6664623647774098,
+            "brier": 0.23706706394107946,
+            "ece": 5.455041262091924e-19,
+            "accuracy": 0.585802288061015
+          }
+        },
+        "test": {
+          "n": 3410,
+          "auc": 0.6106618940726809,
+          "log_loss": 0.6731734382684902,
+          "brier": 0.24010055822415255,
+          "ece": 0.03100168309547309,
+          "accuracy": 0.5821114369501467,
+          "bets": 362,
+          "flat_roi": 0.02486163653940204,
+          "kelly_profit_per_initial_bankroll": 0.44999562136317617
+        },
+        "split": {
+          "train": 15909,
+          "validation": 3409,
+          "test": 3410,
+          "train_end": "2018-07-08",
+          "validation_end": "2019-09-21"
+        }
+      },
+      "catboost": {
+        "family": "catboost",
+        "calibration": "isotonic",
+        "validation_calibrations": {
+          "sigmoid": {
+            "n": 3409,
+            "auc": 0.6233838917048526,
+            "log_loss": 0.6683488141156355,
+            "brier": 0.23781039400139542,
+            "ece": 0.009522771032248328,
+            "accuracy": 0.5931358169551189
+          },
+          "isotonic": {
+            "n": 3409,
+            "auc": 0.6288340251944303,
+            "log_loss": 0.6644736374138995,
+            "brier": 0.23606082111911697,
+            "ece": 2.994573397309567e-17,
+            "accuracy": 0.5987092989146378
+          }
+        },
+        "test": {
+          "n": 3410,
+          "auc": 0.6085821755748346,
+          "log_loss": 0.6726422146389328,
+          "brier": 0.23993142783763186,
+          "ece": 0.02907971129346104,
+          "accuracy": 0.5780058651026393,
+          "bets": 599,
+          "flat_roi": -0.04531933061981854,
+          "kelly_profit_per_initial_bankroll": -1.3573139520635675
+        },
+        "split": {
+          "train": 15909,
+          "validation": 3409,
+          "test": 3410,
+          "train_end": "2018-07-08",
+          "validation_end": "2019-09-21"
+        }
+      },
+      "xgboost": {
+        "family": "xgboost",
+        "calibration": "isotonic",
+        "validation_calibrations": {
+          "sigmoid": {
+            "n": 3409,
+            "auc": 0.6040265210349726,
+            "log_loss": 0.6747699068461959,
+            "brier": 0.24094760824606096,
+            "ece": 0.018300952865679017,
+            "accuracy": 0.5767087122323262
+          },
+          "isotonic": {
+            "n": 3409,
+            "auc": 0.6099494301128165,
+            "log_loss": 0.6693082016504256,
+            "brier": 0.23863249168720296,
+            "ece": 3.890300205800285e-09,
+            "accuracy": 0.5814021707245527
+          }
+        },
+        "test": {
+          "n": 3410,
+          "auc": 0.6020582244910341,
+          "log_loss": 0.6862698225673638,
+          "brier": 0.24145608165739982,
+          "ece": 0.025040372956511407,
+          "accuracy": 0.5870967741935483,
+          "bets": 651,
+          "flat_roi": -0.006762269925382068,
+          "kelly_profit_per_initial_bankroll": -0.22011188607119153
+        },
+        "split": {
+          "train": 15909,
+          "validation": 3409,
+          "test": 3410,
+          "train_end": "2018-07-08",
+          "validation_end": "2019-09-21"
+        }
+      },
+      "hist_gradient_boosting": {
+        "family": "hist_gradient_boosting",
+        "calibration": "isotonic",
+        "validation_calibrations": {
+          "sigmoid": {
+            "n": 3409,
+            "auc": 0.6095920414785008,
+            "log_loss": 0.6731642439148314,
+            "brier": 0.24013948535439306,
+            "ece": 0.012618025070865827,
+            "accuracy": 0.5855089469052508
+          },
+          "isotonic": {
+            "n": 3409,
+            "auc": 0.6163463239236538,
+            "log_loss": 0.668495900361062,
+            "brier": 0.23800649489903974,
+            "ece": 6.337618087182619e-17,
+            "accuracy": 0.5904957465532414
+          }
+        },
+        "test": {
+          "n": 3410,
+          "auc": 0.599359513264749,
+          "log_loss": 0.6866905206963577,
+          "brier": 0.2419099391556814,
+          "ece": 0.024618550924338962,
+          "accuracy": 0.575366568914956,
+          "bets": 627,
+          "flat_roi": -0.12325291022742269,
+          "kelly_profit_per_initial_bankroll": -3.863978735629675
+        },
+        "split": {
+          "train": 15909,
+          "validation": 3409,
+          "test": 3410,
+          "train_end": "2018-07-08",
+          "validation_end": "2019-09-21"
+        }
+      },
+      "champion_ensemble": {
+        "family": "champion_ensemble",
+        "members": [
+          "extra_trees",
+          "catboost",
+          "logistic_regression"
+        ],
+        "calibration": "member_selected",
+        "test": {
+          "n": 3410,
+          "auc": 0.6143937043360692,
+          "log_loss": 0.6704583601306076,
+          "brier": 0.23886845184308336,
+          "ece": 0.0272912935670209,
+          "accuracy": 0.5826979472140762,
+          "bets": 128,
+          "flat_roi": 0.0755905615098339,
+          "kelly_profit_per_initial_bankroll": 0.4837795936629371
+        },
+        "split": {
+          "train": 15909,
+          "validation": 3409,
+          "test": 3410,
+          "train_end": "2018-07-08",
+          "validation_end": "2019-09-21"
+        }
+      }
+    },
+    "over": {
+      "lightgbm": {
+        "family": "lightgbm",
+        "calibration": "isotonic",
+        "validation_calibrations": {
+          "sigmoid": {
+            "n": 3243,
+            "auc": 0.517074469501318,
+            "log_loss": 0.6925836211819314,
+            "brier": 0.2497182676001868,
+            "ece": 0.012055146795155274,
+            "accuracy": 0.5004625346901017
+          },
+          "isotonic": {
+            "n": 3243,
+            "auc": 0.534341778459034,
+            "log_loss": 0.6896366334644972,
+            "brier": 0.2483156909847038,
+            "ece": 7.374099275493639e-17,
+            "accuracy": 0.5257477644156645
+          }
+        },
+        "test": {
+          "n": 3244,
+          "auc": 0.5115848763109037,
+          "log_loss": 0.6942412817408332,
+          "brier": 0.25055815098517603,
+          "ece": 0.015955169679570662,
+          "accuracy": 0.5089395807644883,
+          "bets": 1383,
+          "flat_roi": 0.26564416121763773,
+          "kelly_profit_per_initial_bankroll": 18.369293748199347
+        },
+        "split": {
+          "train": 15134,
+          "validation": 3243,
+          "test": 3244,
+          "train_end": "2018-07-08",
+          "validation_end": "2019-09-22"
+        }
+      },
+      "extra_trees": {
+        "family": "extra_trees",
+        "calibration": "isotonic",
+        "validation_calibrations": {
+          "sigmoid": {
+            "n": 3243,
+            "auc": 0.5156287441092682,
+            "log_loss": 0.693101541383459,
+            "brier": 0.2499771586086402,
+            "ece": 0.0017464179197495882,
+            "accuracy": 0.5023126734505088
+          },
+          "isotonic": {
+            "n": 3243,
+            "auc": 0.526051963957659,
+            "log_loss": 0.6915186181229043,
+            "brier": 0.24924608668894938,
+            "ece": 2.5915474241173097e-16,
+            "accuracy": 0.5192722787542399
+          }
+        },
+        "test": {
+          "n": 3244,
+          "auc": 0.5281014647453004,
+          "log_loss": 0.7026880659333841,
+          "brier": 0.2495538416074278,
+          "ece": 0.006913658019543891,
+          "accuracy": 0.5206535141800247,
+          "bets": 1429,
+          "flat_roi": 0.3235837236991511,
+          "kelly_profit_per_initial_bankroll": 23.12005705830397
+        },
+        "split": {
+          "train": 15134,
+          "validation": 3243,
+          "test": 3244,
+          "train_end": "2018-07-08",
+          "validation_end": "2019-09-22"
+        }
+      },
+      "random_forest": {
+        "family": "random_forest",
+        "calibration": "isotonic",
+        "validation_calibrations": {
+          "sigmoid": {
+            "n": 3243,
+            "auc": 0.5122367475172395,
+            "log_loss": 0.6929279629420123,
+            "brier": 0.24989042060579914,
+            "ece": 0.003742394520991379,
+            "accuracy": 0.5044711686709836
+          },
+          "isotonic": {
+            "n": 3243,
+            "auc": 0.5222240817304584,
+            "log_loss": 0.6910496067570804,
+            "brier": 0.24896071714810522,
+            "ece": 2.1995630383030005e-16,
+            "accuracy": 0.5168054270736971
+          }
+        },
+        "test": {
+          "n": 3244,
+          "auc": 0.5176366631846084,
+          "log_loss": 0.6932512268495898,
+          "brier": 0.25003800197737214,
+          "ece": 0.010652101147026983,
+          "accuracy": 0.5061652281134402,
+          "bets": 1121,
+          "flat_roi": 0.28764121827838884,
+          "kelly_profit_per_initial_bankroll": 16.122290284503517
+        },
+        "split": {
+          "train": 15134,
+          "validation": 3243,
+          "test": 3244,
+          "train_end": "2018-07-08",
+          "validation_end": "2019-09-22"
+        }
+      },
+      "logistic_regression": {
+        "family": "logistic_regression",
+        "calibration": "isotonic",
+        "validation_calibrations": {
+          "sigmoid": {
+            "n": 3243,
+            "auc": 0.5042531179515657,
+            "log_loss": 0.6931052767229968,
+            "brier": 0.24997905260334238,
+            "ece": 0.009550044577529476,
+            "accuracy": 0.494295405488745
+          },
+          "isotonic": {
+            "n": 3243,
+            "auc": 0.5164598175061713,
+            "log_loss": 0.6913865545252383,
+            "brier": 0.2492439948109067,
+            "ece": 2.735332089656183e-17,
+            "accuracy": 0.5115633672525439
+          }
+        },
+        "test": {
+          "n": 3244,
+          "auc": 0.510464801560692,
+          "log_loss": 0.7881267146806853,
+          "brier": 0.2508197499538554,
+          "ece": 0.0063083967522203225,
+          "accuracy": 0.5061652281134402,
+          "bets": 1560,
+          "flat_roi": 0.298645473984543,
+          "kelly_profit_per_initial_bankroll": 23.294346970794024
+        },
+        "split": {
+          "train": 15134,
+          "validation": 3243,
+          "test": 3244,
+          "train_end": "2018-07-08",
+          "validation_end": "2019-09-22"
+        }
+      },
+      "catboost": {
+        "family": "catboost",
+        "calibration": "isotonic",
+        "validation_calibrations": {
+          "sigmoid": {
+            "n": 3243,
+            "auc": 0.5147250231065029,
+            "log_loss": 0.6929590067460992,
+            "brier": 0.24990587648967227,
+            "ece": 0.002202958668623526,
+            "accuracy": 0.5053962380511872
+          },
+          "isotonic": {
+            "n": 3243,
+            "auc": 0.5231510043246245,
+            "log_loss": 0.6916600180078536,
+            "brier": 0.24931711982490304,
+            "ece": 7.137881610679776e-17,
+            "accuracy": 0.5174221399938329
+          }
+        },
+        "test": {
+          "n": 3244,
+          "auc": 0.5246735760434391,
+          "log_loss": 0.7029997969390693,
+          "brier": 0.24973546738600258,
+          "ece": 0.004993027024304666,
+          "accuracy": 0.5141800246609125,
+          "bets": 1293,
+          "flat_roi": 0.30934473905416804,
+          "kelly_profit_per_initial_bankroll": 19.99913737985169
+        },
+        "split": {
+          "train": 15134,
+          "validation": 3243,
+          "test": 3244,
+          "train_end": "2018-07-08",
+          "validation_end": "2019-09-22"
+        }
+      },
+      "xgboost": {
+        "family": "xgboost",
+        "calibration": "isotonic",
+        "validation_calibrations": {
+          "sigmoid": {
+            "n": 3243,
+            "auc": 0.5036061358700407,
+            "log_loss": 0.6930414667224305,
+            "brier": 0.24994718172228447,
+            "ece": 0.011248410807787953,
+            "accuracy": 0.494295405488745
+          },
+          "isotonic": {
+            "n": 3243,
+            "auc": 0.5204189218486723,
+            "log_loss": 0.6914316860226017,
+            "brier": 0.24919219495206305,
+            "ece": 1.4129223117739256e-08,
+            "accuracy": 0.5143385753931545
+          }
+        },
+        "test": {
+          "n": 3244,
+          "auc": 0.5097499532431039,
+          "log_loss": 0.693079782513559,
+          "brier": 0.24997402197137147,
+          "ece": 0.00734947987001869,
+          "accuracy": 0.5052404438964242,
+          "bets": 1093,
+          "flat_roi": 0.2624607616430988,
+          "kelly_profit_per_initial_bankroll": 14.343480623795234
+        },
+        "split": {
+          "train": 15134,
+          "validation": 3243,
+          "test": 3244,
+          "train_end": "2018-07-08",
+          "validation_end": "2019-09-22"
+        }
+      },
+      "hist_gradient_boosting": {
+        "family": "hist_gradient_boosting",
+        "calibration": "isotonic",
+        "validation_calibrations": {
+          "sigmoid": {
+            "n": 3243,
+            "auc": 0.5042586330839479,
+            "log_loss": 0.6931054911098511,
+            "brier": 0.249979146105573,
+            "ece": 0.003980292549366514,
+            "accuracy": 0.5078630897317299
+          },
+          "isotonic": {
+            "n": 3243,
+            "auc": 0.5150042029112292,
+            "log_loss": 0.6921791903562985,
+            "brier": 0.24951974837677,
+            "ece": 0.0,
+            "accuracy": 0.5143385753931545
+          }
+        },
+        "test": {
+          "n": 3244,
+          "auc": 0.5105581252841527,
+          "log_loss": 0.6929558500956511,
+          "brier": 0.24989815162451287,
+          "ece": 0.0025544592870283996,
+          "accuracy": 0.5126387176325524,
+          "bets": 1654,
+          "flat_roi": 0.3047762575714777,
+          "kelly_profit_per_initial_bankroll": 25.204996501160824
+        },
+        "split": {
+          "train": 15134,
+          "validation": 3243,
+          "test": 3244,
+          "train_end": "2018-07-08",
+          "validation_end": "2019-09-22"
+        }
+      },
+      "champion_ensemble": {
+        "family": "champion_ensemble",
+        "members": [
+          "hist_gradient_boosting",
+          "xgboost",
+          "random_forest"
+        ],
+        "calibration": "member_selected",
+        "test": {
+          "n": 3244,
+          "auc": 0.5203493234315153,
+          "log_loss": 0.6925791661837729,
+          "brier": 0.24971692521688213,
+          "ece": 0.005182539538445403,
+          "accuracy": 0.5132552404438965,
+          "bets": 1445,
+          "flat_roi": 0.2995898210523456,
+          "kelly_profit_per_initial_bankroll": 21.6453645710317
+        },
+        "split": {
+          "train": 15134,
+          "validation": 3243,
+          "test": 3244,
+          "train_end": "2018-07-08",
+          "validation_end": "2019-09-22"
+        }
+      }
+    }
+  }
+}

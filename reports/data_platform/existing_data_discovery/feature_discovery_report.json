@@ -1,0 +1,3397 @@
+{
+  "created_at": "2026-08-11T09:04:24.275537+00:00",
+  "gate": "mean log-loss improvement and positive in at least 3/4 expanding folds",
+  "targets": {
+    "home_win": {
+      "baseline_features": 49,
+      "accepted_features": [
+        "home_runs_accel_5v10",
+        "away_walks_accel_5v10"
+      ],
+      "baseline_folds": [
+        {
+          "log_loss": 0.6744140523593137,
+          "auc": 0.5997953339247637
+        },
+        {
+          "log_loss": 0.6717736029392963,
+          "auc": 0.612078263166892
+        },
+        {
+          "log_loss": 0.6711547816810634,
+          "auc": 0.6128015679198618
+        },
+        {
+          "log_loss": 0.6660879091232823,
+          "auc": 0.6268405215959204
+        }
+      ],
+      "final_folds": [
+        {
+          "log_loss": 0.6742177323834689,
+          "auc": 0.5997167359262892
+        },
+        {
+          "log_loss": 0.6713283097381558,
+          "auc": 0.6116236965204284
+        },
+        {
+          "log_loss": 0.6703824784054695,
+          "auc": 0.6140436155485387
+        },
+        {
+          "log_loss": 0.6662087883203436,
+          "auc": 0.627097365713334
+        }
+      ],
+      "family_results": {
+        "rolling_trend": {
+          "features": [
+            "home_runs_accel_5v10",
+            "home_runs_accel_5v30",
+            "home_runs_accel_10v30",
+            "home_runs_allowed_accel_5v10",
+            "home_runs_allowed_accel_5v30",
+            "home_runs_allowed_accel_10v30",
+            "home_hits_accel_5v10",
+            "home_hits_accel_5v30",
+            "home_hits_accel_10v30",
+            "home_walks_accel_5v10",
+            "home_walks_accel_5v30",
+            "home_walks_accel_10v30",
+            "home_strikeouts_accel_5v10",
+            "home_strikeouts_accel_5v30",
+            "home_strikeouts_accel_10v30",
+            "home_run_diff_5g",
+            "home_run_diff_30g",
+            "away_runs_accel_5v10",
+            "away_runs_accel_5v30",
+            "away_runs_accel_10v30",
+            "away_runs_allowed_accel_5v10",
+            "away_runs_allowed_accel_5v30",
+            "away_runs_allowed_accel_10v30",
+            "away_hits_accel_5v10",
+            "away_hits_accel_5v30",
+            "away_hits_accel_10v30",
+            "away_walks_accel_5v10",
+            "away_walks_accel_5v30",
+            "away_walks_accel_10v30",
+            "away_strikeouts_accel_5v10",
+            "away_strikeouts_accel_5v30",
+            "away_strikeouts_accel_10v30",
+            "away_run_diff_5g",
+            "away_run_diff_30g"
+          ],
+          "fold_logloss_improvement": [
+            -0.0010340208181455202,
+            -0.0006786878697125909,
+            0.0005841247331431765,
+            -0.0005269674715908668
+          ],
+          "mean_improvement": -0.00041388785657645033,
+          "accepted": false
+        },
+        "recent_form": {
+          "features": [
+            "combined_scoring_form_5g",
+            "combined_prevention_form_5g",
+            "run_environment_form_5g",
+            "combined_scoring_form_10g",
+            "combined_prevention_form_10g",
+            "run_environment_form_10g",
+            "combined_scoring_form_30g",
+            "combined_prevention_form_30g",
+            "run_environment_form_30g",
+            "rest_advantage"
+          ],
+          "fold_logloss_improvement": [
+            -0.000899207053225437,
+            -0.0004516662110161107,
+            -0.000574103436368989,
+            0.0004422498476962522
+          ],
+          "mean_improvement": -0.00037068171322857113,
+          "accepted": false
+        },
+        "market_derived": {
+          "features": [
+            "market_home_logit",
+            "market_favorite_strength",
+            "market_price_asymmetry",
+            "total_juice_skew",
+            "closing_total_prior_z"
+          ],
+          "fold_logloss_improvement": [
+            -0.00023654051469923498,
+            -0.0004310322005655065,
+            -0.0011672593170604095,
+            0.0004829862763394699
+          ],
+          "mean_improvement": -0.0003379614389964203,
+          "accepted": false
+        },
+        "bullpen": {
+          "features": [
+            "home_bp_outs_3g",
+            "home_bp_er_3g",
+            "home_bp_hits_3g",
+            "home_bp_bb_3g",
+            "home_bp_so_3g",
+            "home_bp_hr_3g",
+            "home_bp_pitches_3g",
+            "home_bp_era_3g",
+            "home_bp_whip_3g",
+            "home_bp_k_minus_bb_3g",
+            "home_bp_pitches_per_out_3g",
+            "home_bp_outs_7g",
+            "home_bp_er_7g",
+            "home_bp_hits_7g",
+            "home_bp_bb_7g",
+            "home_bp_so_7g",
+            "home_bp_hr_7g",
+            "home_bp_pitches_7g",
+            "home_bp_era_7g",
+            "home_bp_whip_7g",
+            "home_bp_k_minus_bb_7g",
+            "home_bp_pitches_per_out_7g",
+            "home_bp_outs_14g",
+            "home_bp_er_14g",
+            "home_bp_hits_14g",
+            "home_bp_bb_14g",
+            "home_bp_so_14g",
+            "home_bp_hr_14g",
+            "home_bp_pitches_14g",
+            "home_bp_era_14g",
+            "home_bp_whip_14g",
+            "home_bp_k_minus_bb_14g",
+            "home_bp_pitches_per_out_14g",
+            "away_bp_outs_3g",
+            "away_bp_er_3g",
+            "away_bp_hits_3g",
+            "away_bp_bb_3g",
+            "away_bp_so_3g",
+            "away_bp_hr_3g",
+            "away_bp_pitches_3g",
+            "away_bp_era_3g",
+            "away_bp_whip_3g",
+            "away_bp_k_minus_bb_3g",
+            "away_bp_pitches_per_out_3g",
+            "away_bp_outs_7g",
+            "away_bp_er_7g",
+            "away_bp_hits_7g",
+            "away_bp_bb_7g",
+            "away_bp_so_7g",
+            "away_bp_hr_7g",
+            "away_bp_pitches_7g",
+            "away_bp_era_7g",
+            "away_bp_whip_7g",
+            "away_bp_k_minus_bb_7g",
+            "away_bp_pitches_per_out_7g",
+            "away_bp_outs_14g",
+            "away_bp_er_14g",
+            "away_bp_hits_14g",
+            "away_bp_bb_14g",
+            "away_bp_so_14g",
+            "away_bp_hr_14g",
+            "away_bp_pitches_14g",
+            "away_bp_era_14g",
+            "away_bp_whip_14g",
+            "away_bp_k_minus_bb_14g",
+            "away_bp_pitches_per_out_14g"
+          ],
+          "fold_logloss_improvement": [
+            -0.0023151117610480387,
+            0.0011014812615938174,
+            -0.0004019270840962541,
+            -0.00012513304517691726
+          ],
+          "mean_improvement": -0.00043517265718184817,
+          "accepted": false
+        },
+        "interactions": {
+          "features": [
+            "market_logit_x_run_form",
+            "market_strength_x_form_disagreement",
+            "total_x_scoring_acceleration",
+            "bullpen_era_diff_7g",
+            "bullpen_quality_x_rest",
+            "bullpen_workload_diff_3g",
+            "total_x_bullpen_era"
+          ],
+          "fold_logloss_improvement": [
+            -0.0006489770913561399,
+            4.301821724350674e-05,
+            -0.00010677465838004885,
+            1.834711523485133e-06
+          ],
+          "mean_improvement": -0.00017772470524229922,
+          "accepted": false
+        }
+      },
+      "individual_results": [
+        {
+          "feature": "home_runs_accel_5v10",
+          "family": "rolling_trend",
+          "fold_improvement": [
+            0.0001635894940109628,
+            0.00012960738986089737,
+            -3.611678104298299e-05,
+            0.0008877240450297919
+          ],
+          "mean_improvement": 0.00028620103696466725,
+          "accepted": true
+        },
+        {
+          "feature": "home_runs_accel_5v30",
+          "family": "rolling_trend",
+          "fold_improvement": [
+            -0.0003787141264168792,
+            0.00042626710530202505,
+            0.00026837607166341204,
+            -0.0006707841682912496
+          ],
+          "mean_improvement": -8.871377943567293e-05,
+          "accepted": false
+        },
+        {
+          "feature": "home_runs_accel_10v30",
+          "family": "rolling_trend",
+          "fold_improvement": [
+            -0.0005432563293822357,
+            0.00029430172339284244,
+            0.0004749221993439745,
+            -0.0010631794916506898
+          ],
+          "mean_improvement": -0.00020930297457402713,
+          "accepted": false
+        },
+        {
+          "feature": "home_runs_allowed_accel_5v10",
+          "family": "rolling_trend",
+          "fold_improvement": [
+            -0.000377940864977111,
+            0.0003346449591961065,
+            0.00024988931521585656,
+            -0.0007225701589264055
+          ],
+          "mean_improvement": -0.00012899418737288837,
+          "accepted": false
+        },
+        {
+          "feature": "home_runs_allowed_accel_5v30",
+          "family": "rolling_trend",
+          "fold_improvement": [
+            -0.0006180364245821357,
+            0.00035511325247938874,
+            0.00017355788990858212,
+            -0.0011842996941342498
+          ],
+          "mean_improvement": -0.00031841624408210367,
+          "accepted": false
+        },
+        {
+          "feature": "home_runs_allowed_accel_10v30",
+          "family": "rolling_trend",
+          "fold_improvement": [
+            -0.0005451195392868202,
+            0.00013405275049926946,
+            0.0002180431030865959,
+            -0.001109806765386523
+          ],
+          "mean_improvement": -0.00032570761277186944,
+          "accepted": false
+        },
+        {
+          "feature": "home_hits_accel_5v10",
+          "family": "rolling_trend",
+          "fold_improvement": [
+            -0.0005134370218741191,
+            -0.0002808348166855046,
+            2.4009113491763046e-05,
+            -0.001130342856131783
+          ],
+          "mean_improvement": -0.0004751513952999109,
+          "accepted": false
+        },
+        {
+          "feature": "home_hits_accel_5v30",
+          "family": "rolling_trend",
+          "fold_improvement": [
+            -0.0005491248885953759,
+            0.00030588352264260266,
+            0.0006105743517635931,
+            -0.0009943897888274877
+          ],
+          "mean_improvement": -0.00015676420075416697,
+          "accepted": false
+        },
+        {
+          "feature": "home_hits_accel_10v30",
+          "family": "rolling_trend",
+          "fold_improvement": [
+            -0.00017833934165278897,
+            -0.00022948571908243398,
+            0.0003868038387569994,
+            -0.0008516605497776997
+          ],
+          "mean_improvement": -0.0002181704429389808,
+          "accepted": false
+        },
+        {
+          "feature": "home_walks_accel_5v10",
+          "family": "rolling_trend",
+          "fold_improvement": [
+            -0.00068339043766108,
+            0.00020797802526140163,
+            0.0005997622180432538,
+            -0.0007280663476051386
+          ],
+          "mean_improvement": -0.00015092913549039078,
+          "accepted": false
+        },
+        {
+          "feature": "home_walks_accel_5v30",
+          "family": "rolling_trend",
+          "fold_improvement": [
+            -0.0007836835776887652,
+            -6.795506773238369e-05,
+            0.0003131643382670024,
+            -0.0014941852901562136
+          ],
+          "mean_improvement": -0.00050816489932759,
+          "accepted": false
+        },
+        {
+          "feature": "home_walks_accel_10v30",
+          "family": "rolling_trend",
+          "fold_improvement": [
+            -0.00020012016505799313,
+            8.960258542600741e-05,
+            0.00034123039901035046,
+            -0.0011754367766855234
+          ],
+          "mean_improvement": -0.00023618098932678966,
+          "accepted": false
+        },
+        {
+          "feature": "home_strikeouts_accel_5v10",
+          "family": "rolling_trend",
+          "fold_improvement": [
+            -0.0008852724638671594,
+            -0.00011822522939930469,
+            0.00035651002157521816,
+            -0.0007509721775531553
+          ],
+          "mean_improvement": -0.0003494899623111003,
+          "accepted": false
+        },
+        {
+          "feature": "home_strikeouts_accel_5v30",
+          "family": "rolling_trend",
+          "fold_improvement": [
+            -0.0005602845303387394,
+            0.000487328091100081,
+            0.0006117084812471418,
+            -0.0009594497003694302
+          ],
+          "mean_improvement": -0.00010517441459023669,
+          "accepted": false
+        },
+        {
+          "feature": "home_strikeouts_accel_10v30",
+          "family": "rolling_trend",
+          "fold_improvement": [
+            -0.0006801965225663453,
+            -0.0002346823667986886,
+            0.0007980552067948787,
+            -0.0011177585656860778
+          ],
+          "mean_improvement": -0.00030864556206405824,
+          "accepted": false
+        },
+        {
+          "feature": "home_run_diff_5g",
+          "family": "rolling_trend",
+          "fold_improvement": [
+            -0.0007210423431059931,
+            0.00018050542472725084,
+            0.0002288117752815566,
+            -0.0010124011649441655
+          ],
+          "mean_improvement": -0.0003310315770103378,
+          "accepted": false
+        },
+        {
+          "feature": "home_run_diff_30g",
+          "family": "rolling_trend",
+          "fold_improvement": [
+            -0.0005886308686451347,
+            0.0002493547286783748,
+            2.4804849332649148e-05,
+            -0.0007791093131757076
+          ],
+          "mean_improvement": -0.0002733951509524546,
+          "accepted": false
+        },
+        {
+          "feature": "away_runs_accel_5v10",
+          "family": "rolling_trend",
+          "fold_improvement": [
+            -0.0003280692955545117,
+            0.0002186867202532694,
+            0.0004194859608753765,
+            -0.001092920157825028
+          ],
+          "mean_improvement": -0.00019570419306272346,
+          "accepted": false
+        },
+        {
+          "feature": "away_runs_accel_5v30",
+          "family": "rolling_trend",
+          "fold_improvement": [
+            -0.0006138362095592376,
+            0.00050675675391465,
+            0.0003914294632010318,
+            -0.0009309213035589847
+          ],
+          "mean_improvement": -0.00016164282400063512,
+          "accepted": false
+        },
+        {
+          "feature": "away_runs_accel_10v30",
+          "family": "rolling_trend",
+          "fold_improvement": [
+            -0.0005310064678281101,
+            0.0001741249382054555,
+            0.0004367364888651082,
+            -0.0010179231968302505
+          ],
+          "mean_improvement": -0.00023451705939694922,
+          "accepted": false
+        },
+        {
+          "feature": "away_runs_allowed_accel_5v10",
+          "family": "rolling_trend",
+          "fold_improvement": [
+            -0.00032266910511358216,
+            -0.00046679350593337166,
+            8.402811883312378e-05,
+            -0.000929699427674402
+          ],
+          "mean_improvement": -0.000408783479972058,
+          "accepted": false
+        },
+        {
+          "feature": "away_runs_allowed_accel_5v30",
+          "family": "rolling_trend",
+          "fold_improvement": [
+            -0.0002736112818378933,
+            0.00036464290780602315,
+            0.00044699740118636644,
+            -0.0012383876680073236
+          ],
+          "mean_improvement": -0.00017508966021320682,
+          "accepted": false
+        },
+        {
+          "feature": "away_runs_allowed_accel_10v30",
+          "family": "rolling_trend",
+          "fold_improvement": [
+            -0.00015008037179098377,
+            0.0001309247710959971,
+            0.00045439252296630706,
+            -0.001010686709399078
+          ],
+          "mean_improvement": -0.00014386244678193938,
+          "accepted": false
+        },
+        {
+          "feature": "away_hits_accel_5v10",
+          "family": "rolling_trend",
+          "fold_improvement": [
+            6.88525080714264e-05,
+            -0.00012187867318269596,
+            0.0003508967467983348,
+            -0.001055400188429978
+          ],
+          "mean_improvement": -0.00018938240168572817,
+          "accepted": false
+        },
+        {
+          "feature": "away_hits_accel_5v30",
+          "family": "rolling_trend",
+          "fold_improvement": [
+            -0.0003684583209989656,
+            0.0004033339161946259,
+            0.0008111618612719473,
+            -0.0014729440360075063
+          ],
+          "mean_improvement": -0.00015672664488497468,
+          "accepted": false
+        },
+        {
+          "feature": "away_hits_accel_10v30",
+          "family": "rolling_trend",
+          "fold_improvement": [
+            -0.00021443269597198888,
+            -4.912889435060297e-05,
+            0.0004079231263849348,
+            -0.0010097223312207637
+          ],
+          "mean_improvement": -0.0002163401987896052,
+          "accepted": false
+        },
+        {
+          "feature": "away_walks_accel_5v10",
+          "family": "rolling_trend",
+          "fold_improvement": [
+            3.2730481833831426e-05,
+            0.00031568581127960904,
+            0.0008084200566368382,
+            -0.0010086032420910662
+          ],
+          "mean_improvement": 3.705827691480312e-05,
+          "accepted": true
+        },
+        {
+          "feature": "away_walks_accel_5v30",
+          "family": "rolling_trend",
+          "fold_improvement": [
+            -0.00040518731601735247,
+            -0.00028305584655974325,
+            -0.0002865525289560411,
+            0.0001549807313870888
+          ],
+          "mean_improvement": -0.000204953740036512,
+          "accepted": false
+        },
+        {
+          "feature": "away_walks_accel_10v30",
+          "family": "rolling_trend",
+          "fold_improvement": [
+            -0.00044615707790651715,
+            -0.00039494260229089306,
+            -0.000817368245730199,
+            -1.702839999540018e-05
+          ],
+          "mean_improvement": -0.00041887408148075234,
+          "accepted": false
+        },
+        {
+          "feature": "away_strikeouts_accel_5v10",
+          "family": "rolling_trend",
+          "fold_improvement": [
+            -0.00021303110478887444,
+            -0.00042525915676006054,
+            -0.0007538238007379627,
+            7.055933394750635e-05
+          ],
+          "mean_improvement": -0.00033038868208484784,
+          "accepted": false
+        },
+        {
+          "feature": "away_strikeouts_accel_5v30",
+          "family": "rolling_trend",
+          "fold_improvement": [
+            -5.5342780280631665e-05,
+            -0.0005833052237652625,
+            -0.0007691685641828538,
+            -9.795352415442604e-05
+          ],
+          "mean_improvement": -0.0003764425230957935,
+          "accepted": false
+        },
+        {
+          "feature": "away_strikeouts_accel_10v30",
+          "family": "rolling_trend",
+          "fold_improvement": [
+            -0.0005110082646985203,
+            -5.131304677985504e-05,
+            -0.0008905945147391625,
+            0.000565133330053369
+          ],
+          "mean_improvement": -0.00022194562404104223,
+          "accepted": false
+        },
+        {
+          "feature": "away_run_diff_5g",
+          "family": "rolling_trend",
+          "fold_improvement": [
+            -0.00030328531573375894,
+            -0.0005414638798275639,
+            -0.0006830270193147747,
+            -4.676037063566785e-05
+          ],
+          "mean_improvement": -0.00039363414637794136,
+          "accepted": false
+        },
+        {
+          "feature": "away_run_diff_30g",
+          "family": "rolling_trend",
+          "fold_improvement": [
+            -0.0007117103217164633,
+            -0.0005102284561855353,
+            -0.0006486045272728891,
+            -0.00019049482718225264
+          ],
+          "mean_improvement": -0.0005152595330892851,
+          "accepted": false
+        },
+        {
+          "feature": "combined_scoring_form_5g",
+          "family": "recent_form",
+          "fold_improvement": [
+            -0.00014327860755591892,
+            -0.00016315448094894602,
+            -0.0009988357355584787,
+            0.00010909128070646368
+          ],
+          "mean_improvement": -0.00029904438583922,
+          "accepted": false
+        },
+        {
+          "feature": "combined_prevention_form_5g",
+          "family": "recent_form",
+          "fold_improvement": [
+            -0.0001843596761432753,
+            2.7332336022145576e-05,
+            -0.0008383261798827757,
+            0.00020597720888781978
+          ],
+          "mean_improvement": -0.0001973440777790214,
+          "accepted": false
+        },
+        {
+          "feature": "run_environment_form_5g",
+          "family": "recent_form",
+          "fold_improvement": [
+            -0.000391520686114033,
+            -0.0002950215471659856,
+            -0.001174247847628429,
+            9.995448978439292e-05
+          ],
+          "mean_improvement": -0.0004402088977810137,
+          "accepted": false
+        },
+        {
+          "feature": "combined_scoring_form_10g",
+          "family": "recent_form",
+          "fold_improvement": [
+            -0.00036424094424447606,
+            -0.0001265055110276636,
+            -0.0008982123355056881,
+            9.458827274411163e-05
+          ],
+          "mean_improvement": -0.00032359262950842904,
+          "accepted": false
+        },
+        {
+          "feature": "combined_prevention_form_10g",
+          "family": "recent_form",
+          "fold_improvement": [
+            -0.0003433157071420778,
+            -0.0003604909847859661,
+            -0.0010573504887416707,
+            6.746886964115184e-05
+          ],
+          "mean_improvement": -0.0004234220777571407,
+          "accepted": false
+        },
+        {
+          "feature": "run_environment_form_10g",
+          "family": "recent_form",
+          "fold_improvement": [
+            -0.00041490240163666314,
+            -0.0003244423784279915,
+            -0.0008569400930162896,
+            2.4243112970112612e-05
+          ],
+          "mean_improvement": -0.0003930104400277079,
+          "accepted": false
+        },
+        {
+          "feature": "combined_scoring_form_30g",
+          "family": "recent_form",
+          "fold_improvement": [
+            -0.000356803334084721,
+            -0.00011463408286094268,
+            -0.0009939483383187842,
+            0.0006111133477879616
+          ],
+          "mean_improvement": -0.00021356810186912156,
+          "accepted": false
+        },
+        {
+          "feature": "combined_prevention_form_30g",
+          "family": "recent_form",
+          "fold_improvement": [
+            -0.000501150714933396,
+            -7.804788054621703e-05,
+            -0.0007651453196299007,
+            0.0005299884115007591
+          ],
+          "mean_improvement": -0.00020358887590218866,
+          "accepted": false
+        },
+        {
+          "feature": "run_environment_form_30g",
+          "family": "recent_form",
+          "fold_improvement": [
+            7.119940104471922e-05,
+            -0.00045583004183447073,
+            -0.0009107264851963004,
+            -4.885784172248275e-05
+          ],
+          "mean_improvement": -0.00033605374192713366,
+          "accepted": false
+        },
+        {
+          "feature": "rest_advantage",
+          "family": "recent_form",
+          "fold_improvement": [
+            -0.0001001381926618583,
+            -0.000498516349278999,
+            -0.00019555216757061178,
+            9.476355239546042e-05
+          ],
+          "mean_improvement": -0.00017486078927900217,
+          "accepted": false
+        },
+        {
+          "feature": "market_home_logit",
+          "family": "market_derived",
+          "fold_improvement": [
+            -0.00024923427882928006,
+            -0.0008507878991996787,
+            -0.0012069999256365538,
+            0.00010148384242514297
+          ],
+          "mean_improvement": -0.0005513845653100924,
+          "accepted": false
+        },
+        {
+          "feature": "market_favorite_strength",
+          "family": "market_derived",
+          "fold_improvement": [
+            -5.125992786847444e-05,
+            -0.0007701726153886979,
+            -0.0010961586340177965,
+            -1.6295882106165394e-05
+          ],
+          "mean_improvement": -0.00048347176484528354,
+          "accepted": false
+        },
+        {
+          "feature": "market_price_asymmetry",
+          "family": "market_derived",
+          "fold_improvement": [
+            -0.00011879452484286901,
+            -0.0004980067777646813,
+            -0.00078579673433532,
+            0.00012894532987728358
+          ],
+          "mean_improvement": -0.0003184131767663967,
+          "accepted": false
+        },
+        {
+          "feature": "total_juice_skew",
+          "family": "market_derived",
+          "fold_improvement": [
+            -0.0004886672564586858,
+            -7.134181862344935e-05,
+            -0.0009392819294136157,
+            0.00038861740692119895
+          ],
+          "mean_improvement": -0.00027766839939363797,
+          "accepted": false
+        },
+        {
+          "feature": "closing_total_prior_z",
+          "family": "market_derived",
+          "fold_improvement": [
+            0.00022898594915909953,
+            -0.0002596519088956528,
+            -0.0008154018068328162,
+            0.00046229487805216074
+          ],
+          "mean_improvement": -9.594322212930217e-05,
+          "accepted": false
+        },
+        {
+          "feature": "home_bp_outs_3g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.0003552467163125961,
+            -0.0003438814869709539,
+            -0.0005880283507123663,
+            0.00012294212587837805
+          ],
+          "mean_improvement": -0.00029105360702938454,
+          "accepted": false
+        },
+        {
+          "feature": "home_bp_er_3g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.0007648015689859511,
+            -0.0007552578330384252,
+            -0.0008272449347178634,
+            0.0003894760015291654
+          ],
+          "mean_improvement": -0.0004894570838032686,
+          "accepted": false
+        },
+        {
+          "feature": "home_bp_hits_3g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.0004737589820151822,
+            -0.0006924465601657603,
+            -0.0008733871955006745,
+            8.51266502732706e-07
+          ],
+          "mean_improvement": -0.0005096853677947211,
+          "accepted": false
+        },
+        {
+          "feature": "home_bp_bb_3g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -5.956027720255275e-05,
+            -0.0004305965781463694,
+            -0.000826205568367766,
+            0.00012184434841966407
+          ],
+          "mean_improvement": -0.00029862951882425604,
+          "accepted": false
+        },
+        {
+          "feature": "home_bp_so_3g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.00023674059676026538,
+            -0.0008470982296026053,
+            -0.0008842282763334985,
+            -0.00019387004845727862
+          ],
+          "mean_improvement": -0.000540484287788412,
+          "accepted": false
+        },
+        {
+          "feature": "home_bp_hr_3g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.00044280286167464045,
+            -0.0002063304345181205,
+            -0.0005654598285197432,
+            0.0005770384910556148
+          ],
+          "mean_improvement": -0.00015938865841422234,
+          "accepted": false
+        },
+        {
+          "feature": "home_bp_pitches_3g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.0005341314395396202,
+            -0.000297068304008663,
+            -0.0009749385270454436,
+            0.0001610570506396236
+          ],
+          "mean_improvement": -0.0004112703049885258,
+          "accepted": false
+        },
+        {
+          "feature": "home_bp_era_3g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.0006329899313273213,
+            -0.0005542728360503624,
+            -0.0007316943651781704,
+            0.0006078391585740972
+          ],
+          "mean_improvement": -0.0003277794934954392,
+          "accepted": false
+        },
+        {
+          "feature": "home_bp_whip_3g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.00040346185581185967,
+            -0.0004660001263838698,
+            -0.0008395558266832692,
+            0.00015359669998626924
+          ],
+          "mean_improvement": -0.00038885527722318236,
+          "accepted": false
+        },
+        {
+          "feature": "home_bp_k_minus_bb_3g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.0004622300797166856,
+            -0.00030202399886813946,
+            -0.00045460597875590647,
+            -0.00035567491948251817
+          ],
+          "mean_improvement": -0.00039363374420581243,
+          "accepted": false
+        },
+        {
+          "feature": "home_bp_pitches_per_out_3g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.00045560355899443294,
+            -0.000801546514948015,
+            -0.0006986058495459524,
+            -8.885215113996203e-06
+          ],
+          "mean_improvement": -0.0004911602846505991,
+          "accepted": false
+        },
+        {
+          "feature": "home_bp_outs_7g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.0005138885078128652,
+            -0.0003610668577549436,
+            -0.0008865246909658397,
+            1.0179667418674931e-05
+          ],
+          "mean_improvement": -0.0004378250972787434,
+          "accepted": false
+        },
+        {
+          "feature": "home_bp_er_7g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.00026019285078549004,
+            -0.00020014744276786178,
+            -0.0007303070296300618,
+            0.0004663256236818736
+          ],
+          "mean_improvement": -0.000181080424875385,
+          "accepted": false
+        },
+        {
+          "feature": "home_bp_hits_7g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.0002261047515501602,
+            -0.00043684398531307345,
+            -0.0010437307699463494,
+            7.965294609513229e-05
+          ],
+          "mean_improvement": -0.0004067566401786127,
+          "accepted": false
+        },
+        {
+          "feature": "home_bp_bb_7g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -8.397299057938401e-05,
+            4.568310649988305e-05,
+            -0.0006737960448901514,
+            -5.1183010698951925e-05
+          ],
+          "mean_improvement": -0.00019081723491715108,
+          "accepted": false
+        },
+        {
+          "feature": "home_bp_so_7g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.000532332699183069,
+            -0.0002532171129173699,
+            -0.001136015975371274,
+            0.00010018981728621146
+          ],
+          "mean_improvement": -0.00045534399254637536,
+          "accepted": false
+        },
+        {
+          "feature": "home_bp_hr_7g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.0002860216449874775,
+            -0.0002774887620166089,
+            -0.0008345516589968183,
+            0.0003115179700535764
+          ],
+          "mean_improvement": -0.00027163602398683206,
+          "accepted": false
+        },
+        {
+          "feature": "home_bp_pitches_7g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.0006937704154131863,
+            -0.00027195479545960577,
+            -0.0006666751292864204,
+            -0.00014352684423390993
+          ],
+          "mean_improvement": -0.0004439817960982806,
+          "accepted": false
+        },
+        {
+          "feature": "home_bp_era_7g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.0002886167013499419,
+            -0.00025859733625632764,
+            -0.0007926495595340644,
+            0.0003220596809522247
+          ],
+          "mean_improvement": -0.0002544509790470273,
+          "accepted": false
+        },
+        {
+          "feature": "home_bp_whip_7g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.0001618695702786388,
+            -0.00011833541092542976,
+            -0.0011841458419674655,
+            0.000194808603689145
+          ],
+          "mean_improvement": -0.0003173855548705973,
+          "accepted": false
+        },
+        {
+          "feature": "home_bp_k_minus_bb_7g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.00038209470806460644,
+            -0.000341716481405796,
+            -0.0010460744452669424,
+            0.00021245117810331227
+          ],
+          "mean_improvement": -0.00038935861415850814,
+          "accepted": false
+        },
+        {
+          "feature": "home_bp_pitches_per_out_7g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -9.682668474564338e-05,
+            -0.0004148818169170676,
+            -0.0008452276160795247,
+            0.0004270144717851698
+          ],
+          "mean_improvement": -0.00023248041148926646,
+          "accepted": false
+        },
+        {
+          "feature": "home_bp_outs_14g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.0003404881077774258,
+            -0.00024009831141891258,
+            -0.0012830970453164836,
+            -0.00029960850581756127
+          ],
+          "mean_improvement": -0.0005408229925825958,
+          "accepted": false
+        },
+        {
+          "feature": "home_bp_er_14g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.0008443174022420008,
+            -0.000190043459772693,
+            -0.0005142168182963314,
+            0.00015340219448645165
+          ],
+          "mean_improvement": -0.0003487938714561434,
+          "accepted": false
+        },
+        {
+          "feature": "home_bp_hits_14g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.0002835343193529072,
+            -0.00018950859972544087,
+            -0.0009458381600253585,
+            0.000165805904615568
+          ],
+          "mean_improvement": -0.00031326879362203464,
+          "accepted": false
+        },
+        {
+          "feature": "home_bp_bb_14g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.00035370064375084276,
+            -0.00046658019581335974,
+            -0.0008784749071901743,
+            0.00016649902556076235
+          ],
+          "mean_improvement": -0.0003830641802984036,
+          "accepted": false
+        },
+        {
+          "feature": "home_bp_so_14g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.0004517824171560436,
+            -7.86613486994936e-05,
+            -0.000767626404448718,
+            0.00016144950766816546
+          ],
+          "mean_improvement": -0.00028415516565902244,
+          "accepted": false
+        },
+        {
+          "feature": "home_bp_hr_14g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.0004731993173204829,
+            -0.0007784008854141433,
+            -0.000633170506067593,
+            9.15779272806505e-05
+          ],
+          "mean_improvement": -0.00044829819538039217,
+          "accepted": false
+        },
+        {
+          "feature": "home_bp_pitches_14g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.0008824577313474302,
+            -0.000333977426891896,
+            -0.000497194643797938,
+            0.00041042041015393327
+          ],
+          "mean_improvement": -0.00032580234797083274,
+          "accepted": false
+        },
+        {
+          "feature": "home_bp_era_14g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.000246411976465688,
+            -0.00024781221389469366,
+            -0.0007130218762589902,
+            0.0004545798359062436
+          ],
+          "mean_improvement": -0.00018816655767828205,
+          "accepted": false
+        },
+        {
+          "feature": "home_bp_whip_14g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.00010531604907404457,
+            -0.0005384355135393815,
+            -0.0001960666808188405,
+            -0.00019548162860349994
+          ],
+          "mean_improvement": -0.0002588249680089416,
+          "accepted": false
+        },
+        {
+          "feature": "home_bp_k_minus_bb_14g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.0007284788102135398,
+            -0.0005491430053226054,
+            -0.001215914601621404,
+            0.00042525272808024983
+          ],
+          "mean_improvement": -0.0005170709222693248,
+          "accepted": false
+        },
+        {
+          "feature": "home_bp_pitches_per_out_14g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.0007733153344696708,
+            -0.00033638340774722053,
+            -0.0006829659168230418,
+            -0.0002822672715881991
+          ],
+          "mean_improvement": -0.000518732982657033,
+          "accepted": false
+        },
+        {
+          "feature": "away_bp_outs_3g",
+          "family": "bullpen",
+          "fold_improvement": [
+            0.00015540567239280545,
+            -0.00041196925707598364,
+            -0.0009316331360968988,
+            2.6773059121909526e-06
+          ],
+          "mean_improvement": -0.0002963798537169715,
+          "accepted": false
+        },
+        {
+          "feature": "away_bp_er_3g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.00012625987068970446,
+            8.960768092602933e-05,
+            -0.00048164602110700727,
+            0.0004882607087189905
+          ],
+          "mean_improvement": -7.509375537922969e-06,
+          "accepted": false
+        },
+        {
+          "feature": "away_bp_hits_3g",
+          "family": "bullpen",
+          "fold_improvement": [
+            7.373208830896427e-05,
+            -0.00026600700186774073,
+            -0.001142480380655564,
+            0.0005244077135804215
+          ],
+          "mean_improvement": -0.00020258689515847972,
+          "accepted": false
+        },
+        {
+          "feature": "away_bp_bb_3g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.00044726678670847786,
+            -0.00018975793489584003,
+            -0.0008100061744827913,
+            0.0004152377888034797
+          ],
+          "mean_improvement": -0.0002579482768209074,
+          "accepted": false
+        },
+        {
+          "feature": "away_bp_so_3g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.0004302291082940446,
+            -0.00040007571463684943,
+            -0.0006771639956860698,
+            0.00017671842167010787
+          ],
+          "mean_improvement": -0.000332687599236714,
+          "accepted": false
+        },
+        {
+          "feature": "away_bp_hr_3g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -5.753753967363551e-05,
+            8.230499675354608e-06,
+            -0.0007448845600832588,
+            -0.0002118730962857862
+          ],
+          "mean_improvement": -0.00025151617409183147,
+          "accepted": false
+        },
+        {
+          "feature": "away_bp_pitches_3g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.000258997119109039,
+            -0.0004730847385503445,
+            -0.0009819973655073033,
+            0.00013319680588086413
+          ],
+          "mean_improvement": -0.00039522060432145567,
+          "accepted": false
+        },
+        {
+          "feature": "away_bp_era_3g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.0001755255895952157,
+            0.0004235669277639076,
+            -0.0008622600876291298,
+            0.00010927246532554946
+          ],
+          "mean_improvement": -0.0001262365710337221,
+          "accepted": false
+        },
+        {
+          "feature": "away_bp_whip_3g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.0004769704253023699,
+            -0.0005161605504477862,
+            -0.0005583470676999713,
+            7.9423463606898e-05
+          ],
+          "mean_improvement": -0.00036801364496080735,
+          "accepted": false
+        },
+        {
+          "feature": "away_bp_k_minus_bb_3g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.00039158355687662905,
+            -0.0002468940980527856,
+            -0.0007365017447705791,
+            0.00015981361608297107
+          ],
+          "mean_improvement": -0.00030379144590425566,
+          "accepted": false
+        },
+        {
+          "feature": "away_bp_pitches_per_out_3g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.0002536244601343274,
+            0.00012271084405413024,
+            -0.0007559289871302832,
+            0.00014222787694850858
+          ],
+          "mean_improvement": -0.00018615368156549295,
+          "accepted": false
+        },
+        {
+          "feature": "away_bp_outs_7g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.00037866501210515047,
+            -0.0002834657974586374,
+            -0.0008728021802102415,
+            0.00037147743929566435
+          ],
+          "mean_improvement": -0.00029086388761959125,
+          "accepted": false
+        },
+        {
+          "feature": "away_bp_er_7g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.00026661157240803757,
+            -0.00048503637168262337,
+            -0.0008876908208818035,
+            0.00026450503993924457
+          ],
+          "mean_improvement": -0.00034370843125830497,
+          "accepted": false
+        },
+        {
+          "feature": "away_bp_hits_7g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -5.75712472487e-05,
+            -0.0003120909744251943,
+            -0.0012557304291056504,
+            0.0002577661001141873
+          ],
+          "mean_improvement": -0.00034190663766633933,
+          "accepted": false
+        },
+        {
+          "feature": "away_bp_bb_7g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.0007382618273321651,
+            0.000270477790577095,
+            -0.0009053384529583708,
+            0.0003386375318192858
+          ],
+          "mean_improvement": -0.00025862123947353877,
+          "accepted": false
+        },
+        {
+          "feature": "away_bp_so_7g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.00036654393017754305,
+            -9.88517985843762e-05,
+            -0.0008134154009818984,
+            -0.00015977408272760396
+          ],
+          "mean_improvement": -0.0003596463031178554,
+          "accepted": false
+        },
+        {
+          "feature": "away_bp_hr_7g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.00011954119294221854,
+            -0.000436320292874548,
+            -0.0007751945018362738,
+            2.5263448359069685e-05
+          ],
+          "mean_improvement": -0.00032644813482349266,
+          "accepted": false
+        },
+        {
+          "feature": "away_bp_pitches_7g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.000369547690942551,
+            -0.00029097784695930606,
+            -0.0009094651991622404,
+            -0.00012184134801407343
+          ],
+          "mean_improvement": -0.00042295802126954274,
+          "accepted": false
+        },
+        {
+          "feature": "away_bp_era_7g",
+          "family": "bullpen",
+          "fold_improvement": [
+            2.9361747998946086e-05,
+            2.9403401360039716e-05,
+            -0.0009618061202412154,
+            1.643219165048393e-05
+          ],
+          "mean_improvement": -0.0002216521948079364,
+          "accepted": false
+        },
+        {
+          "feature": "away_bp_whip_7g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.0005592037830665086,
+            -0.0003275383415132227,
+            -0.0005366998644664722,
+            0.00016134551333513159
+          ],
+          "mean_improvement": -0.000315524118927768,
+          "accepted": false
+        },
+        {
+          "feature": "away_bp_k_minus_bb_7g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.0003032128660488409,
+            -0.00045400540569373593,
+            -0.0010349205043549414,
+            -0.00010392556682736753
+          ],
+          "mean_improvement": -0.00047401608573122145,
+          "accepted": false
+        },
+        {
+          "feature": "away_bp_pitches_per_out_7g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -7.858240043290277e-05,
+            -0.0003129539488162525,
+            -0.0007942645807165194,
+            -0.00017627015625365505
+          ],
+          "mean_improvement": -0.0003405177715548324,
+          "accepted": false
+        },
+        {
+          "feature": "away_bp_outs_14g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.0007376521752773257,
+            -0.0002703011065550154,
+            -0.0007348989366601222,
+            0.0005549925218480967
+          ],
+          "mean_improvement": -0.00029696492416109166,
+          "accepted": false
+        },
+        {
+          "feature": "away_bp_er_14g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.0005769453438115857,
+            0.00013199534899255294,
+            -0.001144163103534157,
+            0.0006036421951016724
+          ],
+          "mean_improvement": -0.00024636772581287936,
+          "accepted": false
+        },
+        {
+          "feature": "away_bp_hits_14g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -9.657963065501374e-05,
+            0.0002210299699947349,
+            -0.00083032098638125,
+            0.00040797096443390135
+          ],
+          "mean_improvement": -7.447492065190686e-05,
+          "accepted": false
+        },
+        {
+          "feature": "away_bp_bb_14g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.0002735281249159893,
+            -0.00020471833529955852,
+            -0.00021837668347746142,
+            0.00046116837022425194
+          ],
+          "mean_improvement": -5.886369336718933e-05,
+          "accepted": false
+        },
+        {
+          "feature": "away_bp_so_14g",
+          "family": "bullpen",
+          "fold_improvement": [
+            1.916672232193939e-05,
+            -0.00017116637305936155,
+            -0.0005885458835885871,
+            0.00041581032221182923
+          ],
+          "mean_improvement": -8.1183803028545e-05,
+          "accepted": false
+        },
+        {
+          "feature": "away_bp_hr_14g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.00024614625294661074,
+            -0.00023094377756649465,
+            -0.000674964169471326,
+            0.0003616221835102129
+          ],
+          "mean_improvement": -0.00019760800411855461,
+          "accepted": false
+        },
+        {
+          "feature": "away_bp_pitches_14g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.0003269409096682274,
+            -0.00021830154700286375,
+            -0.0007310098804468312,
+            0.00031618370436781174
+          ],
+          "mean_improvement": -0.00024001715818752767,
+          "accepted": false
+        },
+        {
+          "feature": "away_bp_era_14g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.00015117761576632915,
+            7.835071097483937e-05,
+            -0.0005244418069623169,
+            0.00048378012931737935
+          ],
+          "mean_improvement": -2.8372145609106836e-05,
+          "accepted": false
+        },
+        {
+          "feature": "away_bp_whip_14g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.0005527882025384567,
+            -0.0006818694144071769,
+            -0.0005569912329198567,
+            4.99010195514904e-05
+          ],
+          "mean_improvement": -0.0004354369575785,
+          "accepted": false
+        },
+        {
+          "feature": "away_bp_k_minus_bb_14g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.000440441400282765,
+            9.685559511374287e-05,
+            -0.0006454224316324586,
+            0.00018761272132272744
+          ],
+          "mean_improvement": -0.00020034887886968833,
+          "accepted": false
+        },
+        {
+          "feature": "away_bp_pitches_per_out_14g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.0005249549178485413,
+            -0.00021222801017306558,
+            -0.0006500546503017679,
+            0.00017011224500718125
+          ],
+          "mean_improvement": -0.0003042813333290484,
+          "accepted": false
+        },
+        {
+          "feature": "market_logit_x_run_form",
+          "family": "interactions",
+          "fold_improvement": [
+            -0.0004211653721821751,
+            -0.0003791441486282743,
+            -0.0005286293424853206,
+            8.310535732147795e-05
+          ],
+          "mean_improvement": -0.000311458376493573,
+          "accepted": false
+        },
+        {
+          "feature": "market_strength_x_form_disagreement",
+          "family": "interactions",
+          "fold_improvement": [
+            -0.00011751554570538225,
+            -0.0002967142520953203,
+            -0.0009677122614383249,
+            -3.76789087050966e-05
+          ],
+          "mean_improvement": -0.000354905241986031,
+          "accepted": false
+        },
+        {
+          "feature": "total_x_scoring_acceleration",
+          "family": "interactions",
+          "fold_improvement": [
+            -0.00016604774188944127,
+            -0.0001098246905212319,
+            -0.0010463937922163824,
+            0.00037637566453696536
+          ],
+          "mean_improvement": -0.00023647264002252255,
+          "accepted": false
+        },
+        {
+          "feature": "bullpen_era_diff_7g",
+          "family": "interactions",
+          "fold_improvement": [
+            -9.485869991676665e-05,
+            -0.00041126953549974754,
+            -0.00036767407479354475,
+            -2.8369209427392406e-05
+          ],
+          "mean_improvement": -0.00022554287990936284,
+          "accepted": false
+        },
+        {
+          "feature": "bullpen_quality_x_rest",
+          "family": "interactions",
+          "fold_improvement": [
+            0.00037463287685191027,
+            -0.0003330201089839502,
+            -7.9035650998871e-05,
+            8.958304233885883e-05
+          ],
+          "mean_improvement": 1.304003980198698e-05,
+          "accepted": false
+        },
+        {
+          "feature": "bullpen_workload_diff_3g",
+          "family": "interactions",
+          "fold_improvement": [
+            -0.00019117715480643227,
+            -0.0006018131710234798,
+            -0.000578412962707775,
+            0.000617115338705343
+          ],
+          "mean_improvement": -0.000188571987458086,
+          "accepted": false
+        },
+        {
+          "feature": "total_x_bullpen_era",
+          "family": "interactions",
+          "fold_improvement": [
+            -0.00010620185608545274,
+            0.0004426103056228703,
+            -0.001092722036979854,
+            -0.0001728986573272806
+          ],
+          "mean_improvement": -0.00023230306119242927,
+          "accepted": false
+        }
+      ],
+      "mean_logloss_improvement": 0.00032325931387955364,
+      "mean_auc_improvement": 0.00024143177528812565
+    },
+    "over": {
+      "baseline_features": 50,
+      "accepted_features": [
+        "home_runs_accel_10v30",
+        "home_hits_accel_5v10",
+        "away_bp_er_14g"
+      ],
+      "baseline_folds": [
+        {
+          "log_loss": 0.6941813433299006,
+          "auc": 0.4998061552760426
+        },
+        {
+          "log_loss": 0.69225887445288,
+          "auc": 0.513009373004681
+        },
+        {
+          "log_loss": 0.6937278220991472,
+          "auc": 0.5121343373890956
+        },
+        {
+          "log_loss": 0.6928503177895358,
+          "auc": 0.5168512481406982
+        }
+      ],
+      "final_folds": [
+        {
+          "log_loss": 0.6935833845579045,
+          "auc": 0.5075907539917892
+        },
+        {
+          "log_loss": 0.6916977347053311,
+          "auc": 0.5303520527026342
+        },
+        {
+          "log_loss": 0.6938040386694265,
+          "auc": 0.5054126753053804
+        },
+        {
+          "log_loss": 0.6925307690379379,
+          "auc": 0.5284005422268121
+        }
+      ],
+      "family_results": {
+        "rolling_trend": {
+          "features": [
+            "home_runs_accel_5v10",
+            "home_runs_accel_5v30",
+            "home_runs_accel_10v30",
+            "home_runs_allowed_accel_5v10",
+            "home_runs_allowed_accel_5v30",
+            "home_runs_allowed_accel_10v30",
+            "home_hits_accel_5v10",
+            "home_hits_accel_5v30",
+            "home_hits_accel_10v30",
+            "home_walks_accel_5v10",
+            "home_walks_accel_5v30",
+            "home_walks_accel_10v30",
+            "home_strikeouts_accel_5v10",
+            "home_strikeouts_accel_5v30",
+            "home_strikeouts_accel_10v30",
+            "home_run_diff_5g",
+            "home_run_diff_30g",
+            "away_runs_accel_5v10",
+            "away_runs_accel_5v30",
+            "away_runs_accel_10v30",
+            "away_runs_allowed_accel_5v10",
+            "away_runs_allowed_accel_5v30",
+            "away_runs_allowed_accel_10v30",
+            "away_hits_accel_5v10",
+            "away_hits_accel_5v30",
+            "away_hits_accel_10v30",
+            "away_walks_accel_5v10",
+            "away_walks_accel_5v30",
+            "away_walks_accel_10v30",
+            "away_strikeouts_accel_5v10",
+            "away_strikeouts_accel_5v30",
+            "away_strikeouts_accel_10v30",
+            "away_run_diff_5g",
+            "away_run_diff_30g"
+          ],
+          "fold_logloss_improvement": [
+            -0.0001579369499180583,
+            0.00019882883764188453,
+            0.00023449687590759716,
+            -0.00023935407606900938
+          ],
+          "mean_improvement": 9.008671890603503e-06,
+          "accepted": false
+        },
+        "recent_form": {
+          "features": [
+            "combined_scoring_form_5g",
+            "combined_prevention_form_5g",
+            "run_environment_form_5g",
+            "combined_scoring_form_10g",
+            "combined_prevention_form_10g",
+            "run_environment_form_10g",
+            "combined_scoring_form_30g",
+            "combined_prevention_form_30g",
+            "run_environment_form_30g",
+            "rest_advantage"
+          ],
+          "fold_logloss_improvement": [
+            -0.0003778062861523601,
+            5.220021870555591e-05,
+            0.00026502102518954906,
+            -0.0002517221213096388
+          ],
+          "mean_improvement": -7.807679089172348e-05,
+          "accepted": false
+        },
+        "market_derived": {
+          "features": [
+            "market_home_logit",
+            "market_favorite_strength",
+            "market_price_asymmetry",
+            "total_juice_skew",
+            "closing_total_prior_z"
+          ],
+          "fold_logloss_improvement": [
+            -0.0004499916773184065,
+            -0.00015929559219485245,
+            0.00023162981917879133,
+            0.000259744031343323
+          ],
+          "mean_improvement": -2.947835474778615e-05,
+          "accepted": false
+        },
+        "bullpen": {
+          "features": [
+            "home_bp_outs_3g",
+            "home_bp_er_3g",
+            "home_bp_hits_3g",
+            "home_bp_bb_3g",
+            "home_bp_so_3g",
+            "home_bp_hr_3g",
+            "home_bp_pitches_3g",
+            "home_bp_era_3g",
+            "home_bp_whip_3g",
+            "home_bp_k_minus_bb_3g",
+            "home_bp_pitches_per_out_3g",
+            "home_bp_outs_7g",
+            "home_bp_er_7g",
+            "home_bp_hits_7g",
+            "home_bp_bb_7g",
+            "home_bp_so_7g",
+            "home_bp_hr_7g",
+            "home_bp_pitches_7g",
+            "home_bp_era_7g",
+            "home_bp_whip_7g",
+            "home_bp_k_minus_bb_7g",
+            "home_bp_pitches_per_out_7g",
+            "home_bp_outs_14g",
+            "home_bp_er_14g",
+            "home_bp_hits_14g",
+            "home_bp_bb_14g",
+            "home_bp_so_14g",
+            "home_bp_hr_14g",
+            "home_bp_pitches_14g",
+            "home_bp_era_14g",
+            "home_bp_whip_14g",
+            "home_bp_k_minus_bb_14g",
+            "home_bp_pitches_per_out_14g",
+            "away_bp_outs_3g",
+            "away_bp_er_3g",
+            "away_bp_hits_3g",
+            "away_bp_bb_3g",
+            "away_bp_so_3g",
+            "away_bp_hr_3g",
+            "away_bp_pitches_3g",
+            "away_bp_era_3g",
+            "away_bp_whip_3g",
+            "away_bp_k_minus_bb_3g",
+            "away_bp_pitches_per_out_3g",
+            "away_bp_outs_7g",
+            "away_bp_er_7g",
+            "away_bp_hits_7g",
+            "away_bp_bb_7g",
+            "away_bp_so_7g",
+            "away_bp_hr_7g",
+            "away_bp_pitches_7g",
+            "away_bp_era_7g",
+            "away_bp_whip_7g",
+            "away_bp_k_minus_bb_7g",
+            "away_bp_pitches_per_out_7g",
+            "away_bp_outs_14g",
+            "away_bp_er_14g",
+            "away_bp_hits_14g",
+            "away_bp_bb_14g",
+            "away_bp_so_14g",
+            "away_bp_hr_14g",
+            "away_bp_pitches_14g",
+            "away_bp_era_14g",
+            "away_bp_whip_14g",
+            "away_bp_k_minus_bb_14g",
+            "away_bp_pitches_per_out_14g"
+          ],
+          "fold_logloss_improvement": [
+            0.001143466186066977,
+            -0.0006607371365479064,
+            0.0015416704018271776,
+            -0.0001391445245192413
+          ],
+          "mean_improvement": 0.0004713137317067517,
+          "accepted": false
+        },
+        "interactions": {
+          "features": [
+            "market_logit_x_run_form",
+            "market_strength_x_form_disagreement",
+            "total_x_scoring_acceleration",
+            "bullpen_era_diff_7g",
+            "bullpen_quality_x_rest",
+            "bullpen_workload_diff_3g",
+            "total_x_bullpen_era"
+          ],
+          "fold_logloss_improvement": [
+            -4.84234675088846e-05,
+            0.000239133478172171,
+            0.0004387723976867486,
+            -0.00022078107370981925
+          ],
+          "mean_improvement": 0.00010217533366005394,
+          "accepted": false
+        }
+      },
+      "individual_results": [
+        {
+          "feature": "home_runs_accel_5v10",
+          "family": "rolling_trend",
+          "fold_improvement": [
+            0.0005459051533808212,
+            0.00030836169265036073,
+            -0.0009078023716491135,
+            -0.0003583873296434392
+          ],
+          "mean_improvement": -0.00010298071381534268,
+          "accepted": false
+        },
+        {
+          "feature": "home_runs_accel_5v30",
+          "family": "rolling_trend",
+          "fold_improvement": [
+            0.00043316295203255084,
+            0.0004001314668620193,
+            -0.0005801490153828359,
+            -0.00010823386593006301
+          ],
+          "mean_improvement": 3.62278843954178e-05,
+          "accepted": false
+        },
+        {
+          "feature": "home_runs_accel_10v30",
+          "family": "rolling_trend",
+          "fold_improvement": [
+            0.00037677503915356514,
+            0.0001783792651378624,
+            -0.0002896868277431075,
+            4.145852413772744e-05
+          ],
+          "mean_improvement": 7.673150017151187e-05,
+          "accepted": true
+        },
+        {
+          "feature": "home_runs_allowed_accel_5v10",
+          "family": "rolling_trend",
+          "fold_improvement": [
+            -0.00026119195288831776,
+            0.0003928705500622076,
+            0.00026723535131312204,
+            -0.00011150671409443369
+          ],
+          "mean_improvement": 7.185180859814455e-05,
+          "accepted": false
+        },
+        {
+          "feature": "home_runs_allowed_accel_5v30",
+          "family": "rolling_trend",
+          "fold_improvement": [
+            -0.0002198196819388487,
+            0.0002574814702428485,
+            0.0006652151210316815,
+            -5.924890440722752e-05
+          ],
+          "mean_improvement": 0.00016090700123211343,
+          "accepted": false
+        },
+        {
+          "feature": "home_runs_allowed_accel_10v30",
+          "family": "rolling_trend",
+          "fold_improvement": [
+            -5.908607939142385e-05,
+            0.0002689333929655202,
+            0.0002830150634506312,
+            -0.0005613673378417339
+          ],
+          "mean_improvement": -1.7126240204251575e-05,
+          "accepted": false
+        },
+        {
+          "feature": "home_hits_accel_5v10",
+          "family": "rolling_trend",
+          "fold_improvement": [
+            0.00012095994425431744,
+            0.00043207256178745546,
+            0.00021211458519465598,
+            -0.00020206402710576388
+          ],
+          "mean_improvement": 0.00014077076603266625,
+          "accepted": true
+        },
+        {
+          "feature": "home_hits_accel_5v30",
+          "family": "rolling_trend",
+          "fold_improvement": [
+            0.00012995737121668238,
+            -0.00035254551392505107,
+            -0.00048261737605403976,
+            0.0006003308555639908
+          ],
+          "mean_improvement": -2.6218665799604413e-05,
+          "accepted": false
+        },
+        {
+          "feature": "home_hits_accel_10v30",
+          "family": "rolling_trend",
+          "fold_improvement": [
+            -0.0002807651720216908,
+            -0.00022022663146892274,
+            -0.00037851964039692376,
+            0.0003434928487802136
+          ],
+          "mean_improvement": -0.00013400464877683094,
+          "accepted": false
+        },
+        {
+          "feature": "home_walks_accel_5v10",
+          "family": "rolling_trend",
+          "fold_improvement": [
+            -1.5647891937420333e-05,
+            -5.2325084598070504e-05,
+            -0.0002668794520093165,
+            0.00030916542705972105
+          ],
+          "mean_improvement": -6.421750371271573e-06,
+          "accepted": false
+        },
+        {
+          "feature": "home_walks_accel_5v30",
+          "family": "rolling_trend",
+          "fold_improvement": [
+            -0.00027517271318799885,
+            -0.0006129092933256919,
+            -0.00012153700577988147,
+            -3.678301926934857e-06
+          ],
+          "mean_improvement": -0.00025332432855512677,
+          "accepted": false
+        },
+        {
+          "feature": "home_walks_accel_10v30",
+          "family": "rolling_trend",
+          "fold_improvement": [
+            -0.0003659904952078019,
+            -0.0003373765796568229,
+            -0.00016907202244154096,
+            0.000542308351273002
+          ],
+          "mean_improvement": -8.253268650829093e-05,
+          "accepted": false
+        },
+        {
+          "feature": "home_strikeouts_accel_5v10",
+          "family": "rolling_trend",
+          "fold_improvement": [
+            -5.187577412024691e-05,
+            5.753928018159549e-06,
+            -0.0004181565114104169,
+            0.0003659020895167009
+          ],
+          "mean_improvement": -2.4594066998950836e-05,
+          "accepted": false
+        },
+        {
+          "feature": "home_strikeouts_accel_5v30",
+          "family": "rolling_trend",
+          "fold_improvement": [
+            7.461237485473227e-05,
+            -0.0001478764178535208,
+            -0.00023096758619134405,
+            0.00020040552894851071
+          ],
+          "mean_improvement": -2.5956525060405466e-05,
+          "accepted": false
+        },
+        {
+          "feature": "home_strikeouts_accel_10v30",
+          "family": "rolling_trend",
+          "fold_improvement": [
+            3.218205446575695e-08,
+            -0.00043831835039964684,
+            -0.00043475728965525207,
+            0.000340103710118167
+          ],
+          "mean_improvement": -0.00013323493697056654,
+          "accepted": false
+        },
+        {
+          "feature": "home_run_diff_5g",
+          "family": "rolling_trend",
+          "fold_improvement": [
+            -0.0004180101211593845,
+            -0.0006154960202289228,
+            -0.0003645272877899064,
+            0.0002753855374056924
+          ],
+          "mean_improvement": -0.00028066197294313033,
+          "accepted": false
+        },
+        {
+          "feature": "home_run_diff_30g",
+          "family": "rolling_trend",
+          "fold_improvement": [
+            -0.00029607061184055983,
+            -0.0004265223863022527,
+            -0.0005007184608708526,
+            0.00041384802462030024
+          ],
+          "mean_improvement": -0.00020236585859834122,
+          "accepted": false
+        },
+        {
+          "feature": "away_runs_accel_5v10",
+          "family": "rolling_trend",
+          "fold_improvement": [
+            -0.00040034004999789374,
+            -0.0002703285989097415,
+            -0.0005875398498791373,
+            -5.22497755828244e-06
+          ],
+          "mean_improvement": -0.00031585836908626375,
+          "accepted": false
+        },
+        {
+          "feature": "away_runs_accel_5v30",
+          "family": "rolling_trend",
+          "fold_improvement": [
+            -0.00027920103993306356,
+            -0.0004527544692123353,
+            -0.00023621563668119183,
+            0.0002761793689669556
+          ],
+          "mean_improvement": -0.00017299794421490877,
+          "accepted": false
+        },
+        {
+          "feature": "away_runs_accel_10v30",
+          "family": "rolling_trend",
+          "fold_improvement": [
+            -0.0008230858953676146,
+            0.00011237833613886306,
+            -0.0006234843154918623,
+            0.0006236224322186956
+          ],
+          "mean_improvement": -0.00017764236062547956,
+          "accepted": false
+        },
+        {
+          "feature": "away_runs_allowed_accel_5v10",
+          "family": "rolling_trend",
+          "fold_improvement": [
+            -5.518406102089646e-05,
+            -0.00028319933437881417,
+            -0.000162666859175431,
+            0.0002913447279003778
+          ],
+          "mean_improvement": -5.242638166869096e-05,
+          "accepted": false
+        },
+        {
+          "feature": "away_runs_allowed_accel_5v30",
+          "family": "rolling_trend",
+          "fold_improvement": [
+            -0.0003805907393883423,
+            -0.0004955268603221707,
+            -0.0005509881867568067,
+            0.0004056667957782478
+          ],
+          "mean_improvement": -0.000255359747672268,
+          "accepted": false
+        },
+        {
+          "feature": "away_runs_allowed_accel_10v30",
+          "family": "rolling_trend",
+          "fold_improvement": [
+            -7.406895063410968e-05,
+            -0.000522416446845142,
+            -0.0004572215124375445,
+            0.0005447686588417877
+          ],
+          "mean_improvement": -0.0001272345627687521,
+          "accepted": false
+        },
+        {
+          "feature": "away_hits_accel_5v10",
+          "family": "rolling_trend",
+          "fold_improvement": [
+            -8.804711278542765e-05,
+            -0.000628549024903502,
+            -0.00030112657325020997,
+            0.00033522653417072945
+          ],
+          "mean_improvement": -0.00017062404419210253,
+          "accepted": false
+        },
+        {
+          "feature": "away_hits_accel_5v30",
+          "family": "rolling_trend",
+          "fold_improvement": [
+            -0.00013485786470268657,
+            -0.00013479446115771676,
+            -0.0003599769446941403,
+            0.000654443290935558
+          ],
+          "mean_improvement": 6.203505095253581e-06,
+          "accepted": false
+        },
+        {
+          "feature": "away_hits_accel_10v30",
+          "family": "rolling_trend",
+          "fold_improvement": [
+            -0.0004131757528558211,
+            -0.0006386083950007393,
+            -0.0005728032955020224,
+            0.0005684268283141503
+          ],
+          "mean_improvement": -0.0002640401537611081,
+          "accepted": false
+        },
+        {
+          "feature": "away_walks_accel_5v10",
+          "family": "rolling_trend",
+          "fold_improvement": [
+            -0.0006371236696812721,
+            -0.0004647652980102057,
+            -0.0005636056771637366,
+            4.690612320923382e-05
+          ],
+          "mean_improvement": -0.00040464713041149514,
+          "accepted": false
+        },
+        {
+          "feature": "away_walks_accel_5v30",
+          "family": "rolling_trend",
+          "fold_improvement": [
+            -0.0002121739190910077,
+            -0.0003872865679934723,
+            -0.0006266638226021248,
+            0.00025884445776469533
+          ],
+          "mean_improvement": -0.00024181996298047737,
+          "accepted": false
+        },
+        {
+          "feature": "away_walks_accel_10v30",
+          "family": "rolling_trend",
+          "fold_improvement": [
+            4.740665330671412e-05,
+            -0.0006283769893220548,
+            5.4218132035877e-05,
+            0.0003385670914795025
+          ],
+          "mean_improvement": -4.704627812499029e-05,
+          "accepted": false
+        },
+        {
+          "feature": "away_strikeouts_accel_5v10",
+          "family": "rolling_trend",
+          "fold_improvement": [
+            -4.6962000550432315e-05,
+            -0.0003154806879864802,
+            -0.0003715675928415152,
+            0.00030790104021127807
+          ],
+          "mean_improvement": -0.00010652731029178741,
+          "accepted": false
+        },
+        {
+          "feature": "away_strikeouts_accel_5v30",
+          "family": "rolling_trend",
+          "fold_improvement": [
+            -0.0003762656567555256,
+            -0.00017741758018374743,
+            -0.0004038194330973077,
+            0.00022379672204886347
+          ],
+          "mean_improvement": -0.00018342648699692932,
+          "accepted": false
+        },
+        {
+          "feature": "away_strikeouts_accel_10v30",
+          "family": "rolling_trend",
+          "fold_improvement": [
+            0.00033796794431251165,
+            -0.00042282086562817067,
+            -0.00038029196761424355,
+            0.00014325614080323845
+          ],
+          "mean_improvement": -8.047218703166603e-05,
+          "accepted": false
+        },
+        {
+          "feature": "away_run_diff_5g",
+          "family": "rolling_trend",
+          "fold_improvement": [
+            -0.00028907877879114086,
+            -0.0004167660140299567,
+            -0.00028431928459682343,
+            0.0003495989480216677
+          ],
+          "mean_improvement": -0.00016014128234906333,
+          "accepted": false
+        },
+        {
+          "feature": "away_run_diff_30g",
+          "family": "rolling_trend",
+          "fold_improvement": [
+            -0.0005405107585495506,
+            -9.038101626490658e-05,
+            -0.000549759582787912,
+            0.00030196898371248615
+          ],
+          "mean_improvement": -0.00021967059347247075,
+          "accepted": false
+        },
+        {
+          "feature": "combined_scoring_form_5g",
+          "family": "recent_form",
+          "fold_improvement": [
+            0.00022977654790212743,
+            -0.0007465014222198807,
+            -0.0004389780659330711,
+            0.00016641444087395207
+          ],
+          "mean_improvement": -0.00019732212484421807,
+          "accepted": false
+        },
+        {
+          "feature": "combined_prevention_form_5g",
+          "family": "recent_form",
+          "fold_improvement": [
+            -0.0001930057463964685,
+            -5.46560154235376e-06,
+            -0.0003221930630051828,
+            7.700361301410386e-05
+          ],
+          "mean_improvement": -0.0001109151994824753,
+          "accepted": false
+        },
+        {
+          "feature": "run_environment_form_5g",
+          "family": "recent_form",
+          "fold_improvement": [
+            -0.00024550919704402485,
+            -4.3534909747067196e-05,
+            -0.00024595243517100407,
+            0.00014985531019406917
+          ],
+          "mean_improvement": -9.628530794200674e-05,
+          "accepted": false
+        },
+        {
+          "feature": "combined_scoring_form_10g",
+          "family": "recent_form",
+          "fold_improvement": [
+            -0.0006477460611999941,
+            -0.0005691302607100379,
+            -0.000510226209156639,
+            0.000698660489947156
+          ],
+          "mean_improvement": -0.00025711051027987875,
+          "accepted": false
+        },
+        {
+          "feature": "combined_prevention_form_10g",
+          "family": "recent_form",
+          "fold_improvement": [
+            -0.0001787482949857644,
+            -0.00041359221677217395,
+            -0.0005129824181397957,
+            0.0002700837981183257
+          ],
+          "mean_improvement": -0.00020880978294485208,
+          "accepted": false
+        },
+        {
+          "feature": "run_environment_form_10g",
+          "family": "recent_form",
+          "fold_improvement": [
+            -2.2160640938739817e-05,
+            -0.00029952375005404264,
+            -0.00038689692921733965,
+            0.00010430232524061278
+          ],
+          "mean_improvement": -0.00015106974874237733,
+          "accepted": false
+        },
+        {
+          "feature": "combined_scoring_form_30g",
+          "family": "recent_form",
+          "fold_improvement": [
+            1.997033727119124e-05,
+            -0.0006263971026577719,
+            -0.0003742139966670388,
+            0.0007210764435152672
+          ],
+          "mean_improvement": -6.489107963458807e-05,
+          "accepted": false
+        },
+        {
+          "feature": "combined_prevention_form_30g",
+          "family": "recent_form",
+          "fold_improvement": [
+            -0.0005995088823933514,
+            -0.000255310786386187,
+            -0.0003626096881943486,
+            0.00028391456333920484
+          ],
+          "mean_improvement": -0.00023337869840867054,
+          "accepted": false
+        },
+        {
+          "feature": "run_environment_form_30g",
+          "family": "recent_form",
+          "fold_improvement": [
+            -0.000414847507557492,
+            -0.00012404587137127,
+            -0.0004544395834046311,
+            0.0005363166990124402
+          ],
+          "mean_improvement": -0.00011425406583023823,
+          "accepted": false
+        },
+        {
+          "feature": "rest_advantage",
+          "family": "recent_form",
+          "fold_improvement": [
+            -0.0005930850356177242,
+            -0.00031529828801968307,
+            -0.00018646918777187604,
+            8.496855180195606e-05
+          ],
+          "mean_improvement": -0.0002524709899018318,
+          "accepted": false
+        },
+        {
+          "feature": "market_home_logit",
+          "family": "market_derived",
+          "fold_improvement": [
+            -0.00011541079131649479,
+            -7.044025026403666e-05,
+            -0.00041414832359820686,
+            0.0002244146143161041
+          ],
+          "mean_improvement": -9.389618771565855e-05,
+          "accepted": false
+        },
+        {
+          "feature": "market_favorite_strength",
+          "family": "market_derived",
+          "fold_improvement": [
+            -3.2736789283949186e-05,
+            2.7997437825444393e-05,
+            -0.0005769696670652191,
+            0.00010952612872117129
+          ],
+          "mean_improvement": -0.00011804572245063816,
+          "accepted": false
+        },
+        {
+          "feature": "market_price_asymmetry",
+          "family": "market_derived",
+          "fold_improvement": [
+            -0.00035591762841880037,
+            -0.00020728958057492086,
+            -0.0005230415100123675,
+            0.00011224953007682448
+          ],
+          "mean_improvement": -0.00024349979723231607,
+          "accepted": false
+        },
+        {
+          "feature": "total_juice_skew",
+          "family": "market_derived",
+          "fold_improvement": [
+            -0.00037828658734073706,
+            3.5941341283263206e-05,
+            -0.0003855467446017835,
+            -0.00015048357395586187
+          ],
+          "mean_improvement": -0.0002195938911537798,
+          "accepted": false
+        },
+        {
+          "feature": "closing_total_prior_z",
+          "family": "market_derived",
+          "fold_improvement": [
+            4.53199967650475e-05,
+            -0.00031962672310081874,
+            -0.0004773902291961285,
+            0.0005575351597316702
+          ],
+          "mean_improvement": -4.854044895005738e-05,
+          "accepted": false
+        },
+        {
+          "feature": "home_bp_outs_3g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.0002875252858941524,
+            -0.0004341298697591034,
+            -0.00042361649837940885,
+            0.00013986059620096913
+          ],
+          "mean_improvement": -0.00025135276445792387,
+          "accepted": false
+        },
+        {
+          "feature": "home_bp_er_3g",
+          "family": "bullpen",
+          "fold_improvement": [
+            7.755061581771194e-05,
+            -0.0003534262747426631,
+            -0.0001907779722586378,
+            0.00017129615182642777
+          ],
+          "mean_improvement": -7.383936983929029e-05,
+          "accepted": false
+        },
+        {
+          "feature": "home_bp_hits_3g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.0003895336384204251,
+            -0.0003267380508188422,
+            -0.0003539645850180184,
+            0.00041762928035660174
+          ],
+          "mean_improvement": -0.000163151748475171,
+          "accepted": false
+        },
+        {
+          "feature": "home_bp_bb_3g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.00030527044925476865,
+            -0.0008908976651866851,
+            1.9049518475422467e-05,
+            0.0004220825138171458
+          ],
+          "mean_improvement": -0.00018875902053722138,
+          "accepted": false
+        },
+        {
+          "feature": "home_bp_so_3g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.0004171848128207145,
+            -0.000256222796566119,
+            -0.0006490596663725201,
+            0.00030517958230980025
+          ],
+          "mean_improvement": -0.00025432192336238835,
+          "accepted": false
+        },
+        {
+          "feature": "home_bp_hr_3g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.00044399877106204855,
+            -0.0001673199386107438,
+            -0.00017819895821868936,
+            -0.00015028979121423092
+          ],
+          "mean_improvement": -0.00023495186477642815,
+          "accepted": false
+        },
+        {
+          "feature": "home_bp_pitches_3g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.0006443959050252968,
+            -0.0004085900288249844,
+            -0.000539090395597186,
+            0.0005327779607299243
+          ],
+          "mean_improvement": -0.0002648245921793857,
+          "accepted": false
+        },
+        {
+          "feature": "home_bp_era_3g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.0003034731226022602,
+            -0.0005171033243314138,
+            -0.00028606944345443974,
+            0.0003281157386534339
+          ],
+          "mean_improvement": -0.00019463253793366997,
+          "accepted": false
+        },
+        {
+          "feature": "home_bp_whip_3g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.00014220363042538597,
+            -0.0008176857576067675,
+            -0.0001262018623138239,
+            0.00024177721863394286
+          ],
+          "mean_improvement": -0.00021107850792800864,
+          "accepted": false
+        },
+        {
+          "feature": "home_bp_k_minus_bb_3g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.0005316168052814652,
+            -0.00032848470102397886,
+            -0.00030392658195521616,
+            0.0006060331400683516
+          ],
+          "mean_improvement": -0.00013949873704807714,
+          "accepted": false
+        },
+        {
+          "feature": "home_bp_pitches_per_out_3g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.00020414264008872252,
+            -0.0006399087861995723,
+            -0.0004803701832352125,
+            0.00018797768480049992
+          ],
+          "mean_improvement": -0.00028411098118075184,
+          "accepted": false
+        },
+        {
+          "feature": "home_bp_outs_7g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.00019327391694556884,
+            -0.0005116881312230426,
+            -0.0006774495068890829,
+            0.00028013435494733674
+          ],
+          "mean_improvement": -0.0002755693000275894,
+          "accepted": false
+        },
+        {
+          "feature": "home_bp_er_7g",
+          "family": "bullpen",
+          "fold_improvement": [
+            0.00011646087761474355,
+            -0.00033468753809784424,
+            -0.00017372835138385057,
+            -0.00018479830176776346
+          ],
+          "mean_improvement": -0.00014418832840867868,
+          "accepted": false
+        },
+        {
+          "feature": "home_bp_hits_7g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.0003644898305378286,
+            -0.0008928421907090645,
+            -0.0002993402490533148,
+            8.832184687057598e-05
+          ],
+          "mean_improvement": -0.00036708760585740796,
+          "accepted": false
+        },
+        {
+          "feature": "home_bp_bb_7g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.00021169011171129348,
+            -0.00047683447101998233,
+            8.669609989342408e-05,
+            0.00012296674517187078
+          ],
+          "mean_improvement": -0.00011971543441649524,
+          "accepted": false
+        },
+        {
+          "feature": "home_bp_so_7g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.0004931547121898028,
+            -0.0004793732549107643,
+            -0.00034569044547150263,
+            0.00018307081950930115
+          ],
+          "mean_improvement": -0.00028378689826569214,
+          "accepted": false
+        },
+        {
+          "feature": "home_bp_hr_7g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -3.826944940432675e-05,
+            -0.0006664980955018995,
+            1.4381997602286312e-05,
+            -0.00035199989481327076
+          ],
+          "mean_improvement": -0.0002605963605293027,
+          "accepted": false
+        },
+        {
+          "feature": "home_bp_pitches_7g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.00020202801173674345,
+            -0.000508191802865321,
+            -0.00016846680521920288,
+            0.00019702200307258888
+          ],
+          "mean_improvement": -0.0001704161541871696,
+          "accepted": false
+        },
+        {
+          "feature": "home_bp_era_7g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.0001656036794110971,
+            0.0003193419139675413,
+            0.0001843857518201153,
+            -0.0001181416425398707
+          ],
+          "mean_improvement": 5.49955859591722e-05,
+          "accepted": false
+        },
+        {
+          "feature": "home_bp_whip_7g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.000360662591016192,
+            -0.00020846893370274344,
+            -0.0002697551171565449,
+            0.00028736980359911346
+          ],
+          "mean_improvement": -0.00013787920956909172,
+          "accepted": false
+        },
+        {
+          "feature": "home_bp_k_minus_bb_7g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.0002484125257626868,
+            -0.00037106694829702747,
+            -0.00022234771941254117,
+            -0.0001526298602166909
+          ],
+          "mean_improvement": -0.0002486142634222366,
+          "accepted": false
+        },
+        {
+          "feature": "home_bp_pitches_per_out_7g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -7.34226253052972e-05,
+            7.345943941827748e-05,
+            -0.00016667242082080147,
+            0.0003975142014966959
+          ],
+          "mean_improvement": 5.7719648697218684e-05,
+          "accepted": false
+        },
+        {
+          "feature": "home_bp_outs_14g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.0007038019451746091,
+            -0.0003535248614989772,
+            -0.0001080732261841133,
+            0.0001953060390705863
+          ],
+          "mean_improvement": -0.00024252349844677834,
+          "accepted": false
+        },
+        {
+          "feature": "home_bp_er_14g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.0003815663917665635,
+            -0.00048372356094184,
+            -0.00024073686600822874,
+            0.0002439529429728582
+          ],
+          "mean_improvement": -0.0002155184689359435,
+          "accepted": false
+        },
+        {
+          "feature": "home_bp_hits_14g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.0002743983041355591,
+            -0.000486795516262295,
+            -0.0004527956665005828,
+            0.0004365341806110701
+          ],
+          "mean_improvement": -0.0001943638265718417,
+          "accepted": false
+        },
+        {
+          "feature": "home_bp_bb_14g",
+          "family": "bullpen",
+          "fold_improvement": [
+            0.0002105841283607246,
+            -0.00028686507169228825,
+            -0.0006085238290393091,
+            3.121303822073429e-07
+          ],
+          "mean_improvement": -0.00017112316049716636,
+          "accepted": false
+        },
+        {
+          "feature": "home_bp_so_14g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.0005212745534051155,
+            -0.0005196195209167254,
+            -0.0003800125642379193,
+            0.00031189508410822686
+          ],
+          "mean_improvement": -0.00027725288861288333,
+          "accepted": false
+        },
+        {
+          "feature": "home_bp_hr_14g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.00029732895625422806,
+            -0.0005740842597371509,
+            -0.00045739355185792085,
+            0.0005293530579968397
+          ],
+          "mean_improvement": -0.00019986342746311503,
+          "accepted": false
+        },
+        {
+          "feature": "home_bp_pitches_14g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.00027739198038756463,
+            -0.0005106001778153457,
+            -0.0004692687878299351,
+            5.912858482082228e-05
+          ],
+          "mean_improvement": -0.0002995330903030058,
+          "accepted": false
+        },
+        {
+          "feature": "home_bp_era_14g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -9.04247358016752e-05,
+            -0.0004808897638841625,
+            -0.0002494407531254961,
+            0.0005058112528580905
+          ],
+          "mean_improvement": -7.873599998831082e-05,
+          "accepted": false
+        },
+        {
+          "feature": "home_bp_whip_14g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.00017829319894357987,
+            -0.0004990426798471281,
+            -0.0003911564599370365,
+            0.00018722374566915168
+          ],
+          "mean_improvement": -0.0002203171482646482,
+          "accepted": false
+        },
+        {
+          "feature": "home_bp_k_minus_bb_14g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -2.9905164704580045e-06,
+            -0.000677598993806483,
+            -0.0004974637542080051,
+            0.00038198539013933885
+          ],
+          "mean_improvement": -0.00019901696858640183,
+          "accepted": false
+        },
+        {
+          "feature": "home_bp_pitches_per_out_14g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -2.6121010852531157e-05,
+            -0.00023502810412856512,
+            -0.0002878369765609845,
+            -0.00017548088176233545
+          ],
+          "mean_improvement": -0.00018111674332610406,
+          "accepted": false
+        },
+        {
+          "feature": "away_bp_outs_3g",
+          "family": "bullpen",
+          "fold_improvement": [
+            3.0745371017548706e-05,
+            -0.0007669201840878603,
+            -0.0003451688237319228,
+            0.00035739318029026634
+          ],
+          "mean_improvement": -0.00018098761412799202,
+          "accepted": false
+        },
+        {
+          "feature": "away_bp_er_3g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.00020080168421343636,
+            -0.00030700435909880586,
+            -0.00024391050701466632,
+            0.0003502129892489769
+          ],
+          "mean_improvement": -0.0001003758902694829,
+          "accepted": false
+        },
+        {
+          "feature": "away_bp_hits_3g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.00022797554181464008,
+            -0.0003107126369867874,
+            -0.0003498878931023075,
+            4.7236446471421445e-05
+          ],
+          "mean_improvement": -0.0002103349063580784,
+          "accepted": false
+        },
+        {
+          "feature": "away_bp_bb_3g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.0006676231408838662,
+            -0.0008857416885393876,
+            -0.0002916695379306944,
+            0.00026739691332700044
+          ],
+          "mean_improvement": -0.00039440936350673694,
+          "accepted": false
+        },
+        {
+          "feature": "away_bp_so_3g",
+          "family": "bullpen",
+          "fold_improvement": [
+            0.00020918316163054396,
+            -0.0003187417549895821,
+            -0.00025411191353075235,
+            0.00030408352586053233
+          ],
+          "mean_improvement": -1.4896745257314548e-05,
+          "accepted": false
+        },
+        {
+          "feature": "away_bp_hr_3g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.00044966242616362173,
+            -0.00021899802591340833,
+            -2.7895447141101926e-05,
+            0.0002626633590894212
+          ],
+          "mean_improvement": -0.0001084731350321777,
+          "accepted": false
+        },
+        {
+          "feature": "away_bp_pitches_3g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.0002638899021335517,
+            -0.0005981335971249058,
+            -0.0003460349704405008,
+            0.00019985709468850477
+          ],
+          "mean_improvement": -0.00025205034375261337,
+          "accepted": false
+        },
+        {
+          "feature": "away_bp_era_3g",
+          "family": "bullpen",
+          "fold_improvement": [
+            0.00012697826817698044,
+            -0.00025041653778890005,
+            -0.00039568091991393217,
+            0.0004537531152587482
+          ],
+          "mean_improvement": -1.6341518566775903e-05,
+          "accepted": false
+        },
+        {
+          "feature": "away_bp_whip_3g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.0003112028068258388,
+            -0.0005454794372875549,
+            -0.00023432959294411582,
+            0.0003849493226848466
+          ],
+          "mean_improvement": -0.00017651562859316572,
+          "accepted": false
+        },
+        {
+          "feature": "away_bp_k_minus_bb_3g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.0005754680211936813,
+            -0.0006752996038152936,
+            -0.0008068958072134924,
+            0.00017587245932459972
+          ],
+          "mean_improvement": -0.0004704477432244669,
+          "accepted": false
+        },
+        {
+          "feature": "away_bp_pitches_per_out_3g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.000369239979981284,
+            -0.0002032749670063394,
+            -0.00014608044914332652,
+            0.0003243023955817881
+          ],
+          "mean_improvement": -9.857325013729046e-05,
+          "accepted": false
+        },
+        {
+          "feature": "away_bp_outs_7g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.0004545144605117013,
+            -0.00013147573531180345,
+            2.0033968310850803e-05,
+            0.0001440089660836863
+          ],
+          "mean_improvement": -0.00010548681535724191,
+          "accepted": false
+        },
+        {
+          "feature": "away_bp_er_7g",
+          "family": "bullpen",
+          "fold_improvement": [
+            4.225329507723252e-05,
+            -0.0006903235934919705,
+            -6.694083735681033e-05,
+            0.0003549108207268059
+          ],
+          "mean_improvement": -9.00250787611856e-05,
+          "accepted": false
+        },
+        {
+          "feature": "away_bp_hits_7g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.00012171002818572862,
+            4.153619714952761e-06,
+            -0.0002680115676962913,
+            0.00021289580102401562
+          ],
+          "mean_improvement": -4.316804378576289e-05,
+          "accepted": false
+        },
+        {
+          "feature": "away_bp_bb_7g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -7.058337355525524e-05,
+            -0.0006281480558563146,
+            -0.0005157925141127118,
+            0.0004549360199267438
+          ],
+          "mean_improvement": -0.00018989698089938445,
+          "accepted": false
+        },
+        {
+          "feature": "away_bp_so_7g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -1.1381476508143251e-05,
+            -0.0002716478819175805,
+            -0.0005234024349868305,
+            0.0006246288677513867
+          ],
+          "mean_improvement": -4.545073141529188e-05,
+          "accepted": false
+        },
+        {
+          "feature": "away_bp_hr_7g",
+          "family": "bullpen",
+          "fold_improvement": [
+            0.00010280149769315017,
+            -0.00011591122700083112,
+            -0.0003777144959811185,
+            0.00017080293354765352
+          ],
+          "mean_improvement": -5.500532293528648e-05,
+          "accepted": false
+        },
+        {
+          "feature": "away_bp_pitches_7g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.0006178306987950632,
+            -8.07574724778215e-05,
+            -0.00042925100077606526,
+            0.00022139739596049868
+          ],
+          "mean_improvement": -0.00022661044402211283,
+          "accepted": false
+        },
+        {
+          "feature": "away_bp_era_7g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -7.209404994756863e-05,
+            -0.0006407429434822642,
+            -0.0002856926128413928,
+            6.58930335133423e-05
+          ],
+          "mean_improvement": -0.00023315914318947084,
+          "accepted": false
+        },
+        {
+          "feature": "away_bp_whip_7g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.00031432597590097533,
+            -0.00013741206578765652,
+            -9.945886161821793e-05,
+            0.0005719428044526076
+          ],
+          "mean_improvement": 5.1864752864394514e-06,
+          "accepted": false
+        },
+        {
+          "feature": "away_bp_k_minus_bb_7g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.0004396591704255437,
+            -9.016568007669257e-05,
+            -0.0007509057320002066,
+            0.00025337601069075344
+          ],
+          "mean_improvement": -0.00025683864295292236,
+          "accepted": false
+        },
+        {
+          "feature": "away_bp_pitches_per_out_7g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.00021262282741218996,
+            -0.0005658025499062358,
+            -0.0006140221477781704,
+            -0.00010536233419489172
+          ],
+          "mean_improvement": -0.000374452464822872,
+          "accepted": false
+        },
+        {
+          "feature": "away_bp_outs_14g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.0005657004494121765,
+            -0.0003591413505485974,
+            -0.0003706941944215947,
+            0.0004444429897235702
+          ],
+          "mean_improvement": -0.00021277325116469958,
+          "accepted": false
+        },
+        {
+          "feature": "away_bp_er_14g",
+          "family": "bullpen",
+          "fold_improvement": [
+            0.00010022378858820513,
+            -4.9312079376417906e-05,
+            1.355672269109931e-06,
+            0.0004801542545659343
+          ],
+          "mean_improvement": 0.00013310540901170786,
+          "accepted": true
+        },
+        {
+          "feature": "away_bp_hits_14g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.00013417459707232293,
+            -7.169036004350815e-05,
+            0.00012985383600905287,
+            -8.309846607623683e-05
+          ],
+          "mean_improvement": -3.977739679575376e-05,
+          "accepted": false
+        },
+        {
+          "feature": "away_bp_bb_14g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.0004891661849986129,
+            -0.0002791338897869533,
+            0.0001413247897417147,
+            -0.00013780456400291907
+          ],
+          "mean_improvement": -0.00019119496226169264,
+          "accepted": false
+        },
+        {
+          "feature": "away_bp_so_14g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -7.176879397197133e-05,
+            -0.00016037730476281542,
+            0.0001616871903870054,
+            -0.000382048520601197
+          ],
+          "mean_improvement": -0.00011312685723724458,
+          "accepted": false
+        },
+        {
+          "feature": "away_bp_hr_14g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.00030666998811035295,
+            -3.166626100314929e-05,
+            -5.0366298065984694e-05,
+            -0.000472577378183181
+          ],
+          "mean_improvement": -0.000215319981340667,
+          "accepted": false
+        },
+        {
+          "feature": "away_bp_pitches_14g",
+          "family": "bullpen",
+          "fold_improvement": [
+            -0.00023112937630187513,
+            -0.00011944700030741551,
+            -8.372489521646376e-05,
+            -0.0009243744934698261
+          ],
+          "mean_improvement": -0.00033966894132389513,
+          "accepted": false
+        },
+        {
+          "feature": "away_bp_era_14g",
+          "family": "bullpen",
+          "fold_improvement": [
+            0.000374511482523876,
+            -0.0001873952516626698,
+            0.00025104716039903163,
+            -0.00047099621304147465
+          ],
+          "mean_improvement": -8.208205445309202e-06,
+          "accepted": false
+        },
+        {
+          "feature": "away_bp_whip_14g",
+          "family": "bullpen",
+          "fold_improvement": [
+            0.0002981354080645593,
+            -5.048188985079527e-05,
+            -0.00017117961105528323,
+            -0.0007241307977444711
+          ],
+          "mean_improvement": -0.00016191422264649757,
+          "accepted": false
+        },
+        {
+          "feature": "away_bp_k_minus_bb_14g",
+          "family": "bullpen",
+          "fold_improvement": [
+            0.0002849527019147535,
+            -9.082190379428035e-06,
+            -0.00037423770989064575,
+            -0.0004916173454256878
+          ],
+          "mean_improvement": -0.00014749613594525202,
+          "accepted": false
+        },
+        {
+          "feature": "away_bp_pitches_per_out_14g",
+          "family": "bullpen",
+          "fold_improvement": [
+            0.0001457989371289603,
+            -0.00016544347725744313,
+            7.373828786905179e-06,
+            -0.00036490399344402125
+          ],
+          "mean_improvement": -9.429367619639972e-05,
+          "accepted": false
+        },
+        {
+          "feature": "market_logit_x_run_form",
+          "family": "interactions",
+          "fold_improvement": [
+            5.4047378234001187e-05,
+            -0.00016815130641045783,
+            -2.555794265346467e-05,
+            -0.0007268769982142764
+          ],
+          "mean_improvement": -0.00021663471726104944,
+          "accepted": false
+        },
+        {
+          "feature": "market_strength_x_form_disagreement",
+          "family": "interactions",
+          "fold_improvement": [
+            9.943671765633155e-05,
+            -0.00035962569106129383,
+            4.401762505334972e-05,
+            -0.00037199203225202204
+          ],
+          "mean_improvement": -0.00014704084515090865,
+          "accepted": false
+        },
+        {
+          "feature": "total_x_scoring_acceleration",
+          "family": "interactions",
+          "fold_improvement": [
+            -2.5230612611282233e-05,
+            -0.00018476664706301715,
+            0.00024536645146155944,
+            -0.0001385135769124135
+          ],
+          "mean_improvement": -2.5786096281288362e-05,
+          "accepted": false
+        },
+        {
+          "feature": "bullpen_era_diff_7g",
+          "family": "interactions",
+          "fold_improvement": [
+            -7.365063771169744e-05,
+            -0.0005725417876607519,
+            0.00010389294373480684,
+            -0.0002633948418345744
+          ],
+          "mean_improvement": -0.00020142358086805423,
+          "accepted": false
+        },
+        {
+          "feature": "bullpen_quality_x_rest",
+          "family": "interactions",
+          "fold_improvement": [
+            4.2923060982191785e-06,
+            -0.00022272218870467153,
+            0.00045503593766416106,
+            -0.0008024342118753136
+          ],
+          "mean_improvement": -0.00014145703920440122,
+          "accepted": false
+        },
+        {
+          "feature": "bullpen_workload_diff_3g",
+          "family": "interactions",
+          "fold_improvement": [
+            9.418119861215324e-05,
+            -0.0002606436191197048,
+            -0.00027890940469732506,
+            -0.0005097375578217989
+          ],
+          "mean_improvement": -0.00023877734575666887,
+          "accepted": false
+        },
+        {
+          "feature": "total_x_bullpen_era",
+          "family": "interactions",
+          "fold_improvement": [
+            -0.0001091581043624057,
+            -5.514129835004766e-05,
+            0.0002474711874699276,
+            -0.0001761913997829767
+          ],
+          "mean_improvement": -2.3254903756375622e-05,
+          "accepted": false
+        }
+      ],
+      "mean_logloss_improvement": 0.000350607675215886,
+      "mean_auc_improvement": 0.0074887276040246364
+    }
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "candidate": {
+    "kelly_profit_units": -0.11745449267537383,
+    "kelly_roi": -0.29439199137134014,
+    "total_stake": 0.39897312467043,
+    "zero_kelly": 70
+  },
+  "champion": {
+    "kelly_profit_units": -0.0038011397652880224,
+    "kelly_roi": -0.13140047997269183,
+    "total_stake": 0.0289278986353626,
+    "zero_kelly": 91
+  }
+}

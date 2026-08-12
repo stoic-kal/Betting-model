@@ -3,8 +3,16 @@ import sqlite3
 from collections import defaultdict
 from datetime import datetime
 
+from pipeline.calibration_common import brier_score
+
 DB_PATH = "database/picks.db"
 UNIT_DOLLARS = 20.0
+
+
+def _pair_brier(pairs):
+    if not pairs:
+        return None
+    return brier_score([outcome for outcome, _ in pairs], [prob for _, prob in pairs])
 
 
 def _snapshot(raw):
@@ -33,7 +41,8 @@ def _quality(row, snap):
 "bullpen": f.get("home_bp_era") is not None and f.get("away_bp_era") is not None,
 "defense": f.get("defense_adv") is not None,
 "rest_travel": f.get("rest_adv") is not None
-            and f.get("travel_timezone_adv") is not None,
+            and f.get("travel_timezone_adv") is not None
+            and f.get("travel_context_available", False),
 "market": snap.get("market_home") is not None,
 "statcast": advanced.get("home_pitcher_statcast", {}).get("available")
             and advanced.get("away_pitcher_statcast", {}).get("available"),
@@ -52,7 +61,8 @@ def _quality(row, snap):
 "bullpen": snap.get("bullpen_workload_adj") is not None,
 "defense": snap.get("defense_runs_adj") is not None,
 "rest_travel": c.get("rest_adv") is not None
-            and c.get("travel_timezone_adv") is not None,
+            and c.get("travel_timezone_adv") is not None
+            and c.get("travel_context_available", False),
 "market": snap.get("market_line") is not None,
 "statcast": advanced.get("home_pitcher_statcast", {}).get("available")
             and advanced.get("away_pitcher_statcast", {}).get("available"),
@@ -185,7 +195,7 @@ def get_model_control():
     enriched, bankroll, errors, alerts = [], [], [], []
     flat_bank = kelly_bank = 1000.0
     peak = 1000.0
-    model_sq, market_sq, starter_sq, core_sq = [], [], [], []
+    model_pairs, market_pairs, starter_pairs, core_pairs = [], [], [], []
     for row in rows:
         snap = _snapshot(row.get("feature_snapshot"))
         market = _market_prob(row, snap)
@@ -220,9 +230,9 @@ def get_model_control():
 "kelly_pl": round(kelly_pl, 2),
                 }
             )
-            model_sq.append((row["model_prob"] - outcome) ** 2)
+            model_pairs.append((outcome, row["model_prob"]))
             if market is not None:
-                market_sq.append((market - outcome) ** 2)
+                market_pairs.append((outcome, market))
         expected = snap.get("expected_total")
         actual = row.get("actual_total")
         if row["pick_type"] == "totals" and actual is not None and expected is not None:
@@ -257,8 +267,8 @@ def get_model_control():
                 0.99,
                 max(0.01, starter_p + effects.get("Venue offense", 0) + effects.get("Bullpen", 0)),
             )
-            starter_sq.append((starter_p - outcome) ** 2)
-            core_sq.append((core_p - outcome) ** 2)
+            starter_pairs.append((outcome, starter_p))
+            core_pairs.append((outcome, core_p))
         item = {k: v for k, v in row.items() if k != "feature_snapshot"}
         item.update(
             {
@@ -291,8 +301,8 @@ def get_model_control():
                 {"period": f"{block[0]['date']} → {block[-1]['date']}", **_summary(block)}
             )
 
-    brier_model = sum(model_sq) / len(model_sq) if model_sq else None
-    brier_market = sum(market_sq) / len(market_sq) if market_sq else None
+    brier_model = _pair_brier(model_pairs)
+    brier_market = _pair_brier(market_pairs)
     baselines = [
         {
 "name": "Full model forecast",
@@ -304,11 +314,11 @@ def get_model_control():
         },
         {
 "name": "Market + starter challenger",
-"brier": round(sum(starter_sq) / len(starter_sq), 4) if starter_sq else None,
+"brier": round(_pair_brier(starter_pairs), 4) if starter_pairs else None,
         },
         {
 "name": "Market + SP/offense/bullpen challenger",
-"brier": round(sum(core_sq) / len(core_sq), 4) if core_sq else None,
+"brier": round(_pair_brier(core_pairs), 4) if core_pairs else None,
         },
         {"name": "Uninformed 50/50 forecast", "brier": 0.25 if resolved else None},
     ]

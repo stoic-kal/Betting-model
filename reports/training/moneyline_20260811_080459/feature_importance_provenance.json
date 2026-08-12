@@ -1,0 +1,69 @@
+{
+  "gain_importance": {
+    "applicable": true,
+    "reason": null,
+    "tree_model": true
+  },
+  "permutation_importance": {
+    "applicable": true,
+    "scoring": "neg_log_loss",
+    "n_repeats": 10,
+    "n_rows": 734
+  },
+  "shap": {
+    "applicable": true,
+    "explainer": "tree",
+    "n_rows_explained": 500,
+    "kernel_nsamples": 500,
+    "kernel_background_clusters": 20,
+    "kernel_l1_reg": 0
+  },
+  "leave_one_feature_out": {
+    "applicable": true,
+    "retrained_per_feature": true,
+    "features_evaluated": [
+      "home_k_rate",
+      "home_bb_rate",
+      "home_hr_rate",
+      "home_hard_hit_pct",
+      "home_fb_velo",
+      "home_xwoba_against",
+      "home_fip",
+      "home_is_lefty",
+      "home_days_rest",
+      "away_k_rate",
+      "away_bb_rate",
+      "away_hr_rate",
+      "away_hard_hit_pct",
+      "away_fb_velo",
+      "away_xwoba_against",
+      "away_fip",
+      "away_is_lefty",
+      "away_days_rest",
+      "home_bat_k_rate",
+      "home_bat_hard_hit_pct",
+      "home_bat_iso",
+      "home_bat_woba",
+      "away_bat_k_rate",
+      "away_bat_hard_hit_pct",
+      "away_bat_iso",
+      "away_bat_woba",
+      "home_L10_wr",
+      "home_L10_rs",
+      "home_L10_ra",
+      "away_L10_wr",
+      "away_L10_rs",
+      "away_L10_ra",
+      "park_factor",
+      "is_dome",
+      "is_coors",
+      "temp_f",
+      "wind_mph",
+      "wind_out_factor"
+    ],
+    "features_evaluated_count": 38,
+    "total_features": 38,
+    "validation": "walk_forward",
+    "walk_forward_splits": 4
+  }
+}

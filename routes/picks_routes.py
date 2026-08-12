@@ -253,7 +253,9 @@ def live_monitor():
             SELECT game_id, date, matchup, pick_type, pick, odds, opening_odds,
                    closing_odds, clv, clv_captured_at, model_prob, ev, status,
                    model_version, model_build, forecast_stage, scheduled_start,
-                   recommendation_tier, kelly_units, feature_snapshot, created_at, updated_at
+                   recommendation_tier, kelly_units, theoretical_kelly_units,
+                   realized_stake_units, wager_status, wager_reason,
+                   feature_snapshot, created_at, updated_at
             FROM picks WHERE date = ?
             ORDER BY matchup, CASE pick_type WHEN 'moneyline' THEN 0 ELSE 1 END
         """,
@@ -322,8 +324,9 @@ def mobile_slate():
         rows = conn.execute(
             """SELECT game_id,date,matchup,pick_type,pick,odds,
             opening_odds,closing_odds,clv,model_prob,ev,status,model_version,
-            model_build,forecast_stage,scheduled_start,kelly_units,feature_snapshot
-            ,recommendation_tier
+            model_build,forecast_stage,scheduled_start,kelly_units,
+            theoretical_kelly_units,realized_stake_units,wager_status,wager_reason,
+            feature_snapshot,recommendation_tier
             FROM picks WHERE date=? ORDER BY matchup,pick_type""",
             (date,),
         ).fetchall()

@@ -1,0 +1,77 @@
+{
+  "generated_at": "2026-08-10T18:51:21.248264+00:00",
+  "model_version_comparisons": {
+    "moneyline": {
+      "model_name": "moneyline",
+      "comparison": "ok",
+      "latest_version": "20260810_185112",
+      "previous_version": "20260810_184249",
+      "latest_metrics": {
+        "n": 814,
+        "accuracy": 0.547911547911548,
+        "auc": 0.5455260318563356,
+        "log_loss": 0.6875452232343724,
+        "brier": 0.2471574636797573,
+        "ece": 0.019183795293718577
+      },
+      "previous_metrics": {
+        "n": 814,
+        "accuracy": 0.547911547911548,
+        "auc": 0.5455260318563356,
+        "log_loss": 0.6875452232343724,
+        "brier": 0.2471574636797573,
+        "ece": 0.019183795293718577
+      },
+      "delta": {
+        "accuracy": 0.0,
+        "auc": 0.0,
+        "log_loss": 0.0,
+        "brier": 0.0,
+        "ece": 0.0
+      }
+    },
+    "totals": {
+      "model_name": "totals",
+      "comparison": "ok",
+      "latest_version": "20260810_185120",
+      "previous_version": "20260810_184301",
+      "latest_metrics": {
+        "n": 814,
+        "accuracy": 0.527027027027027,
+        "auc": 0.5411518895348837,
+        "log_loss": 0.6893323593596138,
+        "brier": 0.24809840025252913,
+        "ece": 0.011318033293239247
+      },
+      "previous_metrics": {
+        "n": 814,
+        "accuracy": 0.527027027027027,
+        "auc": 0.5411518895348837,
+        "log_loss": 0.6893323593596138,
+        "brier": 0.24809840025252913,
+        "ece": 0.011318033293239247
+      },
+      "delta": {
+        "accuracy": 0.0,
+        "auc": 0.0,
+        "log_loss": 0.0,
+        "brier": 0.0,
+        "ece": 0.0
+      }
+    }
+  },
+  "shadow_comparisons": {
+    "moneyline": {
+      "pick_type": "moneyline",
+      "comparison": "insufficient_shadow_data",
+      "graded_rows": 0,
+      "recommendation": "NO ACTION - insufficient shadow data (0 graded rows, need >= 30)"
+    },
+    "totals": {
+      "pick_type": "totals",
+      "comparison": "insufficient_shadow_data",
+      "graded_rows": 0,
+      "recommendation": "NO ACTION - insufficient shadow data (0 graded rows, need >= 30)"
+    }
+  }
+}

@@ -38,6 +38,7 @@ from datetime import datetime
 from pathlib import Path
 
 from config import ODDS_API_KEY, today_et
+from services.execution_service import sanitize_odds_quotes, validate_decimal_odds
 
 if Path("models/lgbm_v2_moneyline.pkl").exists() and Path("models/lgbm_v2_totals.pkl").exists():
     _engine = "v2"
@@ -705,6 +706,9 @@ def generate_pick_for_game(
             for o in book.get("outcomes", []):
                 p = o.get("price")
                 if p:
+                    valid_price, _ = validate_decimal_odds(p)
+                    if not valid_price:
+                        continue
                     if o.get("name") == home_full:
                         home_ml_list.append(float(p))
                         home_ml_books.append((float(p), bookmaker))
@@ -715,6 +719,9 @@ def generate_pick_for_game(
             for o in book.get("outcomes", []):
                 pt, p, n = o.get("point"), o.get("price"), o.get("name")
                 if pt and p and n:
+                    valid_price, _ = validate_decimal_odds(p)
+                    if not valid_price:
+                        continue
                     ln = float(pt)
                     totals_by_line.setdefault(
                         ln, {"over": [], "under": [], "over_books": [], "under_books": []}
@@ -773,8 +780,10 @@ def generate_pick_for_game(
     best_home_odds = max(home_ml_list)
     best_away_odds = max(away_ml_list)
 
-    home_ev = (model_home * best_home_odds - 1) * 100
-    away_ev = (model_away * best_away_odds - 1) * 100
+    from services.prediction_math import expected_value
+
+    home_ev = expected_value(model_home, best_home_odds)
+    away_ev = expected_value(model_away, best_away_odds)
 
     def _book_for(price, books):
         return next((b for p, b in books if p == price), "Best Available")
@@ -817,7 +826,7 @@ def generate_pick_for_game(
     except Exception as e:
         print(f"   Debug reasoning (ML) failed: {e}")
 
-    from services.totals_model_v3 import kelly_units
+    from services.prediction_math import kelly_units
 
     def _ml_pick_dict(skipped=False, skip_reason=None):
         d = {
@@ -849,6 +858,7 @@ def generate_pick_for_game(
         ml_skip_reason = f'model_prob {ml_pick_prob:.3f} < {_min_prob} minimum{"  [dog boost]" if _is_slight_dog else ""}'
     elif model_edge < ML_MIN_EDGE:
         ml_skip_reason = f"edge {model_edge:.1f}pp < {ML_MIN_EDGE}pp minimum"
+    ml_recommendation_tier = "qualified_pick" if ml_skip_reason is None else "daily_forecast"
 
     snapshot_created_at = datetime.now().isoformat()
     ml_snapshot = json.dumps(
@@ -863,27 +873,56 @@ def generate_pick_for_game(
         default=_json_safe,
     )
 
+    ml_stake = {
+        "theoretical_kelly_units": kelly_units(ml_pick_prob, ml_best_odds),
+        "realized_stake_units": 0.0,
+        "wager_status": "preview",
+        "wager_reason": "preview is not an executed wager",
+    }
     if record_official:
         try:
             conn = sqlite3.connect("database/picks.db")
+            ml_theoretical = kelly_units(ml_pick_prob, ml_best_odds)
+            from services.execution_service import allocate_realized_stake
+
+            ml_stake = allocate_realized_stake(
+                conn,
+                date=today,
+                matchup=matchup,
+                game_id=ml_game_id,
+                theoretical_kelly=ml_theoretical,
+                recommendation_tier=ml_recommendation_tier,
+            )
             conn.execute(
                 """INSERT INTO picks
                    (game_id, date, matchup, pick_type, pick, odds, model_prob, ev,
-                    kelly_units, status, created_at, model_version, model_build,
+                    kelly_units, theoretical_kelly_units, realized_stake_units,
+                    wager_status, wager_reason, status, created_at, model_version, model_build,
                     opposite_opening_odds, opposite_price_source, forecast_stage, scheduled_start,
-                    feature_snapshot)
-                   VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,'actual sportsbook generation quote',?,?,?)
+                    recommendation_tier, feature_snapshot)
+                   VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'actual sportsbook generation quote',?,?,?,?)
                    ON CONFLICT(game_id) DO UPDATE SET
                      date=excluded.date, matchup=excluded.matchup,
                      pick_type=excluded.pick_type, pick=excluded.pick,
                      odds=excluded.odds, model_prob=excluded.model_prob,
                      ev=excluded.ev, kelly_units=excluded.kelly_units,
+                     theoretical_kelly_units=excluded.theoretical_kelly_units,
+                     realized_stake_units=COALESCE(picks.realized_stake_units,excluded.realized_stake_units),
+                     wager_status=CASE
+                         WHEN picks.realized_stake_units IS NULL THEN excluded.wager_status
+                         ELSE picks.wager_status
+                     END,
+                     wager_reason=CASE
+                         WHEN picks.realized_stake_units IS NULL THEN excluded.wager_reason
+                         ELSE picks.wager_reason
+                     END,
                      model_version=excluded.model_version,
                      model_build=excluded.model_build,
                      opposite_opening_odds=excluded.opposite_opening_odds,
                      opposite_price_source=excluded.opposite_price_source,
                      forecast_stage=excluded.forecast_stage,
                      scheduled_start=excluded.scheduled_start,
+                     recommendation_tier=excluded.recommendation_tier,
                      feature_snapshot=excluded.feature_snapshot""",
                 (
                     ml_game_id,
@@ -894,7 +933,11 @@ def generate_pick_for_game(
                     ml_best_odds,
                     ml_pick_prob,
                     ml_ev,
-                    kelly_units(ml_pick_prob, ml_best_odds),
+                    ml_theoretical,
+                    ml_stake["theoretical_kelly_units"],
+                    ml_stake["realized_stake_units"],
+                    ml_stake["wager_status"],
+                    ml_stake["wager_reason"],
                     "pending",
                     snapshot_created_at,
                     MODEL_VERSION,
@@ -902,8 +945,13 @@ def generate_pick_for_game(
                     ml_opposite_odds,
                     forecast_stage,
                     scheduled_start,
+                    ml_recommendation_tier,
                     ml_snapshot,
                 ),
+            )
+            conn.execute(
+                "UPDATE picks SET mlb_game_pk=? WHERE game_id=?",
+                (scheduled_game.get("game_pk") if scheduled_game else None, ml_game_id),
             )
             conn.commit()
             conn.close()
@@ -915,7 +963,7 @@ def generate_pick_for_game(
             try:
                 from services import discord_service
 
-                ml_kelly = kelly_units(ml_pick_prob, ml_best_odds)
+                ml_kelly = ml_stake["realized_stake_units"]
 
                 print("  Sending moneyline model output...")
                 discord_service.send_moneyline_output(
@@ -929,8 +977,9 @@ def generate_pick_for_game(
                 )
                 print("  Model output sent")
 
-                print("  Sending pick notification...")
-                discord_service.send_pick(
+                if ml_kelly > 0:
+                    print("  Sending pick notification...")
+                    discord_service.send_pick(
                     {
                         "pick_type": "moneyline",
                         "matchup": matchup,
@@ -940,14 +989,29 @@ def generate_pick_for_game(
                         "odds_dec": ml_best_odds,
                         "sportsbook": ml_sportsbook,
                     }
-                )
-                print("  Pick notification sent")
+                    )
+                    print("  Pick notification sent")
             except Exception as e:
                 print(f"  Discord notification failed: {e}")
+
+            try:
+                from services import shadow_inference_service
+
+                shadow_inference_service.shadow_moneyline(
+                    home_abbr, away_abbr, home_sp_id_ml, away_sp_id_ml,
+                    scheduled_start, ml_pick_prob, ml_market_prob, ml_best_odds,
+                )
+            except Exception:
+                pass
         except Exception as e:
             print(f"   DB save error (ML): {e}")
     ml_pick = _ml_pick_dict()
     ml_pick["qualified"] = ml_skip_reason is None
+    ml_pick["recommendation_tier"] = ml_recommendation_tier
+    ml_pick["theoretical_kelly_units"] = kelly_units(ml_pick_prob, ml_best_odds)
+    ml_pick["realized_stake_units"] = (
+        ml_stake["realized_stake_units"] if record_official else 0.0
+    )
     ml_pick["recorded"] = record_official
     ml_pick["advisory"] = ml_skip_reason
     ml_pick["summary"] = _moneyline_summary(
@@ -1040,6 +1104,7 @@ def generate_pick_for_game(
                     "snapshot_created_at": tot_snapshot_created_at,
                     "market_line": main_line,
                     "expected_total": tot_result["expected_total"],
+                    "run_distribution": tot_result.get("run_distribution"),
                     "home_fip": tot_result["home_fip"],
                     "away_fip": tot_result["away_fip"],
                     "home_rsg": tot_result["home_rsg"],
@@ -1071,21 +1136,55 @@ def generate_pick_for_game(
                 },
                 default=_json_safe,
             )
+            tot_theoretical = (
+                kelly_units(tot_result["model_prob"], tot_result["best_odds"])
+                if not tot_result.get("skipped")
+                and tot_result.get("recommendation_tier") != "daily_forecast"
+                else 0.0
+            )
+            tot_stake = {
+                "theoretical_kelly_units": tot_theoretical,
+                "realized_stake_units": 0.0,
+                "wager_status": "preview",
+                "wager_reason": "preview is not an executed wager",
+            }
             if record_official:
                 try:
                     conn = sqlite3.connect("database/picks.db")
+                    from services.execution_service import allocate_realized_stake
+
+                    tot_stake = allocate_realized_stake(
+                        conn,
+                        date=today,
+                        matchup=matchup,
+                        game_id=tot_game_id,
+                        theoretical_kelly=tot_theoretical,
+                        recommendation_tier=tot_result.get("recommendation_tier"),
+                    )
                     conn.execute(
                         """INSERT INTO picks
                        (game_id, date, matchup, pick_type, pick, odds,
-                       model_prob, ev, kelly_units, status, created_at, model_version, model_build,
+                       model_prob, ev, kelly_units, theoretical_kelly_units,
+                       realized_stake_units, wager_status, wager_reason,
+                       status, created_at, model_version, model_build,
                        opposite_opening_odds, opposite_price_source, forecast_stage, scheduled_start, recommendation_tier,
                        feature_snapshot)
-                       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,'actual sportsbook generation quote',?,?,?,?)
+                       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'actual sportsbook generation quote',?,?,?,?)
                        ON CONFLICT(game_id) DO UPDATE SET
                          date=excluded.date, matchup=excluded.matchup,
                          pick_type=excluded.pick_type, pick=excluded.pick,
                          odds=excluded.odds, model_prob=excluded.model_prob,
                          ev=excluded.ev, kelly_units=excluded.kelly_units,
+                         theoretical_kelly_units=excluded.theoretical_kelly_units,
+                         realized_stake_units=COALESCE(picks.realized_stake_units,excluded.realized_stake_units),
+                         wager_status=CASE
+                             WHEN picks.realized_stake_units IS NULL THEN excluded.wager_status
+                             ELSE picks.wager_status
+                         END,
+                         wager_reason=CASE
+                             WHEN picks.realized_stake_units IS NULL THEN excluded.wager_reason
+                             ELSE picks.wager_reason
+                         END,
                          model_version=excluded.model_version,
                          model_build=excluded.model_build,
                          opposite_opening_odds=excluded.opposite_opening_odds,
@@ -1103,11 +1202,11 @@ def generate_pick_for_game(
                             tot_result["best_odds"],
                             tot_result["model_prob"],
                             tot_result["ev"],
-                            (
-                                kelly_units(tot_result["model_prob"], tot_result["best_odds"])
-                                if tot_result.get("recommendation_tier") != "daily_forecast"
-                                else 0
-                            ),
+                            tot_theoretical,
+                            tot_stake["theoretical_kelly_units"],
+                            tot_stake["realized_stake_units"],
+                            tot_stake["wager_status"],
+                            tot_stake["wager_reason"],
                             "pending",
                             tot_snapshot_created_at,
                             MODEL_VERSION,
@@ -1119,6 +1218,10 @@ def generate_pick_for_game(
                             totals_snapshot,
                         ),
                     )
+                    conn.execute(
+                        "UPDATE picks SET mlb_game_pk=? WHERE game_id=?",
+                        (scheduled_game.get("game_pk") if scheduled_game else None, tot_game_id),
+                    )
                     conn.commit()
                     conn.close()
                     print("  Totals committed")
@@ -1126,11 +1229,7 @@ def generate_pick_for_game(
                     try:
                         from services import discord_service
 
-                        tot_kelly = (
-                            kelly_units(tot_result["model_prob"], tot_result["best_odds"])
-                            if tot_result.get("recommendation_tier") != "daily_forecast"
-                            else 0
-                        )
+                        tot_kelly = tot_stake["realized_stake_units"]
 
                         print("  Sending totals model output...")
                         discord_service.send_totals_output(
@@ -1146,9 +1245,10 @@ def generate_pick_for_game(
                         )
                         print("  Model output sent")
 
-                        print("  Sending pick notification...")
-                        discord_service.send_pick(
-                            {
+                        if tot_kelly > 0:
+                            print("  Sending pick notification...")
+                            discord_service.send_pick(
+                                {
                                 "pick_type": "totals",
                                 "matchup": matchup,
                                 "pick": tot_result["pick"],
@@ -1158,11 +1258,22 @@ def generate_pick_for_game(
                                 "kelly_units": tot_kelly,
                                 "odds_dec": tot_result["best_odds"],
                                 "sportsbook": tot_sportsbook,
-                            }
-                        )
-                        print("  Pick notification sent")
+                                }
+                            )
+                            print("  Pick notification sent")
                     except Exception as e:
                         print(f"  Discord notification failed: {e}")
+
+                    try:
+                        from services import shadow_inference_service
+
+                        shadow_inference_service.shadow_totals(
+                            home_abbr, away_abbr, home_sp_id, away_sp_id,
+                            scheduled_start, tot_result["model_prob"], main_line, tot_result["best_odds"],
+                            "OVER" in tot_result["pick"],
+                        )
+                    except Exception:
+                        pass
                 except Exception as e:
                     print(f"   DB save error (Totals): {e}")
 
@@ -1204,6 +1315,10 @@ def generate_pick_for_game(
                         if tot_result.get("recommendation_tier") != "daily_forecast"
                         else 0
                     ),
+                    "theoretical_kelly_units": tot_stake["theoretical_kelly_units"],
+                    "realized_stake_units": tot_stake["realized_stake_units"],
+                    "wager_status": tot_stake["wager_status"],
+                    "wager_reason": tot_stake["wager_reason"],
                     "num_books": n_books_t,
                     "qualified": tot_result.get("recommendation_tier")
                     in ("qualified_pick", "strong_lock"),

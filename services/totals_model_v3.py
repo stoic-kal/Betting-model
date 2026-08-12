@@ -1,12 +1,17 @@
 from datetime import date, datetime
+import math
 
 import numpy as np
 import requests
 from scipy.stats import poisson
 
+from services.baseball_metrics import baseball_innings, fip_from_mlb_stat
+
 LEAGUE_AVG_FIP = 3.90
 LEAGUE_AVG_RSG = 4.60
 SP_FIP_EXPONENT = 0.75
+FIP_FORMULA_VERSION = 2
+TOTALS_INPUT_VERSION = 2
 
 
 PARK_FACTORS = {
@@ -174,6 +179,11 @@ def _fetch_home_plate_umpire(game_pk) -> tuple[str, float]:
         return ("Unknown", 0.0)
 
 
+def _fip_from_mlb_stat(stat):
+    """Calculate FIP from the field names actually emitted by MLB Stats API."""
+    return fip_from_mlb_stat(stat, min_ip=20)
+
+
 def _fetch_pitcher_fip(pitcher_id) -> float:
 
     _maybe_clear_cache()
@@ -198,17 +208,11 @@ def _fetch_pitcher_fip(pitcher_id) -> float:
             return LEAGUE_AVG_FIP
         s = splits[0].get("stat", {})
 
-        ip = _baseball_innings(s.get("inningsPitched", 0))
-        hr = float(s.get("homeRunsAllowed", 0) or 0)
-        bb = float(s.get("baseOnBalls", 0) or 0)
-        so = float(s.get("strikeOuts", 0) or 0)
-        if ip < 20:
-
+        fip = _fip_from_mlb_stat(s)
+        if fip is None:
             _fip_cache[pitcher_id] = LEAGUE_AVG_FIP
             return LEAGUE_AVG_FIP
-
-        fip = (13 * hr + 3 * bb - 2 * so) / max(ip, 0.1) + 3.10
-        fip = float(np.clip(fip, 2.00, 6.50))
+        ip = _baseball_innings(s.get("inningsPitched", 0))
         print(f"    FIP fetched: pitcher {pitcher_id} → {fip:.2f} ({ip:.0f} IP)")
     except Exception as e:
         print(f"     FIP fetch error (id={pitcher_id}): {e}")
@@ -219,10 +223,7 @@ def _fetch_pitcher_fip(pitcher_id) -> float:
 
 
 def _baseball_innings(value):
-
-    text = str(value or "0")
-    whole, _, outs = text.partition(".")
-    return float(whole or 0) + min(int(outs or 0), 2) / 3
+    return baseball_innings(value)
 
 
 def _fetch_expected_starter_usage(pitcher_id):
@@ -419,15 +420,15 @@ def _fetch_team_bullpen_era(team_abbr: str) -> float:
 
 def _fetch_weather(venue_city: str, home_abbr: str, game_pk=None) -> dict:
 
+    mlb_weather = {}
     if game_pk:
         try:
             game_feed = requests.get(
                 f"https://statsapi.mlb.com/api/v1.1/game/{game_pk}/feed/live",
                 timeout=6,
             ).json()
-            condition = str(
-                game_feed.get("gameData", {}).get("weather", {}).get("condition", "")
-            ).lower()
+            mlb_weather = game_feed.get("gameData", {}).get("weather", {}) or {}
+            condition = str(mlb_weather.get("condition", "")).lower()
             if any(label in condition for label in ("roof closed", "dome", "indoor")):
                 return {
                     "temp_f": 72,
@@ -442,7 +443,7 @@ def _fetch_weather(venue_city: str, home_abbr: str, game_pk=None) -> dict:
             print(f"     Roof status unavailable ({home_abbr}): {e}")
 
     _maybe_clear_cache()
-    cache_key = f"weather_{home_abbr}"
+    cache_key = f"weather_{home_abbr}_{game_pk or 'no_game'}"
     if cache_key in _rsg_cache:
         return _rsg_cache[cache_key]
 
@@ -488,9 +489,12 @@ def _fetch_weather(venue_city: str, home_abbr: str, game_pk=None) -> dict:
         )
         data = r.json()
         current = data["current_condition"][0]
-        temp_f = float(current.get("temp_F", 72))
-        wind_mph = float(current.get("windspeedMiles", 5))
-        wind_dir = current.get("winddir16Point", "N")
+        temp_f = float(mlb_weather.get("temp") or current.get("temp_F", 72))
+        wind_mph, wind_dir, wind_semantics = _parse_wind(
+            mlb_weather.get("wind"),
+            fallback_mph=current.get("windspeedMiles", 5),
+            fallback_direction=current.get("winddir16Point", "unknown"),
+        )
 
         if temp_f < 45:
             temp_factor = 0.92
@@ -501,12 +505,10 @@ def _fetch_weather(venue_city: str, home_abbr: str, game_pk=None) -> dict:
         else:
             temp_factor = 1.00
 
-        OUT_DIRS = {"S", "SW", "SSW", "WSW", "SE", "SSE", "ESE"}
-        IN_DIRS = {"N", "NW", "NNW", "WNW", "NE", "NNE", "ENE"}
         WIND_GATE_MPH = 8
-        if wind_dir in OUT_DIRS and wind_mph >= WIND_GATE_MPH:
+        if wind_semantics == "out" and wind_mph >= WIND_GATE_MPH:
             wind_factor = 1.0 + min((wind_mph - WIND_GATE_MPH + 4) / 100, 0.10)
-        elif wind_dir in IN_DIRS and wind_mph >= WIND_GATE_MPH:
+        elif wind_semantics == "in" and wind_mph >= WIND_GATE_MPH:
             wind_factor = 1.0 - min((wind_mph - WIND_GATE_MPH + 4) / 100, 0.08)
         else:
             wind_factor = 1.00
@@ -519,7 +521,8 @@ def _fetch_weather(venue_city: str, home_abbr: str, game_pk=None) -> dict:
             "dome": False,
             "roof_status": "open/outdoor or unconfirmed",
             "weather_factor": round(weather_factor, 4),
-            "weather_source": "wttr.in",
+            "weather_source": "MLB Stats API + wttr.in" if mlb_weather else "wttr.in",
+            "wind_semantics": wind_semantics,
         }
         print(
             f"     Weather ({home_abbr}): {temp_f:.0f}°F, wind {wind_mph:.0f}mph {wind_dir} → factor {weather_factor:.3f}"
@@ -545,6 +548,26 @@ def _fetch_weather(venue_city: str, home_abbr: str, game_pk=None) -> dict:
         }
         _rsg_cache[cache_key] = result
         return result
+
+
+def _parse_wind(wind_text, fallback_mph=5, fallback_direction="unknown"):
+    """Parse park-relative MLB wind text without guessing from compass bearing."""
+    import re
+
+    text = str(wind_text or "").strip()
+    match = re.search(r"(\d+(?:\.\d+)?)\s*mph", text, flags=re.IGNORECASE)
+    mph = float(match.group(1)) if match else float(fallback_mph or 0)
+    lowered = text.lower()
+    if "out to" in lowered or "blowing out" in lowered:
+        semantics = "out"
+    elif "in from" in lowered or "blowing in" in lowered:
+        semantics = "in"
+    elif "left to right" in lowered or "right to left" in lowered or "cross" in lowered:
+        semantics = "cross"
+    else:
+        semantics = "unknown"
+    direction = text.split(",", 1)[-1].strip() if text else str(fallback_direction)
+    return mph, direction, semantics
 
 
 def _fetch_team_rsg(team_abbr: str, venue: str = "all") -> float:
@@ -600,26 +623,6 @@ def _fetch_team_rsg(team_abbr: str, venue: str = "all") -> float:
     return blended
 
 
-def kelly_units(
-    model_prob: float, decimal_odds: float, kelly_fraction: float = 0.5, max_units: float = 1.0
-) -> float:
-
-    b = decimal_odds - 1.0
-    if b <= 0:
-        return 0.0
-    p = model_prob
-    q = 1.0 - p
-    full_kelly = (b * p - q) / b
-    half_kelly = full_kelly * kelly_fraction
-    if half_kelly <= 0:
-        return 0.0
-    if half_kelly < 0.05:
-        return min(0.25, max_units)
-    if half_kelly < 0.10:
-        return min(0.50, max_units)
-    return min(1.00, max_units)
-
-
 def poisson_side_probs(expected_total: float, line: float) -> tuple[float, float]:
 
     k = int(np.floor(line))
@@ -643,6 +646,27 @@ def poisson_over_prob(expected_total: float, line: float) -> float:
     return poisson_side_probs(expected_total, line)[0]
 
 
+def poisson_run_distribution(expected_total: float) -> dict:
+    lam = max(float(expected_total), 0.01)
+    levels = {}
+    for coverage in (0.80, 0.90, 0.95):
+        alpha = (1 - coverage) / 2
+        levels[str(int(coverage * 100))] = {
+            "lower": int(poisson.ppf(alpha, lam)),
+            "upper": int(poisson.ppf(1 - alpha, lam)),
+        }
+    probabilities = [float(poisson.pmf(runs, lam)) for runs in range(21)]
+    return {
+        "family": "Poisson",
+        "mean": round(lam, 4),
+        "variance": round(lam, 4),
+        "standard_deviation": round(math.sqrt(lam), 4),
+        "prediction_intervals": levels,
+        "run_probabilities_0_to_20": [round(value, 8) for value in probabilities],
+        "probability_above_20": round(max(0.0, 1 - sum(probabilities)), 8),
+    }
+
+
 def compute_totals_pick(
     away_abbr: str,
     home_abbr: str,
@@ -655,6 +679,18 @@ def compute_totals_pick(
     venue_city: str = "",
     game_pk=None,
 ) -> dict:
+
+    from services.execution_service import sanitize_odds_quotes
+
+    over_odds_list, rejected_over = sanitize_odds_quotes(over_odds_list)
+    under_odds_list, rejected_under = sanitize_odds_quotes(under_odds_list)
+    rejected = rejected_over + rejected_under
+    if not over_odds_list or not under_odds_list:
+        return {
+            "skipped": True,
+            "skip_reason": "Totals market rejected because no valid two-sided decimal odds remain.",
+            "rejected_odds": rejected,
+        }
 
     MIN_BOOKS = 6
     limited_market_warning = (
@@ -669,8 +705,8 @@ def compute_totals_pick(
     home_rsg = _fetch_team_rsg(home_abbr, venue="home")
     away_rsg = _fetch_team_rsg(away_abbr, venue="away")
 
-    home_bp_era = _fetch_team_bullpen_era(away_abbr)
-    away_bp_era = _fetch_team_bullpen_era(home_abbr)
+    home_bp_era = _fetch_team_bullpen_era(home_abbr)
+    away_bp_era = _fetch_team_bullpen_era(away_abbr)
 
     weather = _fetch_weather(venue_city, home_abbr, game_pk)
     weather_factor = weather["weather_factor"]
@@ -695,13 +731,13 @@ def compute_totals_pick(
 
     home_available_bp_era = _available_bp_era(
         home_bp_era,
-        context.get("away_available_recent_reliever_era"),
-        context.get("away_available_reliever_quality_count", 0),
+        context.get("home_available_recent_reliever_era"),
+        context.get("home_available_reliever_quality_count", 0),
     )
     away_available_bp_era = _available_bp_era(
         away_bp_era,
-        context.get("home_available_recent_reliever_era"),
-        context.get("home_available_reliever_quality_count", 0),
+        context.get("away_available_recent_reliever_era"),
+        context.get("away_available_reliever_quality_count", 0),
     )
 
     def _pm(sp_fip, bp_era, starter_innings):
@@ -713,13 +749,13 @@ def compute_totals_pick(
     home_exp = (
         home_rsg
         * park_f
-        * _pm(away_fip, home_available_bp_era, away_starter_usage["expected_innings"])
+        * _pm(away_fip, away_available_bp_era, away_starter_usage["expected_innings"])
         * weather_factor
     )
     away_exp = (
         away_rsg
         * park_f
-        * _pm(home_fip, away_available_bp_era, home_starter_usage["expected_innings"])
+        * _pm(home_fip, home_available_bp_era, home_starter_usage["expected_innings"])
         * weather_factor
     )
 
@@ -783,6 +819,7 @@ def compute_totals_pick(
         + defense_runs_adj
         + contact_runs_adj
     )
+    run_distribution = poisson_run_distribution(expected_total)
 
     wind_info = (
         f'{weather["wind_mph"]:.0f}mph {weather["wind_dir"]}' if not weather.get("dome") else "dome"
@@ -824,7 +861,9 @@ def compute_totals_pick(
 
     model_edge = (model_prob - market_prob) * 100
 
-    ev = (model_prob * best_odds - 1) * 100
+    from services.prediction_math import expected_value
+
+    ev = expected_value(model_prob, best_odds)
 
     if best_odds >= 2.0:
         odds_display = f"+{int(round((best_odds - 1) * 100))}"
@@ -837,8 +876,6 @@ def compute_totals_pick(
     MAX_PROB = 0.74
     MIN_EV = 12.0
     MIN_EDGE = 4.0
-
-    OVER_MIN_PROB = 0.62
 
     all_prices = [float(x) for x in over_odds_list + under_odds_list]
     market_price_spread = max(all_prices) - min(all_prices) if all_prices else 99.0
@@ -863,7 +900,6 @@ def compute_totals_pick(
         "strong_edge_7pp": abs(model_edge) >= 7.0,
         "ten_or_more_books": n_books >= 10,
         "stable_cross_book_prices": market_price_spread <= 0.12,
-        "over_min_prob_62": direction != "over" or model_prob >= 0.62,
     }
     qualified = all(
         qualification_checklist[key]
@@ -872,7 +908,6 @@ def compute_totals_pick(
             "ev_at_least_12",
             "edge_at_least_4pp",
             "six_or_more_books",
-            "over_min_prob_62",
         )
     )
     strong_lock = qualified and all(
@@ -909,8 +944,11 @@ def compute_totals_pick(
             "best_odds_display": odds_display,
             "ev": round(ev, 2),
             "expected_total": round(expected_total, 2),
+            "run_distribution": run_distribution,
             "home_fip": round(home_fip, 2),
             "away_fip": round(away_fip, 2),
+            "fip_formula_version": FIP_FORMULA_VERSION,
+            "totals_input_version": TOTALS_INPUT_VERSION,
             "home_rsg": round(home_rsg, 2),
             "away_rsg": round(away_rsg, 2),
             "park_factor": park_f,
@@ -919,14 +957,15 @@ def compute_totals_pick(
             "away_bp_era": round(away_bp_era, 2),
             "home_available_bp_era": round(home_available_bp_era, 2),
             "away_available_bp_era": round(away_available_bp_era, 2),
-            "home_team_available_bp_era": round(away_available_bp_era, 2),
-            "away_team_available_bp_era": round(home_available_bp_era, 2),
+            "home_team_available_bp_era": round(home_available_bp_era, 2),
+            "away_team_available_bp_era": round(away_available_bp_era, 2),
             "home_starter_usage": home_starter_usage,
             "away_starter_usage": away_starter_usage,
             "weather_factor": round(weather_factor, 4),
             "temp_f": weather.get("temp_f"),
             "wind_info": wind_info,
             "weather_source": weather.get("weather_source"),
+            "wind_semantics": weather.get("wind_semantics"),
             "weather_error": weather.get("weather_error"),
             "ump_name": ump_name,
             "ump_runs_adj": round(ump_runs_adj, 2),
@@ -939,6 +978,7 @@ def compute_totals_pick(
             "recommendation_tier": recommendation_tier,
             "qualification_checklist": qualification_checklist,
             "market_price_spread": round(market_price_spread, 4),
+            "rejected_odds": rejected,
         }
 
     if limited_market_warning:
@@ -948,16 +988,6 @@ def compute_totals_pick(
             **_base(),
             "skipped": True,
             "skip_reason": f"Model prob {model_prob:.1%} < {MIN_PROB:.0%} minimum",
-        }
-
-    if direction == "over" and model_prob < OVER_MIN_PROB:
-        return {
-            **_base(),
-            "skipped": True,
-            "skip_reason": (
-                f"OVER model prob {model_prob:.1%} < {OVER_MIN_PROB:.0%} "
-                "temporary OVER-only floor (pending calibration fix)"
-            ),
         }
 
     if model_prob > MAX_PROB:

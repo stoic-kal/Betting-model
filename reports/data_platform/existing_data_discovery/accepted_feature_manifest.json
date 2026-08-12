@@ -1,0 +1,17 @@
+{
+  "created_at": "2026-08-11T09:04:24.275537+00:00",
+  "source_dataset": "data/platform/historical_features.csv",
+  "accepted_dataset": "data/platform/historical_features_existing_data_v2.csv",
+  "selection_gate": "mean log-loss improvement and positive in at least 3/4 expanding folds",
+  "features_by_target": {
+    "home_win": [
+      "home_runs_accel_5v10",
+      "away_walks_accel_5v10"
+    ],
+    "over": [
+      "home_runs_accel_10v30",
+      "home_hits_accel_5v10",
+      "away_bp_er_14g"
+    ]
+  }
+}

@@ -1,8 +1,5 @@
+import math
 import sqlite3
-import json
-import sqlite3
-from datetime import datetime
-from pathlib import Path
 
 DB_PATH = 'database/picks.db'
 UNIT_SIZE = 20.0  # Current standard unit size  1 unit = $20
@@ -153,6 +150,9 @@ def _type_stats(picks: list) -> dict:
 "avg_ev": 0,
 "avg_prob": 0,
 "avg_kelly": 0,
+"roi_ci_low": 0,
+"roi_ci_high": 0,
+"roi_se": 0,
         }
     won = sum(1 for p in picks if p["status"] == "won")
     lost = len(picks) - won
@@ -169,6 +169,15 @@ def _type_stats(picks: list) -> dict:
             profit -= UNIT_SIZE
             kelly_profit -= ku * UNIT_SIZE
     wagered = len(picks) * UNIT_SIZE
+    unit_returns = [(float(p["odds"]) - 1) if p["status"] == "won" else -1.0 for p in picks]
+    mean_return = sum(unit_returns) / len(unit_returns)
+    if len(unit_returns) > 1:
+        variance = sum((value - mean_return) ** 2 for value in unit_returns) / (len(unit_returns) - 1)
+        roi_se = math.sqrt(variance / len(unit_returns)) * 100
+    else:
+        roi_se = 0.0
+    roi_low = mean_return * 100 - 1.96 * roi_se
+    roi_high = mean_return * 100 + 1.96 * roi_se
     avg_ev = sum(float(p["ev"]) for p in picks) / len(picks)
     avg_prob = sum(float(p["model_prob"]) for p in picks) / len(picks)
     avg_ku = kelly_wagered / len(picks) / UNIT_SIZE
@@ -184,6 +193,9 @@ def _type_stats(picks: list) -> dict:
 "avg_ev": round(avg_ev, 1),
 "avg_prob": round(avg_prob * 100, 1),
 "avg_kelly": round(avg_ku, 3),
+"roi_ci_low": round(roi_low, 1),
+"roi_ci_high": round(roi_high, 1),
+"roi_se": round(roi_se, 4),
     }
 
 
@@ -202,33 +214,26 @@ def _compute_streak(resolved: list) -> str:
 
 
 def _calibration_curve(resolved: list) -> list:
-    buckets = [
-        (0.00, 0.45),
-        (0.45, 0.50),
-        (0.50, 0.525),
-        (0.525, 0.55),
-        (0.55, 0.575),
-        (0.575, 0.60),
-        (0.60, 0.65),
-        (0.65, 0.70),
-        (0.70, 0.75),
-        (0.75, 1.00),
-    ]
+    ordered = sorted(resolved, key=lambda pick: float(pick["model_prob"]))
+    bucket_count = max(2, min(10, int(math.sqrt(len(ordered)))))
     curve = []
-    for lo, hi in buckets:
-        bucket_picks = [p for p in resolved if lo <= float(p["model_prob"]) < hi]
-        if len(bucket_picks) >= 3:
-            won = sum(1 for p in bucket_picks if p["status"] == "won")
-            curve.append(
-                {
-"prob_range": f"{lo:.2f}-{hi:.2f}",
-"prob_mid": round((lo + hi) / 2 * 100, 1),
-"predicted": round((lo + hi) / 2 * 100, 1),
-"actual": round(won / len(bucket_picks) * 100, 1),
-"n": len(bucket_picks),
-"won": won,
-                }
-            )
+    for index in range(bucket_count):
+        start = index * len(ordered) // bucket_count
+        end = (index + 1) * len(ordered) // bucket_count
+        bucket_picks = ordered[start:end]
+        if not bucket_picks:
+            continue
+        probabilities = [float(p["model_prob"]) for p in bucket_picks]
+        won = sum(1 for p in bucket_picks if p["status"] == "won")
+        predicted = sum(probabilities) / len(probabilities)
+        curve.append({
+            "prob_range": f"{min(probabilities):.3f}-{max(probabilities):.3f}",
+            "prob_mid": round(predicted * 100, 1),
+            "predicted": round(predicted * 100, 1),
+            "actual": round(won / len(bucket_picks) * 100, 1),
+            "n": len(bucket_picks),
+            "won": won,
+        })
     return curve
 
 
@@ -280,7 +285,9 @@ def _pnl_over_time(resolved: list) -> list:
 
 
 def _ev_threshold_analysis(resolved: list) -> list:
-    thresholds = [0, 5, 10, 15, 20, 25, 30]
+    values = sorted(float(p["ev"]) for p in resolved)
+    quantiles = (0.0, 0.25, 0.50, 0.75, 0.90)
+    thresholds = sorted({values[min(int(q * (len(values) - 1)), len(values) - 1)] for q in quantiles})
     results = []
     for threshold in thresholds:
         subset = [p for p in resolved if float(p["ev"]) >= threshold]
@@ -338,63 +345,37 @@ def _generate_recommendations(ml_stats, tot_stats, calibration, ev_analysis, ove
     for label, stats in (("Moneyline", ml_stats), ("Totals", tot_stats)):
         if stats["n"] == 0:
             continue
-        profitable = stats["roi"] > 0
-        enough_data = stats["n"] >= 30
+        positive = stats["roi_ci_low"] > 0
+        negative = stats["roi_ci_high"] < 0
+        observed = "positive" if stats["roi"] > 0 else "negative"
         recs.append(
             {
-"type": (
-"success"
-                    if profitable and enough_data
-                    else ("warning" if not profitable else "info")
-                ),
-"title": f'{label}: {"profitable" if profitable else "underperforming"} on current results',
+"type": "success" if positive else ("warning" if negative else "info"),
+"title": f"{label}: {observed} observed return",
 "detail": f'{stats["win_rate"]}% win rate, {stats["roi"]:+.1f}% ROI and '
                 f'${stats["profit"]:+.2f} profit across {stats["n"]} resolved picks. '
-                + (
-"The sample is still small; treat this as directional."
-                    if not enough_data
-                    else "This recommendation uses the full current sample."
-                ),
+                f'Approximate 95% ROI interval: {stats["roi_ci_low"]:+.1f}% to '
+                f'{stats["roi_ci_high"]:+.1f}%; '
+                + ("the interval excludes break-even." if positive or negative
+                   else "the interval includes break-even, so this is not a profitability conclusion."),
             }
         )
 
     if ml_stats["n"] and tot_stats["n"]:
         roi_gap = ml_stats["roi"] - tot_stats["roi"]
         better = "Moneyline" if roi_gap >= 0 else "Totals"
+        gap_se = math.sqrt(ml_stats["roi_se"] ** 2 + tot_stats["roi_se"] ** 2)
+        gap_low = abs(roi_gap) - 1.96 * gap_se
         recs.append(
             {
-"type": "success" if abs(roi_gap) >= 10 else "info",
-"title": f"{better} currently has the stronger return",
+"type": "success" if gap_low > 0 else "info",
+"title": (f"{better} has a statistically separated observed return"
+          if gap_low > 0 else "No reliable return difference between pick types"),
 "detail": f'Moneyline ROI is {ml_stats["roi"]:+.1f}% versus '
                 f'Totals ROI of {tot_stats["roi"]:+.1f}% '
-                f"({abs(roi_gap):.1f} percentage-point gap).",
-            }
-        )
-
-    for bucket in calibration:
-        if bucket["n"] >= 5:
-            gap = abs(bucket["actual"] - bucket["predicted"])
-            if gap > 10 and bucket["predicted"] > 60:
-                recs.append(
-                    {
-"type": "warning",
-"title": f'Model overconfident at {bucket["prob_range"]} probability',
-"detail": f'Model predicts {bucket["predicted"]}% but actual win rate is {bucket["actual"]}%. '
-                        f'Correction is recalculated from all {bucket["n"]} picks in this bucket.',
-                    }
-                )
-
-    eligible_ev = [row for row in ev_analysis if row["n"] >= 10]
-    if eligible_ev:
-        best = max(eligible_ev, key=lambda row: (row["roi"], row["n"]))
-        baseline = next((row for row in ev_analysis if row["min_ev"] == 0), None)
-        recs.append(
-            {
-"type": "success" if best["roi"] > 0 else "warning",
-"title": f'Current data favors an EV floor of ≥{best["min_ev"]}%',
-"detail": f'That filter produces {best["win_rate"]}% wins and '
-                f'{best["roi"]:+.1f}% ROI across {best["n"]} picks.'
-                + (f' The unfiltered sample is {baseline["roi"]:+.1f}% ROI.' if baseline else ""),
+                f"({abs(roi_gap):.1f} percentage-point observed gap). "
+                + ("The approximate 95% interval for the gap excludes zero."
+                   if gap_low > 0 else "The approximate 95% interval for the gap includes zero."),
             }
         )
 
@@ -411,34 +392,13 @@ def _generate_recommendations(ml_stats, tot_stats, calibration, ev_analysis, ove
 
 
 def _build_calibration_corrections(calibration: list) -> dict:
-
-    corrections = {}
-    for bucket in calibration:
-        if bucket["n"] >= 5:
-            predicted = bucket["predicted"] / 100
-            actual = bucket["actual"] / 100
-            if predicted > 0:
-                corrections[bucket["prob_range"]] = {
-"predicted": predicted,
-"actual": actual,
-"correction": round(actual / predicted, 4),
-"n": bucket["n"],
-                }
-    return corrections
+    """Analytics buckets are descriptive and never produce production corrections."""
+    return {}
 
 
 def _save_calibration_corrections(corrections: dict):
-
-    Path("analytics").mkdir(exist_ok=True)
-    with open("analytics/calibration_corrections.json", "w") as f:
-        json.dump(
-            {
-"updated_at": datetime.now().isoformat(),
-"corrections": corrections,
-            },
-            f,
-            indent=2,
-        )
+    """Deprecated no-op retained for callers from older deployments."""
+    return None
 
 
 def _empty_analytics(pending: int) -> dict:
@@ -470,20 +430,5 @@ def _empty_analytics(pending: int) -> dict:
 
 
 def apply_calibration_correction(model_prob: float) -> float:
-    """
-    Apply saved calibration correction to a raw model probability.
-    Call this before using model_prob in EV calculation.
-    """
-    try:
-        with open('analytics/calibration_corrections.json') as f:
-            data = json.load(f)
-        corrections = data.get('corrections', {})
-    except Exception:
-        return model_prob
-    for bucket_range, corr in corrections.items():
-        lo, hi = [float(x) for x in bucket_range.split("-")]
-        if lo <= model_prob < hi:
-            corrected = model_prob * corr['correction']
-            return max(0.48, min(0.72, corrected))
-
+    """Deprecated compatibility shim; analytics never changes production probability."""
     return model_prob

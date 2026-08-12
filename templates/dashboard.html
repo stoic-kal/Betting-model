@@ -369,7 +369,7 @@
 <!-- EV Threshold Analysis -->
 <div class="section-card" style="border-top:4px solid #1a1a2e">
   <div class="section-title" style="border-left:4px solid #1a1a2e;padding-left:10px;border-bottom:none;margin-bottom:16px">🔬 EV THRESHOLD ANALYSIS</div>
-  <div style="font-size:9px;color:var(--text-muted);margin-bottom:10px">Does filtering for higher expected value actually improve results?</div>
+  <div style="font-size:9px;color:var(--text-muted);margin-bottom:10px">Descriptive EV quantiles from the current sample. These rows are not validated betting filters or recommendations.</div>
   <table class="ev-table" id="ev-table">
     <thead>
       <tr><th>MIN EV</th><th>PICKS</th><th>WIN RATE</th><th>PROFIT ($)</th><th>ROI</th></tr>
@@ -380,7 +380,7 @@
 
 <!-- Recommendations -->
 <div class="section-card" style="border-top:4px solid #ffd700">
-  <div class="section-title" style="border-left:4px solid #ffd700;padding-left:10px;border-bottom:none;margin-bottom:16px">💡 MODEL RECOMMENDATIONS</div>
+  <div class="section-title" style="border-left:4px solid #ffd700;padding-left:10px;border-bottom:none;margin-bottom:16px">📊 EVIDENCE-BASED PERFORMANCE SUMMARY</div>
   <div id="recommendations">Loading...</div>
 </div>
 
@@ -811,7 +811,7 @@ function renderEVTable(data) {
   tbody.innerHTML = data.map(row => {
     const roiColor = row.roi >= 0 ? '#155a1e' : '#8b0000';
     return `<tr>
-      <td>≥ ${row.min_ev}%</td>
+      <td>≥ ${Number(row.min_ev).toFixed(1)}%</td>
       <td>${row.n}</td>
       <td>${row.win_rate}%</td>
       <td style="color:${roiColor}"><strong>${row.profit >= 0 ? '+' : ''}$${row.profit.toFixed(2)}</strong></td>

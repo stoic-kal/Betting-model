@@ -1,0 +1,48 @@
+{
+  "gain_importance": {
+    "applicable": true,
+    "reason": null,
+    "tree_model": true
+  },
+  "permutation_importance": {
+    "applicable": true,
+    "scoring": "neg_log_loss",
+    "n_repeats": 10,
+    "n_rows": 814
+  },
+  "shap": {
+    "applicable": true,
+    "explainer": "tree",
+    "n_rows_explained": 500
+  },
+  "leave_one_feature_out": {
+    "applicable": true,
+    "retrained_per_feature": true,
+    "features_evaluated": [
+      "away_k_rate",
+      "home_L10_ra",
+      "away_bat_woba",
+      "wind_mph",
+      "away_hard_hit_pct",
+      "home_bat_iso",
+      "away_bb_rate",
+      "home_bat_k_rate",
+      "home_fb_velo",
+      "away_fip",
+      "home_bat_hard_hit_pct",
+      "away_xwoba_against",
+      "away_L10_rs",
+      "home_bat_woba",
+      "home_fip",
+      "away_L10_wr",
+      "away_fb_velo",
+      "away_L10_ra",
+      "home_k_rate",
+      "wind_out_factor"
+    ],
+    "features_evaluated_count": 20,
+    "total_features": 38,
+    "approximation": "single chronological holdout split instead of full walk-forward, restricted to the top features by shap/permutation rank, to keep one retrain per feature tractable",
+    "holdout_frac": 0.2
+  }
+}

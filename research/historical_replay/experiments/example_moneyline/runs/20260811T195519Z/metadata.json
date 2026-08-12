@@ -1,0 +1,157 @@
+{
+  "configuration": {
+    "candidate": {
+      "calibration": null,
+      "family": "logistic_regression",
+      "name": "candidate",
+      "parameters": {
+        "C": 1.0
+      }
+    },
+    "champion": {
+      "calibration": null,
+      "family": "extra_trees",
+      "name": "champion",
+      "parameters": {
+        "max_depth": 8,
+        "min_samples_leaf": 5,
+        "n_estimators": 40
+      }
+    },
+    "dataset_path": "/Users/kalyaan/betting-model/data/platform/historical_features.csv",
+    "end_date": "2021-09-07",
+    "exclude_features": [],
+    "experiment_name": "example_moneyline",
+    "feature_transforms": [],
+    "flat_stake_units": 1.0,
+    "include_features": [],
+    "kelly_multiplier": 0.25,
+    "max_kelly_fraction": 0.05,
+    "min_edge": 0.02,
+    "min_training_rows": 2000,
+    "probability_bins": 10,
+    "seed": 42,
+    "start_date": "2021-09-01",
+    "target": "home_win",
+    "training_window_days": null
+  },
+  "created_at": "2026-08-11T19:55:22.499934+00:00",
+  "dataset_hash": "983a0f630985445206091adab1a3722779c7ae99e76bcb7bd3406ade423e628e",
+  "dataset_path": "/Users/kalyaan/betting-model/data/platform/historical_features.csv",
+  "evaluation_window": {
+    "end": "2021-09-07",
+    "identical_games": 95,
+    "start": "2021-09-01"
+  },
+  "feature_list": [
+    "home_runs_5g",
+    "home_runs_allowed_5g",
+    "home_hits_5g",
+    "home_walks_5g",
+    "home_strikeouts_5g",
+    "home_runs_10g",
+    "home_runs_allowed_10g",
+    "home_hits_10g",
+    "home_walks_10g",
+    "home_strikeouts_10g",
+    "home_runs_30g",
+    "home_runs_allowed_30g",
+    "home_hits_30g",
+    "home_walks_30g",
+    "home_strikeouts_30g",
+    "home_win_rate_10g",
+    "home_rest_days",
+    "away_runs_5g",
+    "away_runs_allowed_5g",
+    "away_hits_5g",
+    "away_walks_5g",
+    "away_strikeouts_5g",
+    "away_runs_10g",
+    "away_runs_allowed_10g",
+    "away_hits_10g",
+    "away_walks_10g",
+    "away_strikeouts_10g",
+    "away_runs_30g",
+    "away_runs_allowed_30g",
+    "away_hits_30g",
+    "away_walks_30g",
+    "away_strikeouts_30g",
+    "away_win_rate_10g",
+    "away_rest_days",
+    "home_moneyline_price_american",
+    "home_moneyline_price_decimal",
+    "home_moneyline_implied",
+    "away_moneyline_price_american",
+    "away_moneyline_price_decimal",
+    "away_moneyline_implied",
+    "market_home_probability",
+    "market_vig",
+    "over_price_decimal",
+    "under_price_decimal",
+    "market_over_probability",
+    "total_market_vig",
+    "home_form_edge",
+    "run_form_edge",
+    "market_x_form_edge"
+  ],
+  "git_commit": "c108de24e2cc7c72beac3105fa214ded48e5b794",
+  "isolation": {
+    "notifications_enabled": false,
+    "production_writes": false,
+    "registry_modified": false,
+    "shadow_modified": false
+  },
+  "model_versions": {
+    "candidate": "logistic_regression",
+    "champion": "extra_trees"
+  },
+  "random_seed": 42,
+  "replay_schema_version": "1.0",
+  "run_id": "20260811T195519Z",
+  "runtime_seconds": 3.417,
+  "schema_version": "b0655494f651ded1",
+  "training_windows": [
+    {
+      "replay_date": "2021-09-01",
+      "train_end": "2021-08-31",
+      "train_rows": 22282,
+      "train_start": "2012-03-28"
+    },
+    {
+      "replay_date": "2021-09-02",
+      "train_end": "2021-09-01",
+      "train_rows": 22296,
+      "train_start": "2012-03-28"
+    },
+    {
+      "replay_date": "2021-09-03",
+      "train_end": "2021-09-02",
+      "train_rows": 22304,
+      "train_start": "2012-03-28"
+    },
+    {
+      "replay_date": "2021-09-04",
+      "train_end": "2021-09-03",
+      "train_rows": 22319,
+      "train_start": "2012-03-28"
+    },
+    {
+      "replay_date": "2021-09-05",
+      "train_end": "2021-09-04",
+      "train_rows": 22335,
+      "train_start": "2012-03-28"
+    },
+    {
+      "replay_date": "2021-09-06",
+      "train_end": "2021-09-05",
+      "train_rows": 22350,
+      "train_start": "2012-03-28"
+    },
+    {
+      "replay_date": "2021-09-07",
+      "train_end": "2021-09-06",
+      "train_rows": 22362,
+      "train_start": "2012-03-28"
+    }
+  ]
+}

@@ -1,0 +1,77 @@
+{
+  "generated_at": "2026-08-10T19:15:26.741819+00:00",
+  "model_version_comparisons": {
+    "moneyline": {
+      "model_name": "moneyline",
+      "comparison": "ok",
+      "latest_version": "20260810_191518",
+      "previous_version": "20260810_191425",
+      "latest_metrics": {
+        "n": 814,
+        "accuracy": 0.547911547911548,
+        "auc": 0.5455260318563356,
+        "log_loss": 0.6875452232343724,
+        "brier": 0.2471574636797573,
+        "ece": 0.019183795293718577
+      },
+      "previous_metrics": {
+        "n": 814,
+        "accuracy": 0.5405405405405406,
+        "auc": 0.5361264012581607,
+        "log_loss": 0.6886341806129606,
+        "brier": 0.2476799482613855,
+        "ece": 0.02848629317437267
+      },
+      "delta": {
+        "accuracy": 0.007371,
+        "auc": 0.0094,
+        "log_loss": -0.001089,
+        "brier": -0.000522,
+        "ece": -0.009302
+      }
+    },
+    "totals": {
+      "model_name": "totals",
+      "comparison": "ok",
+      "latest_version": "20260810_191525",
+      "previous_version": "20260810_191432",
+      "latest_metrics": {
+        "n": 814,
+        "accuracy": 0.527027027027027,
+        "auc": 0.5411518895348837,
+        "log_loss": 0.6893323593596138,
+        "brier": 0.24809840025252913,
+        "ece": 0.011318033293239247
+      },
+      "previous_metrics": {
+        "n": 814,
+        "accuracy": 0.5294840294840295,
+        "auc": 0.5291182170542635,
+        "log_loss": 0.7349773498823121,
+        "brier": 0.24979750712305074,
+        "ece": 0.02404110169306597
+      },
+      "delta": {
+        "accuracy": -0.002457,
+        "auc": 0.012034,
+        "log_loss": -0.045645,
+        "brier": -0.001699,
+        "ece": -0.012723
+      }
+    }
+  },
+  "shadow_comparisons": {
+    "moneyline": {
+      "pick_type": "moneyline",
+      "comparison": "insufficient_shadow_data",
+      "graded_rows": 0,
+      "recommendation": "NO ACTION - insufficient shadow data (0 graded rows, need >= 30)"
+    },
+    "totals": {
+      "pick_type": "totals",
+      "comparison": "insufficient_shadow_data",
+      "graded_rows": 0,
+      "recommendation": "NO ACTION - insufficient shadow data (0 graded rows, need >= 30)"
+    }
+  }
+}

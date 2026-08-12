@@ -199,37 +199,11 @@ def run(dry_run: bool, limit: int, since: str):
                 print(f"    Pick error: {e}")
 
         if row["status"] in ("won", "lost", "push"):
-            if _already_sent(conn, pick_id, "result"):
-                print("    – Result: already sent, skipping")
-                skipped += 1
-            else:
-                try:
-                    overall_record, ml_record, tot_record = _build_records(conn)
-                    payload = {
-                        "matchup": matchup,
-                        "pick": row["pick"],
-                        "pick_type": pick_type,
-                        "status": row["status"],
-                        "profit_units": _profit_units(row["status"], row["odds"]),
-                        "overall_record": overall_record,
-                        "moneyline_record": ml_record,
-                        "totals_record": tot_record,
-                    }
-                    if dry_run:
-                        print(f"    WOULD SEND: Result  {payload}")
-                    else:
-                        ok = discord_service.send_results(payload) if discord_service else False
-                        if ok:
-                            _mark_sent(conn, pick_id, "result")
-                            result_sent += 1
-                            print("    Result sent")
-                        else:
-                            print(
-                                "    Result send returned False (not marked sent, will retry next run)"
-                            )
-                except Exception as e:
-                    errors += 1
-                    print(f"    Result error: {e}")
+            # Result delivery belongs exclusively to ResultsUpdater's transactional
+            # outbox.  A second maintenance-specific sent table cannot coordinate
+            # atomically with the live grader and caused duplicate notifications.
+            print("    – Result: managed by the production result outbox, skipping")
+            skipped += 1
         print()
 
     conn.close()

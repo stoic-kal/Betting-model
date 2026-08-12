@@ -5,6 +5,8 @@ import requests
 from scipy.special import expit
 from scipy.special import logit as scipy_logit
 
+from services.baseball_metrics import baseball_innings, fip_from_mlb_stat
+
 BETA_FIP = 0.22
 BETA_RSG = 0.18
 BETA_FORM = 0.35
@@ -91,14 +93,11 @@ def _fetch_pitcher_fip(pitcher_id) -> float:
             _ml_cache[ck] = LEAGUE_AVG_FIP
             return LEAGUE_AVG_FIP
         s = splits[0].get("stat", {})
-        ip = float(s.get("inningsPitched", 0) or 0)
+        ip = baseball_innings(s.get("inningsPitched", 0))
         if ip < 5:
             _ml_cache[ck] = LEAGUE_AVG_FIP
             return LEAGUE_AVG_FIP
-        hr = float(s.get("homeRunsAllowed", 0) or 0)
-        bb = float(s.get("baseOnBalls", 0) or 0)
-        so = float(s.get("strikeOuts", 0) or 0)
-        fip = float(np.clip((13 * hr + 3 * bb - 2 * so) / max(ip, 0.1) + 3.10, 2.0, 6.5))
+        fip = fip_from_mlb_stat(s, min_ip=5)
         print(f"    [ML] FIP ({pitcher_id}): {fip:.2f} ({ip:.0f}IP)")
     except Exception as e:
         print(f"     [ML] FIP error ({pitcher_id}): {e}")

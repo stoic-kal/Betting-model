@@ -9,10 +9,11 @@ from services.analytics_service import _load_resolved, get_full_analytics_v2, sa
 from services.loss_review_service import get_loss_debrief, get_loss_review, loss_review_csv
 from services.market_signals_service import get_market_signals, signals_csv
 from services.model_control_service import get_model_control
-from services.model_lab import run_model_lab
+from services.model_lab import compare_candidates, get_candidate_detail, run_model_lab
 from services.model_learning_service import run_learning_cycle
 from services.opposite_model_service import get_opposite_model, opposite_csv
 from services.pikkit_service import get_pikkit_calendar, pikkit_csv
+from services.portfolio_risk_service import complete_history_portfolio_audit
 from services.record_tracker_service import get_record_tracker, record_csv
 
 analytics_bp = Blueprint("analytics", __name__, url_prefix="/api")
@@ -21,6 +22,16 @@ analytics_bp = Blueprint("analytics", __name__, url_prefix="/api")
 def _internal_error():
 
     return jsonify({"status": "error", "message": "Internal server error."}), 500
+
+
+@analytics_bp.route("/portfolio-risk")
+def portfolio_risk_data():
+    try:
+        response = jsonify({"status": "success", **complete_history_portfolio_audit()})
+        response.headers["Cache-Control"] = "no-store"
+        return response
+    except Exception:
+        return _internal_error()
 
 
 @analytics_bp.route("/pikkit")
@@ -217,6 +228,30 @@ def get_model_lab():
     try:
         data = run_model_lab()
         return jsonify({"status": "success", **data})
+    except Exception as e:
+        return _internal_error()
+
+
+@analytics_bp.route("/model-lab/candidate/<path:candidate_id>", methods=["GET"])
+def get_model_lab_candidate(candidate_id):
+    try:
+        detail = get_candidate_detail(candidate_id)
+        if detail is None:
+            return jsonify({"status": "error", "message": "candidate not found"}), 404
+        return jsonify({"status": "success", "candidate": detail})
+    except Exception as e:
+        return _internal_error()
+
+
+@analytics_bp.route("/model-lab/compare", methods=["GET"])
+def get_model_lab_compare():
+    try:
+        id_a = request.args.get("a", "")
+        id_b = request.args.get("b", "")
+        result = compare_candidates(id_a, id_b)
+        if result is None:
+            return jsonify({"status": "error", "message": "one or both candidates not found"}), 404
+        return jsonify({"status": "success", **result})
     except Exception as e:
         return _internal_error()
 

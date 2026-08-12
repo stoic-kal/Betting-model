@@ -1,0 +1,14 @@
+{
+  "candidate": {
+    "max_flat_drawdown": 10.776116175426798,
+    "max_kelly_drawdown": 0.13297089905665113,
+    "worst_flat_day": -5.0,
+    "worst_kelly_day": -0.07147420388355252
+  },
+  "champion": {
+    "max_flat_drawdown": 0.0,
+    "max_kelly_drawdown": 0.0,
+    "worst_flat_day": -2.0,
+    "worst_kelly_day": -0.013474206584411758
+  }
+}

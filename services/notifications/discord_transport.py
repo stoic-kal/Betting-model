@@ -1,5 +1,6 @@
 import logging
 import time
+import hashlib
 
 import requests
 
@@ -24,13 +25,13 @@ class DiscordTransport(NotificationTransport):
     def is_configured(self) -> bool:
         return bool(self.bot_token and self.channel_id)
 
-    def send_message(self, content: str) -> bool:
-        return self._post({"content": content[:MESSAGE_CHAR_LIMIT]})
+    def send_message(self, content: str, idempotency_key: str = None) -> bool:
+        return self._post({"content": content[:MESSAGE_CHAR_LIMIT]}, idempotency_key)
 
-    def send_embed(self, embed: dict) -> bool:
-        return self._post({"embeds": [embed]})
+    def send_embed(self, embed: dict, idempotency_key: str = None) -> bool:
+        return self._post({"embeds": [embed]}, idempotency_key)
 
-    def _post(self, payload: dict) -> bool:
+    def _post(self, payload: dict, idempotency_key: str = None) -> bool:
         if not self.is_configured():
             logger.warning(
 "%s: not configured (missing token or channel_id), skipping send.", self.name
@@ -38,6 +39,13 @@ class DiscordTransport(NotificationTransport):
             return False
 
         url = f"{DISCORD_API_BASE}/channels/{self.channel_id}/messages"
+        if idempotency_key:
+            # Discord de-duplicates repeated message creates carrying the same
+            # nonce when enforce_nonce is true.  Keep the nonce stable across
+            # worker crashes and transport retries.
+            payload = dict(payload)
+            payload["nonce"] = str(int(hashlib.sha256(idempotency_key.encode()).hexdigest()[:15], 16))
+            payload["enforce_nonce"] = True
         headers = {
 "Authorization": f"Bot {self.bot_token}",
 "Content-Type": "application/json",

@@ -7,6 +7,8 @@ import numpy as np
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import StandardScaler
 
+from pipeline.calibration_common import brier_score, expected_calibration_error, log_loss_score
+
 DB_PATH = "database/picks.db"
 MIN_TRAINING_EXAMPLES = 40
 MIN_PROMOTION_EXAMPLES = 120
@@ -41,6 +43,19 @@ def _connect():
         training_examples INTEGER NOT NULL, holdout_examples INTEGER NOT NULL,
         artifact_json TEXT NOT NULL, metrics_json TEXT NOT NULL,
         activation_examples INTEGER, confidence_tier TEXT)""")
+    conn.execute("""CREATE TABLE IF NOT EXISTS loss_review_lessons (
+        pick_id INTEGER PRIMARY KEY,
+        first_reviewed_at TEXT NOT NULL,
+        last_reviewed_at TEXT NOT NULL,
+        pick_type TEXT NOT NULL,
+        primary_reason TEXT,
+        reason_codes_json TEXT NOT NULL,
+        quality_score REAL,
+        eligible_for_learning INTEGER NOT NULL,
+        exclusion_reason TEXT,
+        last_learning_run_at TEXT,
+        last_learning_role TEXT,
+        FOREIGN KEY(pick_id) REFERENCES picks(id))""")
     model_columns = [
         row[1] for row in conn.execute("PRAGMA table_info(learning_models)").fetchall()
     ]
@@ -50,6 +65,67 @@ def _connect():
         conn.execute("ALTER TABLE learning_models ADD COLUMN confidence_tier TEXT")
     conn.commit()
     return conn
+
+
+def record_loss_review_lesson(pick_id, pick_type, reason_codes, quality_score=None):
+    """Persist a reviewed loss as diagnostic metadata without creating a model input."""
+    conn = _connect()
+    try:
+        pick = conn.execute(
+            "SELECT status,forecast_stage,feature_snapshot FROM picks WHERE id=?", (int(pick_id),)
+        ).fetchone()
+        if pick is None:
+            return {"recorded": False, "eligible_for_learning": False, "reason": "pick_not_found"}
+        eligible = bool(
+            pick["status"] == "lost"
+            and pick["forecast_stage"] == "lineup_lock"
+            and pick["feature_snapshot"] is not None
+        )
+        if pick["status"] != "lost":
+            exclusion = "not_a_loss"
+        elif pick["forecast_stage"] != "lineup_lock":
+            exclusion = "not_official_lineup_lock"
+        elif pick["feature_snapshot"] is None:
+            exclusion = "missing_pregame_feature_snapshot"
+        else:
+            exclusion = None
+        now = datetime.now(timezone.utc).isoformat()
+        codes = [str(code) for code in reason_codes if code]
+        conn.execute(
+            """INSERT INTO loss_review_lessons
+               (pick_id,first_reviewed_at,last_reviewed_at,pick_type,primary_reason,
+                reason_codes_json,quality_score,eligible_for_learning,exclusion_reason)
+               VALUES (?,?,?,?,?,?,?,?,?)
+               ON CONFLICT(pick_id) DO UPDATE SET
+                 last_reviewed_at=excluded.last_reviewed_at,
+                 pick_type=excluded.pick_type,
+                 primary_reason=excluded.primary_reason,
+                 reason_codes_json=excluded.reason_codes_json,
+                 quality_score=excluded.quality_score,
+                 eligible_for_learning=excluded.eligible_for_learning,
+                 exclusion_reason=excluded.exclusion_reason""",
+            (int(pick_id), now, now, pick_type, codes[0] if codes else None,
+             json.dumps(codes), quality_score, int(eligible), exclusion),
+        )
+        conn.commit()
+        return {"recorded": True, "eligible_for_learning": eligible, "reason": exclusion}
+    finally:
+        conn.close()
+
+
+def _mark_review_lessons(conn, rows, role):
+    ids = [int(row["id"]) for row in rows]
+    if not ids:
+        return 0
+    now = datetime.now(timezone.utc).isoformat()
+    placeholders = ",".join("?" for _ in ids)
+    cursor = conn.execute(
+        f"""UPDATE loss_review_lessons
+            SET last_learning_run_at=?,last_learning_role=?
+            WHERE eligible_for_learning=1 AND pick_id IN ({placeholders})""",
+        (now, role, *ids),
+    )
+    return cursor.rowcount
 
 
 def _clip(value):
@@ -69,7 +145,7 @@ def _snapshot(raw):
 
 
 def _eligible_rows(conn, pick_type):
-    return [
+    rows = [
         dict(row)
         for row in conn.execute(
 """
@@ -81,6 +157,14 @@ def _eligible_rows(conn, pick_type):
             (pick_type,),
         ).fetchall()
     ]
+    if pick_type == "totals":
+        # Never teach the corrected totals engine from predictions produced by
+        # the known-bad FIP/bullpen ownership pipeline.
+        rows = [
+            row for row in rows
+            if (_snapshot(row.get("feature_snapshot")).get("totals_input_version") or 0) >= 2
+        ]
+    return rows
 
 
 def _legacy_v3_rows(conn, pick_type):
@@ -136,25 +220,15 @@ def _example(row):
 
 
 def _brier(probs, targets):
-    return float(np.mean((np.asarray(probs) - np.asarray(targets)) ** 2))
+    return brier_score(targets, probs)
 
 
 def _log_loss(probs, targets):
-    probs = np.clip(np.asarray(probs), 1e-6, 1 - 1e-6)
-    targets = np.asarray(targets)
-    return float(-np.mean(targets * np.log(probs) + (1 - targets) * np.log(1 - probs)))
+    return log_loss_score(targets, probs)
 
 
 def _ece(probs, targets, bins=5):
-    probs, targets = np.asarray(probs), np.asarray(targets)
-    total = len(probs)
-    error = 0.0
-    for low in np.linspace(0, 1, bins + 1)[:-1]:
-        high = low + 1 / bins
-        mask = (probs >= low) & (probs < high if high < 1 else probs <= high)
-        if mask.any():
-            error += mask.sum() / total * abs(float(probs[mask].mean() - targets[mask].mean()))
-    return float(error)
+    return expected_calibration_error(targets, probs, n_bins=bins)
 
 
 def _artifact(scaler, model):
@@ -245,7 +319,8 @@ def _rollback_guard(conn, pick_type, examples):
 
 def _run_type(conn, pick_type):
     rows = _eligible_rows(conn, pick_type)
-    examples = [item for row in rows if (item := _example(row)) is not None]
+    official_pairs = [(row, item) for row in rows if (item := _example(row)) is not None]
+    examples = [item for _, item in official_pairs]
     legacy_examples = [
         item for row in _legacy_v3_rows(conn, pick_type) if (item := _example(row)) is not None
     ]
@@ -261,6 +336,11 @@ def _run_type(conn, pick_type):
             and eligible - previous_run["eligible_examples"] < RETRAIN_EVERY_EXAMPLES
         )
     ):
+        cached_holdout = int(previous_run["holdout_examples"] or 0)
+        if cached_holdout:
+            _mark_review_lessons(conn, [row for row, _ in official_pairs[:-cached_holdout]], "training")
+            _mark_review_lessons(conn, [row for row, _ in official_pairs[-cached_holdout:]], "holdout")
+            conn.commit()
         return {
 "pick_type": pick_type,
 "status": previous_run["status"],
@@ -295,6 +375,8 @@ def _run_type(conn, pick_type):
     )
     official_train = examples[:-holdout]
     test = examples[-holdout:]
+    official_train_rows = [row for row, _ in official_pairs[:-holdout]]
+    holdout_rows = [row for row, _ in official_pairs[-holdout:]]
     train = legacy_examples + official_train
     weights = np.asarray(
         ([LEGACY_V3_WEIGHT] * len(legacy_examples)) + ([1.0] * len(official_train))
@@ -325,6 +407,13 @@ def _run_type(conn, pick_type):
         scaler.transform(x_train), y_train, sample_weight=weights
     )
     artifact = _artifact(scaler, model)
+    reviewed_training_losses = _mark_review_lessons(conn, official_train_rows, "training")
+    reviewed_holdout_losses = _mark_review_lessons(conn, holdout_rows, "holdout")
+    artifact["review_evidence"] = {
+        "reviewed_training_losses": reviewed_training_losses,
+        "reviewed_holdout_losses": reviewed_holdout_losses,
+        "policy": "reason codes are audit metadata only; the model receives pregame probabilities and outcome labels",
+    }
     champion = [e[2] for e in test]
     market = [e[3] for e in test]
     targets = [e[1] for e in test]
@@ -422,6 +511,8 @@ def _run_type(conn, pick_type):
 "legacy_warm_start": len(legacy_examples),
 "legacy_weight": LEGACY_V3_WEIGHT,
 "rollback": rollback,
+"reviewed_training_losses": reviewed_training_losses,
+"reviewed_holdout_losses": reviewed_holdout_losses,
     }
 
 
@@ -455,6 +546,10 @@ def learning_policy():
 "rollback_market_margin": ROLLBACK_MARKET_MARGIN,
 "inputs": ["locked model probability", "locked market probability"],
 "excluded": ["result-derived features", "CLV", "profit", "postgame diagnostics"],
+"loss_review_policy": (
+            "reviewed losses are persisted and their outcomes enter chronological training/holdout; "
+            "postgame reason codes remain audit metadata and never become prediction inputs"
+        ),
     }
 
 
@@ -509,11 +604,27 @@ def get_learning_status():
             champion_ece,candidate_ece,improvement FROM learning_runs ORDER BY id DESC LIMIT 50"""
             ).fetchall()
         ]
+        review_summary = {
+            row["pick_type"]: {
+                "reviewed_losses": row["reviewed_losses"],
+                "eligible_reviewed_losses": row["eligible_reviewed_losses"],
+                "used_for_training": row["used_for_training"],
+                "used_for_holdout": row["used_for_holdout"],
+            }
+            for row in conn.execute(
+                """SELECT pick_type,COUNT(*) reviewed_losses,
+                    SUM(eligible_for_learning) eligible_reviewed_losses,
+                    SUM(CASE WHEN last_learning_role='training' THEN 1 ELSE 0 END) used_for_training,
+                    SUM(CASE WHEN last_learning_role='holdout' THEN 1 ELSE 0 END) used_for_holdout
+                    FROM loss_review_lessons GROUP BY pick_type"""
+            ).fetchall()
+        }
         return {
 "latest": latest,
 "active_models": active,
 "history": history,
 "policy": learning_policy(),
+"loss_reviews": review_summary,
         }
     finally:
         conn.close()

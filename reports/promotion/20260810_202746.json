@@ -1,0 +1,73 @@
+{
+  "generated_at": "2026-08-10T20:27:46.798043+00:00",
+  "model_version_comparisons": {
+    "moneyline": {
+      "model_name": "moneyline",
+      "comparison": "ok",
+      "latest_version": "20260810_202745",
+      "previous_version": "20260810_195938",
+      "latest_metrics": {
+        "n": 814,
+        "accuracy": 0.547911547911548,
+        "auc": 0.5455260318563356,
+        "log_loss": 0.6875452232343724,
+        "brier": 0.2471574636797573,
+        "ece": 0.019183795293718577
+      },
+      "previous_metrics": {
+        "n": 814,
+        "auc": 0.5576565538345251,
+        "log_loss": 0.6848741020552247,
+        "brier": 0.24585978896068258,
+        "ece": 0.028365122191063477
+      },
+      "delta": {
+        "auc": -0.012131,
+        "log_loss": 0.002671,
+        "brier": 0.001298,
+        "ece": -0.009181
+      }
+    },
+    "totals": {
+      "model_name": "totals",
+      "comparison": "ok",
+      "latest_version": "20260810_195938",
+      "previous_version": "20260810_191525",
+      "latest_metrics": {
+        "n": 814,
+        "auc": 0.5440528100775194,
+        "log_loss": 0.6855794309599128,
+        "brier": 0.24632466064344416,
+        "ece": 0.02482218616703754
+      },
+      "previous_metrics": {
+        "n": 814,
+        "accuracy": 0.527027027027027,
+        "auc": 0.5411518895348837,
+        "log_loss": 0.6893323593596138,
+        "brier": 0.24809840025252913,
+        "ece": 0.011318033293239247
+      },
+      "delta": {
+        "auc": 0.002901,
+        "log_loss": -0.003753,
+        "brier": -0.001774,
+        "ece": 0.013504
+      }
+    }
+  },
+  "shadow_comparisons": {
+    "moneyline": {
+      "pick_type": "moneyline",
+      "comparison": "insufficient_shadow_data",
+      "graded_rows": 0,
+      "recommendation": "NO ACTION - insufficient shadow data (0 graded rows, need >= 30)"
+    },
+    "totals": {
+      "pick_type": "totals",
+      "comparison": "insufficient_shadow_data",
+      "graded_rows": 0,
+      "recommendation": "NO ACTION - insufficient shadow data (0 graded rows, need >= 30)"
+    }
+  }
+}
