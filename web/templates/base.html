@@ -11,6 +11,7 @@
             <h1><a href="/" style="text-decoration: none; color: var(--text);">⚡ Jingleez Picks</a></h1>
             <ul class="nav-links">
                 <li><a href="/live-scores">LIVE SCORES</a></li>
+                <li><a href="/matchups">MATCHUPS</a></li>
                 <li><a href="/model-control">MODEL CONTROL</a></li>
                 <li><a href="/opposite-model">OPPOSITE</a></li>
                 <li><a href="/record-tracker">RECORDS</a></li>
@@ -47,7 +48,6 @@
       function closeTodaySlate(){document.getElementById('slate-modal-bg').classList.remove('open');document.body.style.overflow=''}
       async function openTodaySlate(){const modal=document.getElementById('slate-modal-bg'),body=document.getElementById('slate-modal-body');modal.classList.add('open');document.body.style.overflow='hidden';body.className='slate-empty';body.textContent='Loading today’s locked picks…';try{const r=await fetch('/api/live-monitor',{cache:'no-store'}),d=await r.json();if(!r.ok)throw Error(d.error||'Could not load slate');document.getElementById('slate-date').textContent=`${d.date} · ${d.count} stored picks`;const groups={};(d.picks||[]).forEach(p=>(groups[p.matchup]??=[]).push(p));const cards=Object.entries(groups).map(([game,picks])=>{const cell=kind=>{const p=picks.find(x=>x.pick_type===kind);if(!p)return `<div class="slate-pick"><div class="slate-kind">${kind.toUpperCase()}</div><div class="slate-name">— NOT STORED —</div><div class="slate-status">Market unavailable or generation incomplete</div></div>`;return `<div class="slate-pick"><div class="slate-kind">${kind==='moneyline'?'MONEYLINE':'TOTALS'}</div><div class="slate-name"><strong>${slateEscape(p.pick)}</strong></div><div class="slate-metrics"><span>PROB</span><strong>${(Number(p.model_prob)*100).toFixed(1)}%</strong><span>OPEN</span><strong>${Number(p.opening_odds||p.odds).toFixed(3)}</strong><span>EV</span><strong>${Number(p.ev).toFixed(1)}%</strong><span>KELLY</span><strong>${Number(p.kelly_units||0).toFixed(2)}u</strong></div><div class="slate-status">${slateEscape(String(p.status).toUpperCase())} · ${slateEscape(p.model_version)}</div></div>`};return `<article class="slate-game"><h3>${slateEscape(game)}</h3><div class="slate-picks">${cell('moneyline')}${cell('totals')}</div></article>`}).join('');body.className=cards?'slate-grid':'slate-empty';body.innerHTML=cards||'No picks have been generated for today yet. Use GENERATE TODAY\'S FULL SLATE first.'}catch(err){body.className='slate-empty';body.textContent=`Could not load today's slate: ${err.message}`}}
       document.addEventListener('keydown',event=>{if(event.key==='Escape')closeTodaySlate()});
-      // Keep grading/CLV automation alive from any open application page.
       setInterval(() => fetch('/api/live-state', {cache:'no-store'}).catch(() => {}), 60000);
     </script>
 </body>
