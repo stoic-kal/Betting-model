@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='matchups.css') }}">
+<section class="matchup-lab">
+  <header class="matchup-head">
+    <div><div class="matchup-kicker">MLB // STATCAST WORKSPACE</div><h1 class="matchup-title">MATCHUP LAB</h1><div class="matchup-status" id="matchup-status">Checking data status…</div></div>
+    <div class="matchup-toolbar"><label for="matchup-date">DATE</label><input id="matchup-date" type="date"><button type="button" onclick="loadSlate()">LOAD</button></div>
+  </header>
+
+  <div class="matchup-slate" id="matchup-slate"></div>
+  <div class="matchup-tabs">
+    <button class="matchup-tab active" data-tab="matchup">MATCHUP</button>
+    <button class="matchup-tab" data-tab="rolling">ROLLING</button>
+    <button class="matchup-tab" data-tab="pitcher-zones">PITCHER ZONES</button>
+    <button class="matchup-tab" data-tab="hitter-zones">HITTER ZONES</button>
+  </div>
+  <main class="matchup-panel" id="matchup-content"><div class="matchup-empty">Loading Matchup Lab…</div></main>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const lab={slate:null,game:null,tab:'matchup'};
+const esc=v=>String(v??'—').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+const fmt=(v,d=1)=>v===null||v===undefined||Number.isNaN(Number(v))?'—':Number(v).toFixed(d);
+const pct=(v,d=1)=>v===null||v===undefined?'—':`${fmt(v,d)}%`;
+const band=v=>v>=85?'elite':v>=70?'good':v>=50?'neutral':v>=35?'poor':'bad';
+function score(v){return v===null||v===undefined?'—':`<span class="matchup-score" data-band="${band(Number(v))}">${fmt(v,0)}</span>`}
+function todayLocal(){const d=new Date(),off=d.getTimezoneOffset();return new Date(d.getTime()-off*60000).toISOString().slice(0,10)}
+async function loadStatus(){try{const r=await fetch('/api/matchups/status',{cache:'no-store'}),d=await r.json();document.getElementById('matchup-status').textContent=`STATCAST ${String(d.status||'unknown').toUpperCase()} · latest ${d.latest_game_date||'—'} · ${d.total_rows?Number(d.total_rows).toLocaleString():'—'} pitches`}catch{document.getElementById('matchup-status').textContent='STATCAST STATUS UNAVAILABLE'}}
+async function loadSlate(){const date=document.getElementById('matchup-date').value||todayLocal(),content=document.getElementById('matchup-content');content.innerHTML='<div class="matchup-empty">Loading slate…</div>';try{const r=await fetch(`/api/matchups/slate?date=${encodeURIComponent(date)}`,{cache:'no-store'}),d=await r.json();lab.slate=d;renderSlate();if(d.games?.length)selectGame(d.games[0].game_pk);else{lab.game=null;content.innerHTML=`<div class="matchup-empty">${esc(d.message||`No Matchup Lab slate for ${date}.`)}</div>`}}catch(e){content.innerHTML=`<div class="matchup-empty">Could not load Matchup Lab: ${esc(e.message)}</div>`}}
+function renderSlate(){const el=document.getElementById('matchup-slate'),games=lab.slate?.games||[];el.innerHTML=games.map(g=>`<button class="matchup-game-btn ${lab.game?.game_pk===g.game_pk?'active':''}" onclick="selectGame(${Number(g.game_pk)})">${esc(g.away_team)} @ ${esc(g.home_team)}</button>`).join('')}
+function selectGame(pk){lab.game=(lab.slate?.games||[]).find(g=>Number(g.game_pk)===Number(pk))||null;renderSlate();renderGame()}
+function hitterTable(title,subtitle,rows=[]){const body=rows.map(r=>`<tr><td><strong>${esc(r.name)}</strong><div class="matchup-meta">${esc(r.stand||'')} · ${esc(r.batting_order?`#${r.batting_order}`:'')}</div></td><td>${score(r.match)}</td><td>${score(r.pitch_mix)}</td><td>${score(r.platoon)}</td><td>${score(r.form)}</td><td>${fmt(r.xwoba,3)}</td><td>${fmt(r.iso,3)}</td><td>${pct(r.whiff_pct)}</td><td>${pct(r.barrel_pct)}</td><td>${pct(r.hard_hit_pct)}</td><td>${fmt(r.avg_exit_velocity,1)}</td><td>${fmt(r.avg_launch_angle,1)}</td><td>${r.sample_pitches??'—'}</td></tr>`).join('');return `<section><div class="matchup-section-head"><div><h3>${esc(title)}</h3><div class="matchup-meta">${esc(subtitle||'')}</div></div></div><div class="matchup-scroll"><table class="matchup-table"><thead><tr><th>HITTER</th><th>MATCH</th><th>PIT</th><th>PLTN</th><th>FORM</th><th>xwOBA</th><th>ISO</th><th>WHIFF</th><th>BRL</th><th>HH</th><th>EV</th><th>LA</th><th>PITCHES</th></tr></thead><tbody>${body||'<tr><td colspan="13">No hitter profiles available.</td></tr>'}</tbody></table></div></section>`}
+function renderGame(){const c=document.getElementById('matchup-content'),g=lab.game;if(!g){c.innerHTML='<div class="matchup-empty">Select a game.</div>';return}if(lab.tab!=='matchup'){c.innerHTML=`<div class="matchup-empty">${esc(lab.tab.toUpperCase())} view is reserved for the next profile-builder phase. No synthetic data is shown.</div>`;return}c.innerHTML=`<div class="matchup-section-head"><div><h2>${esc(g.away_team)} @ ${esc(g.home_team)}</h2><div class="matchup-meta">${esc(g.game_date||lab.slate?.date)} · ${esc(g.venue||'')}</div></div></div><div class="matchup-grid">${hitterTable(`${g.away_team} vs ${g.home_pitcher?.name||'SP'}`,g.home_pitcher?.summary,g.away_hitters)}${hitterTable(`${g.home_team} vs ${g.away_pitcher?.name||'SP'}`,g.away_pitcher?.summary,g.home_hitters)}</div>`}
+document.querySelectorAll('.matchup-tab').forEach(btn=>btn.addEventListener('click',()=>{document.querySelectorAll('.matchup-tab').forEach(x=>x.classList.remove('active'));btn.classList.add('active');lab.tab=btn.dataset.tab;renderGame()}));
+document.getElementById('matchup-date').value=todayLocal();loadStatus();loadSlate();
+</script>
+{% endblock %}
