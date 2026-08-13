@@ -31,6 +31,7 @@ from config import Config
 from web.routes.analytics_routes import analytics_bp
 from web.routes.diagnostics_routes import diagnostics_bp
 from web.routes.game_routes import game_bp
+from web.routes.matchup_routes import matchup_bp
 from web.routes.picks_routes import picks_bp
 from web.routes.results_routes import results_bp
 from web.routes.stats_routes import stats_bp
@@ -227,6 +228,7 @@ def create_app(config_class=Config):
     app.register_blueprint(analytics_bp)
     app.register_blueprint(diagnostics_bp)
     app.register_blueprint(system_bp)
+    app.register_blueprint(matchup_bp)
     dev_mode.init_app(app)
 
     @app.route("/picks")
